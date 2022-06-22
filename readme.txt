@@ -1,3 +1,10 @@
+# Description
+This is ticketing managements/reporting system like (os tickets) It has
+the features to add different organization and their independent
+reporting and managements.
+
+
+
 This file contains instructions regarding to the setup of ATG-Extra on new Machine.
 
 1. Create Virtual Environment
