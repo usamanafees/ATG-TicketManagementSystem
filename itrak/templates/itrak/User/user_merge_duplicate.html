@@ -1,0 +1,108 @@
+   {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+        {% load tz %}
+  <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-gears" aria-hidden="true"></i> User ID Maintenance</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+{#                    <li><span>Email Notification</span></li>#}
+{#                    <li><span>Email Defaults</span></li>#}
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+
+
+        <!-- start: page -->
+        <div class="row">
+            <div class="col-md-12">
+                <section class="panel">
+                    <header class="panel-heading">
+                        <h2 class="panel-title">Merge Duplicate Users</h2>
+                    </header>
+                    <div class="panel-body">
+                        <a onClick="javascript:history.go(-1);" class="back-text"><span class="fa fa-arrow-circle-left"> </span> Back</a>
+                        <h3>Select Users to Merge</h3>
+
+                        <p>Select the record you wish to retain (primary) and another User (secondary) to be replaced. This process will replace ALL instances of the secondary User with the primary User value you wish to retain, transferring all issues, assets, history records, etc. to the primary user. However, neither USER record is modified. Check the box "Delete after processing" to remove the secondary user record from the system completely. <b>Please note</b>: if either the primary user or the secondary user is an Agent, the resulting primary user will be an Agent.</p>
+                        <br>
+                             <form id="summary-form" action="{% url 'DuplicateUserMerge' %}" method="post" class="form-horizontal">
+                        {% csrf_token %}
+                        <div class="panel-body">
+                            {% for message in messages %}
+                                <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                {{ message }}
+                                </div>
+                            {% endfor %}
+                            <div class="validation-message">
+                                <ul></ul>
+                            </div>
+                            <br>
+                            <div class="form-group">
+                                <label class="col-lg-3 col-md-4 col-sm-5 control-label">Primary User:</label>
+                                <div class="col-lg-4 col-sm-6">
+                                   <select name="prime_usr_id" id="prime_usr_id" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Organization", "allowClear": true }'>
+                                       <option value="" readonly="readonly" >Select a Primary User </option>
+                                       {% if users %}
+                                           {% for primyUsr in users %}
+                                               <option value="{{ primyUsr.id }}">{{ primyUsr.display_name }}</option>
+                                           {% endfor %}
+                                       {% endif %}
+                                   </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-lg-3 col-md-4 col-sm-5 control-label">Secondary User:</label>
+                                <div class="col-lg-4 col-sm-6">
+                                    <select name="second_usr_id" id="second_usr_id" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Organization", "allowClear": true }'>
+                                       <option value="" readonly="readonly" >Select a Secondary User </option>
+                                       {% if users %}
+                                           {% for secondUsr in users %}
+                                               <option value="{{ secondUsr.id }}">{{ secondUsr.display_name }}</option>
+                                           {% endfor %}
+                                       {% endif %}
+                                   </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-lg-3 col-md-4 col-sm-5 control-label"></label>
+                                <div class="col-lg-4 col-sm-6">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="is_delete" id="is_delete" value="0">
+                                            <strong>Delete after processing? </strong>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <footer class="panel-footer">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <button class="btn btn-primary saveButton">Merge</button>
+                                    <button type="reset" class="btn btn-primary">Reset</button>
+{#                                     <label class="required-lable"><span class="required">*</span> Required</label>#}
+                                </div>
+                            </div>
+                        </footer>
+                    </form>
+                        <br>
+
+
+                    </div>
+                </section>
+            </div>
+        </div>
+    </section>
+    {% endblock %}

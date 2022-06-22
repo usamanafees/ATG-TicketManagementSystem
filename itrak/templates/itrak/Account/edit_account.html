@@ -1,0 +1,164 @@
+{% extends 'itrak/base.html' %}
+
+{% block body_block %}
+    {% load static %}
+    {% load tz %} {# it will Load the Django TimeZone Library#}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+
+            <section role="main" class="content-body">
+                <header class="page-header">
+                   <h2><i class="fa fa-user-circle-o" aria-hidden="true"></i> Account</h2>
+
+                    <div class="right-wrapper pull-right">
+                        <ol class="breadcrumbs">
+                            <li>
+                                <a href="{% url 'home' %}">
+                                    <i class="fa fa-home"></i>
+                                </a>
+                            </li>
+                            <li><span>Account</span></li>
+                            <li><span>Edit Account</span></li>
+                        </ol>
+
+                        <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+                    </div>
+                </header>
+
+                <!-- start: page -->
+                     <div class="row">
+                        <div class="col-md-12">
+                            {% for message in messages %}
+                                <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                            <form id="summary-form" action="{% url 'updateAccount' %}" method="post" class="form-horizontal">
+                                {% csrf_token %}
+                                <section class="panel">
+                                    <header class="panel-heading">
+{#                                            <div class="panel-actions">#}
+{#                                                <a href="#" class="fa fa-caret-down"></a>#}
+{#                                                <a href="#" class="fa fa-times"></a>#}
+{#                                            </div>#}
+
+                                        <h2 class="panel-title">Edit Account</h2>
+                                    </header>
+                                    <footer class="panel-footer">
+                                        <div class="row">
+                                            <div class="col-sm-9">
+                                                <button class="btn btn-primary saveButton">Update</button>
+                                                <button type="reset" class="btn btn-default resetbtn">Reset</button>
+                                            </div>
+                                        </div>
+                                    </footer>
+                                    <div class="panel-body">
+                                        <div class="validation-message">
+                                            <ul></ul>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label"><span class="required">*</span>AIAN DK:</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" name="AIAN_DK" value="{{data.AIAN_DK}}" disabled="true" id="AIAN_DK" class="form-control" title="Please Select AIAN DK." placeholder="AIAN DK" required/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label"><span class="required">*</span>ACC NUMBER:</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" name="acc_number" value="{{data.acc_number}}" disabled="true" id="acc_number" class="form-control" title="Please Select ACC NUMBER." placeholder="ACC NUMBER" required/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label"><span class="required">*</span>ACC NAME:</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" name="acc_name" value="{{data.acc_name}}" disabled="true" id="acc_name" class="form-control" title="Please Select ACC NAME." placeholder="ACC NAME" required/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label"><span class="required">*</span>CLIENT:</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" name="client" value="{{data.client}}" disabled="true" id="client" class="form-control" title="Please Select CLIENT." placeholder="CLIENT" required/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label"><span class="required">*</span>COMPANY:</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" name="company" value="{{data.company}}" disabled="true" id="company" class="form-control" title="Please Select COMPANY." placeholder="COMPANY" required/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label"><span class="required">*</span>COUNTRY:</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" name="country" value="{{data.country}}" disabled="true" id="country" class="form-control" title="Please Select COUNTRY." placeholder="COUNTRY" required/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label"><span class="required">*</span>AGENCY:</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" name="agency" value="{{data.agency}}" disabled="true" id="agency" class="form-control" title="Please Select AGENCY." placeholder="AGENCY" required/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label"><span class="required">*</span>LOGIN ID:</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" name="login_id" value="{{data.login_id}}" disabled="true" id="login_id" class="form-control" title="Please Select LOGIN ID." placeholder="LOGIN ID" required/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label"><span class="required">*</span>AGENCY EMAIL:</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" name="agency_email" value="{{data.agency_email}}" disabled="true" id="agency_email" class="form-control" title="Please Select AGENCY EMAIL." placeholder="AGENCY EMAIL" required/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label"><span class="required">*</span>CURRENCY:</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" name="currency" value="{{data.currency}}" disabled="true" id="currency" class="form-control" title="Please Select CURRENCY." placeholder="CURRENCY" required/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">STATUS</label>
+                                            <div class="col-sm-6">
+                                                <div class="checkbox">
+                                                    <label>
+                                                       <input type="checkbox" name="status" {% if data.status == True %}checked{% endif %} disabled>
+                                                    </label>
+                                                </div>
+                                           </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">NOTE:</label>
+                                            <div class="col-sm-9">
+                                                <textarea name="note" value="{{data.note}}" disabled="true" class="form-control" rows="3" id="textareaDefault"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Associated Emails:</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" name="associated_emails" value="{% if data.associated_emails %}{{data.associated_emails}}{% endif %}" id="associated_emails" class="form-control" title="Please Select Email." placeholder="Associated Emails"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <footer class="panel-footer">
+                                        <div class="row">
+                                            <div class="col-sm-9">
+                                                <input type="hidden" name="account_id" value="{{data.id}}">
+                                                <button class="btn btn-primary saveButton">Update</button>
+                                                <button type="reset" class="btn btn-default resetbtn">Reset</button>
+                                            </div>
+                                        </div>
+                                    </footer>
+                                </section>
+                            </form>
+                        </div>
+                    </div>
+                <!-- end: page -->
+            </section>
+        </div>
+
+{% endblock %}
+
+
+
+

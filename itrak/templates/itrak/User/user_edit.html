@@ -1,0 +1,1018 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+        {% load check_permissions %}
+        {% load tz %} {# it will Load the Django TimeZone Library#}
+        {% load templates_extras %}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-user-circle-o" aria-hidden="true"></i> User</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>User</span></li>
+								<li><span>Edit User</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+                         <div class="row">
+                            <div class="col-md-12">
+                                {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                                <form id="summary-form" action="{% url 'updateUser' %}" method="post" class="form-horizontal">
+                                    {% csrf_token %}
+                                    <section class="panel">
+                                        <header class="panel-heading">
+{#                                            <div class="panel-actions">#}
+{#                                                <a href="#" class="fa fa-caret-down"></a>#}
+{#                                                <a href="#" class="fa fa-times"></a>#}
+{#                                            </div>#}
+
+                                            <h2 class="panel-title">Edit User </h2>
+                                        </header>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-12">
+                                                    <button class="btn btn-primary saveButton" id="submit_btn">Update</button>
+                                                    <button type="reset" class="btn btn-default resetbtn" onclick="resetFields()">Reset</button>
+                                                    <!-- Action Permission check -->
+                                                    {% comment "Permission Commented" %}
+                                                    {% if "da_Can_change_their_own_password"|check_action_permission:user.id %}
+                                                    <a href="{% url 'changeUsersPassword' %}?user_id={{user_id}}" style="float: right;" class="mb-xs mt-xs mr-xs btn btn-primary">Change Password</a>
+                                                    {% endif %}
+                                                    {% endcomment %}
+                                                    <a href="{% url 'changeUsersPassword' %}?user_id={{user_id}}" style="float: right;" class="mb-xs mt-xs mr-xs btn btn-primary">Change Password</a>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                        <div class="panel-body">
+                                            <div class="validation-message">
+                                                <ul></ul>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">User Type:</label>
+                                                <div class="col-md-4 col-sm-4">
+                                                    <select name="user_type" id="user_type" class="form-control" onchange="canViewTickets();">
+                                                        <option value="0" {% if data.user_type == '0' %}selected{% endif %}>Agent</option>
+                                                        <option value="1" {% if data.user_type == '1' %}selected{% endif %}>End User</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">User ID: </label>
+                                                <div class="col-sm-4">
+                                                    <label>{{ data.username }}</label>
+                                                    <input type="hidden" name="user_id" value="{{ data.id}}" id="user_id"/>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <span id="usernameValid"></span>
+                                                </div>
+
+                                            </div>
+                                            <!-- <div class="form-group">
+                                                <label class="col-sm-3 control-label">Photo:</label>
+                                                <div class="col-sm-4">
+                                                    <a class="DetailsLink"  data-toggle="modal" data-target="#updatePhotoModal" title="Update Photo" href="javascript:void(0)" id="a_userPhoto">update photo</a>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <span id="usernameValid"></span>
+                                                </div>
+
+                                            </div> -->
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label"><span class="required">*</span>First Name: </label>
+                                                <div class="col-sm-4">
+                                                    <input type="text" name="first_name" value="{{ data.first_name }}" class="form-control" title="Please enter First Name." onkeyup="makeDisplayName();" placeholder="eg.: ABC" required/>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label"><span class="required">*</span>Last Name: </label>
+                                                <div class="col-sm-4">
+                                                    <input type="text" name="last_name" value="{{ data.last_name }}" class="form-control" title="Please enter Last Name." onkeyup="makeDisplayName();" placeholder="eg.: XYZ" required/>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label"><span class="required">*</span>Display Name: </label>
+                                                <div class="col-sm-4">
+                                                    <input type="text" name="display_name" value="{{ data.display_name }}" class="form-control" title="Please enter Display Name." placeholder="eg.: ABC" required/>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                 <label class="col-sm-3 control-label" for="inputSuccess">Parameters</label>
+                                                 <div class="col-sm-6">
+                                                     <div class="checkbox">
+                                                         <label>
+                                                            <input type="checkbox" name="is_active" {% if data.is_active == True %}checked{% endif %} />
+                                                               <i>Active</i>
+                                                         </label>
+                                                     </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                 <label class="col-sm-3 control-label" for="inputSuccess"></label>
+                                                 <div class="col-sm-6">
+                                                     <div class="checkbox">
+                                                         <label>
+                                                            <input type="checkbox" name="login_permit" {% if data.login_permit == True %}checked{% endif %} />
+                                                               <i>Can Log In</i>
+                                                         </label>
+                                                     </div>
+                                                </div>
+                                            </div>
+                                           <!-- {% comment %} {% if data.user_type == '1' %} {% endcomment %}
+                                            <div class="form-group" >
+                                                <label class="col-sm-3 control-label" for="inputSuccess"></label>
+                                                <div class="col-sm-6">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                           <input type="checkbox" disabled="disabled" name="sys_admin" id="sys_admin" {% if data.admin == True %}checked{% endif %} />
+                                                              <i>Sys Admin</i>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% comment %}  {% else %} {% endcomment %}
+                                            <div class="form-group" >
+                                                <label class="col-sm-3 control-label" for="inputSuccess"></label>
+                                                <div class="col-sm-6">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                           <input type="checkbox" name="sys_admin" id="sys_admin" {% if data.admin == True %}checked{% endif %} />
+                                                              <i>Sys Admin</i>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% comment %}  {% endif %} {% endcomment %} -->
+
+                                            
+                                            <!-- <div class="form-group">
+                                                 <label class="col-sm-3 control-label" for="inputSuccess"></label>
+                                                 <div class="col-sm-6">
+                                                     <div class="checkbox">
+                                                         <label>
+                                                            <input type="checkbox" name="show_debug" {% if data.show_debug == True %}checked{% endif %} />
+                                                               <i>Show Debug</i>
+                                                         </label>
+                                                     </div>
+                                                </div>
+                                            </div> -->
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Phone:</label>
+                                                <div class="col-sm-4">
+                                                    <input name="phone"  value="{{ data.phone_no}}" id="phone" data-plugin-masked-input data-input-mask="(999) 999-9999" placeholder="(123) 123-1234" class="form-control">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label"><span class="required">*</span>Email:</label>
+                                                <div class="col-sm-4">
+                                                    <input type="email" name="email" id="email" value="{{ data.email}}" class="form-control" title="Please enter a valid email address." placeholder="eg.: example@xyz.com" required/>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <span id="emailValid"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Mobile/SMS Email:</label>
+                                                <div class="col-sm-4">
+                                                    <input name="mob_sms_email"  value="{{ data.mob_sms_email}}" id="mob_sms_email" data-plugin-masked-input data-input-mask="(999) 999-9999" placeholder="(123) 123-1234" class="form-control">
+                                                </div>
+                                            </div>
+                                            <!-- <div class="form-group">
+                                                 <label class="col-sm-3 control-label" for="inputSuccess"></label>
+                                                 <div class="col-sm-6">
+                                                     <div class="checkbox">
+                                                         <label>
+                                                            <input type="checkbox" name="suppress_email" {% if data.suppress_email == True %}checked{% endif %} />
+                                                               <i>Suppress All Email</i>
+                                                         </label>
+                                                     </div>
+                                                </div>
+                                            </div> -->
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span>Organization </label>
+                                                <div class="col-md-4 col-sm-4">
+                                                    <select name="org_id" aria-readonly="true"  id="org_id" data-plugin-selectTwo required class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Organization", "allowClear": true }'>
+                                                        <option value="" readonly="readonly" disabled >Select an Organization</option>
+                                                        {% if data.organizations %}
+                                                            {% for org in data.organizations %}
+                                                                <option value="{{ org.org_id }}" {% if org.org_id == data.user_org_id %}selected{% endif %}>{{ org.org_name }}</option>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Department </label>
+                                                <div class="col-md-4 col-sm-4">
+                                                    
+                                                    <select name="dep_id" id="dep_id" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Department", "allowClear": true }'>
+                                                        {% if data.organizations %}
+                                                        {% for dep in data.departments %}
+                                                        <option value="{{ dep.dep_id }}" {% if dep.dep_id == data.user_dep_id %}selected{% endif %}>{{ dep.dep_name }}
+                                                        {% endfor %}
+                                                        {% endif %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Client </label>
+                                                <div class="col-md-4 col-sm-4">
+                                                    <select name="client_id" id="client_id" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Department", "allowClear": true }'>
+                                                        <option value="" readonly="readonly" >Select an Client <small class="text-primary">(None Selected)</small></option>
+                                                        {% if data.clients %}
+                                                            {% for client in data.clients %}
+                                                                <option value="{{ client.client_id }}" {% if client.client_id == data.user_client_id %}selected{% endif %}>{{ client.client_name }}</option>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span>TimeZone </label>
+                                                <div class="col-md-4 col-sm-4">
+                                                    <select name="time_zone" id="time_zone" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Client", "allowClear": true }' required>
+                                                        <option value="" readonly="readonly" >Select an TimeZone<small class="text-primary">(None Selected)</small></option>
+                                                        {% if timezones %}
+                                                            {% for tz in timezones %}
+                                                                <option value="{{ tz }}"{% if tz == data.user_time_zone %} selected{% endif %}>{{ tz }}</option>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label" for="address1">Address 1:</label>
+                                                <div class="col-sm-4">
+                                                    <input type="text" class="form-control" name="address1" value="{{ data.address1}}" id="address1">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label" for="address2">Address 2:</label>
+                                                <div class="col-sm-4">
+                                                    <input type="text" class="form-control" name="address2" value="{{ data.address2}}" id="address2">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label" for="city_state_zip">City/State/Zip:</label>
+                                                <div class="col-sm-4">
+                                                    <input type="text" class="form-control" name="city"  value="{{ data.user_city }}" id="city">
+                                                </div>
+                                               <div class="col-sm-2 col-xs-6 all-space-auto">
+                                                    <input type="text" class="form-control" name="state"  value="{{ data.user_state}}" id="state">
+                                                </div>
+                                               <div class="col-sm-2 col-xs-6 all-space-auto">
+                                                    <input type="text" class="form-control" name="zip"  value="{{ data.user_zip_code}}" id="zip">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Country:</label>
+                                                <div class="col-sm-4">
+                                                    <input type="text" name="country"  value="{{ data.user_country}}" id="country" title="Please enter country." class="form-control" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                            <label class="col-sm-3 control-label">Default Home Page:</label>
+                                            <div class="col-md-4 col-sm-4">
+                                                <select name="default_home_page" id="default_home_page" data-plugin-selectTwo class="form-control">
+                                                    <option value="home"
+                                                            {% if settings1 %}
+                                                                {% if settings1.m_default_page == "home" %}
+                                                                    selected
+                                                                {% endif %}
+                                                            {% endif %}>Dashboard
+                                                    </option>
+                                                    <option value="Home_MyTicket#assignee"
+                                                            {% if settings1 %}
+                                                                {% if settings1.m_default_page == "Home_MyTicket#assignee" %}
+                                                                    selected
+                                                                {% endif %}
+                                                            {% endif %}>Assigned To Me
+                                                    </option>
+                                                    <option value="Home_MyTicket#submitter"
+                                                            {% if settings1 %}
+                                                                {% if settings1.m_default_page == "Home_MyTicket#submitter" %}
+                                                                    selected
+                                                                {% endif %}
+                                                            {% endif %}>My Tickets
+                                                    </option>
+                                                    <option value="Home_MyTicket#next_action"
+                                                            {% if settings1 %}
+                                                                {% if settings1.m_default_page == "Home_MyTicket#next_action" %}
+                                                                    selected
+                                                                {% endif %}
+                                                            {% endif %}>Next Actioned To Me
+                                                    </option>
+                                                    <option value="Home_MyTicket#submitter#"
+                                                            {% if settings1 %}
+                                                                {% if settings1.m_default_page == "Home_MyTicket#submitter#" %}
+                                                                    selected
+                                                                {% endif %}
+                                                            {% endif %}>Submitted By Me
+                                                    </option>
+                                                    <option value="Home_MyTicket"
+                                                            {% if settings1 %}
+                                                                {% if settings1.m_default_page == "Home_MyTicket" %}
+                                                                    selected
+                                                                {% endif %}
+                                                            {% endif %}>Summary of All
+                                                    </option>
+                                                    <option value="Home_GetReport"
+                                                            {% if settings1 %}
+                                                                {% if settings1.m_default_page == "Home_GetReport" %}
+                                                                    selected
+                                                                {% endif %}
+                                                            {% endif %}>Reports
+                                                    </option>
+                                                    <option value="Home_SearchTicket"
+                                                            {% if settings1 %}
+                                                                {% if settings1.m_default_page == "Home_SearchTicket" %}
+                                                                    selected
+                                                                {% endif %}
+                                                            {% endif %}>Search Tickets
+                                                    </option>
+                                                    <option value="Home_SubmitTicket"
+                                                            {% if settings1 %}
+                                                                {% if settings1.m_default_page == "Home_SubmitTicket" %}
+                                                                    selected
+                                                                {% endif %}
+                                                            {% endif %}>Submit Ticket
+                                                    </option>
+                                                </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Redirect To:</label>
+                                                <div class="col-md-4 col-sm-4">
+                                                    <select name="redirect_to" id="redirect_to" data-plugin-selectTwo class="form-control">
+                                                        <option value="home"
+                                                            {% if settings1 %}
+                                                                {% if settings1.m_redirect_to == "home" %}selected{% endif %}
+                                                            {% endif %}>Dashboard
+                                                        </option>
+                                                        <option value="TicketView"
+                                                            {% if settings1 %}
+                                                                {% if settings1.m_redirect_to == "TicketView" %}selected{% endif %}
+                                                            {% endif %}>Ticket View
+                                                        </option>
+                                                        <option value="Home_MyTicket"
+                                                            {% if settings1 %}
+                                                                {% if settings1.m_redirect_to == "Home_MyTicket" %}selected{% endif %}
+                                                            {% endif %}>My Tickets
+                                                        </option>
+                                                        <option value="Home_SubmitTicket"
+                                                            {% if settings1 %}
+                                                                {% if settings1.m_redirect_to == "Home_SubmitTicket" %}selected{% endif %}
+                                                            {% endif %}>Submit Ticket
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Accounts</label>
+                                                <div class="col-md-4 col-sm-4">
+                                                    <input type="text" name="account_ids" id="loadAccountMultiSelect" class="form-control" title="Please Enter Account" required >
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+												<label class="col-md-3 control-label">Group Membership</label>
+												<div class="col-md-6">
+													<select class="form-control" multiple="multiple" data-plugin-multiselect data-plugin-options='{ "includeSelectAllOption": true }' name="group_membership" id="group_membership">
+                                                        {% if data.group_list %}
+                                                            {% for group_id, group_display_name in data.group_list %}
+                                                                <option value="{{ group_id }}" {% if group_id in data.allowed_groups%}selected{% endif %}>{{ group_display_name }}</option>
+                                                            {% endfor %}
+                                                        {% endif %}
+													</select>
+												</div>
+											</div>
+
+                                            {# Permission Start Here#}
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label" for="country">User Permission:</label>
+                                                <div class="col-sm-4">
+                                                    <span class="fa fa-question-circle"></span>
+                                                </div>
+                                            </div>                                            
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label" for=""></label>
+                                                <div class="col-sm-4">
+                                                    <strong class="text-primary"> Menu Options/Pages Allowed</strong>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                 <label class="col-sm-3 control-label" for="inputSuccess"></label>
+                                                 <div class="col-sm-6">
+                                                     {% for submenu in sidebar.sub_menus %}
+                                                        {% if submenu.submenu_permit_active == 1 %}
+                                                            <div class="checkbox">
+                                                                 <label>
+                                                                    <input type="checkbox" name="submenus" id="{{ submenu.submenu_id }}" value="{{ submenu.submenu_id }}" {% if submenu.submenu_id in submenus_allowed  %}checked{% endif %}>
+                                                                     <p>{{ submenu.submenu_name }} </p>
+                                                                 </label>
+                                                             </div>
+                                                        {% endif %}
+                                                     {% endfor %}
+                                                     {% for menu in sidebar.menus %}
+                                                        {% if menu.menu_permit_active == 1 %}
+                                                                <div class="checkbox">
+                                                                     <label>
+                                                                        <input type="checkbox" name="menus" id="{{ menu.menu_id }}" value="{{ menu.menu_id }}" {% if menu.menu_id in menus_allowed  %}checked{% endif %}>
+                                                                         <p>{{ menu.menu_name }} </p>
+                                                                     </label>
+                                                                </div>
+                                                        {% endif %}
+                                                     {% endfor %}
+                                                </div>
+                                            </div>
+
+                                            {# Permission Ends Here#}
+                                            <br>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label" for="country">* Default Home Page:</label>
+                                                <div class="col-sm-4">
+                                                    <select class="form-control input-medium" name="home_page" id="home_page">             
+                                                    <option value="My Tickets">My Tickets</option>
+                                                    <option value="Submitted By Me">Submitted By Me</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label" for="country">Redirect To:</label>
+                                                <div class="col-sm-4">
+                                                    <select class="form-control input-medium" name="_redirect_to" id="_redirect_to">
+                                                    <option value="CSIssue_View.asp">Ticket View</option>
+                                                    <option value="TrakHome.asp">My Tickets</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            {% for permission in permissions %}
+                                            <div class="form-group">
+                                            <label id="section_{{permission.perm_sect_id}}" class="col-sm-3 control-label {% if data.user_type == "1" and "Agent Permissions:" == permission.permission %}not-available{% endif %}">{{permission}}</label>
+                                            <label class="col-sm-9 control-label" for="inputSuccess"></label>
+                                                <div class="col-sm-9 col-sm-offset-3">
+                                                {% for parent in permission.permission_action.all %}
+                                                    {%if parent.is_active == 1%}
+                                                    <div  class="checkbox">
+                                                        <label>
+                                                        <input type="checkbox" name="permission_action" id="action_{{ parent.perm_act_id }}" {% if parent.perm_act_id in disabled_actions %}disabled{% endif %} value="{{ parent.perm_act_id }}" {% if parent.perm_act_id in actions_list  %}checked{% endif %}>
+                                                            <p {% if parent.perm_act_id in disabled_actions %}class="not-available"{% endif %}>{{ parent }} </p>
+                                                        </label>
+                                                    </div>
+                                                    {% endif %}
+                                                    {% for child in parent.permission_sub_action.all %}
+                                                        {%if child.is_active == 1%}
+                                                        <label for="" class="control-label"></label>
+                                                        <div class="col-sm-12">
+                                                            <div class="checkbox">
+                                                                <label>
+                                                                <input type="checkbox" name="permission_sub_action" id="sub_action_{{ child.sub_act_id }}" {% if child.sub_act_id in disabled_sub_action %}disabled{% endif %} value="{{ child.sub_act_id }}" {% if child.sub_act_id in sub_actions_list  %}checked{% endif %}>
+                                                                    <p {% if child.sub_act_id in disabled_sub_action %}class="not-available"{% endif %}>{{ child }} </p>
+                                                                </label>
+                                                            </div>
+                                                        </div>   
+                                                        {%endif%} 
+                                                    {% endfor %} 
+                                                {% endfor %}
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                        
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary saveButton" id="submit_btn1">Update</button>
+                                                    <button type="reset" class="btn btn-default resetbtn" onclick="resetFields()">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                    </section>
+                                </form>
+                            </div>
+                        </div>
+					<!-- end: page -->
+				</section>
+			</div>
+        <div class="modal fade" id="updatePhotoModal" role="dialog">
+            <div class="modal-dialog">    
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title"><b>Add User Photo</b></h4>
+                </div>
+                <div class="modal-body">
+                    <p><strong><i>To update a photo, first select a file and then click Save</i></strong></p>
+                    <p>(File best viewed at 150x150 pixels; must be less than 500Kb)</p>
+                    <div class="form-group">
+                    <form method="post" action="{% url 'saveUserFiles' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <input type="file" class="" name="upload_photo" id="upload_photo">
+                            <br>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                        </div>
+                    </form>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+            
+            </div>
+        </div>
+
+        <div class="modal fade" id="showGroupsModal" role="dialog">
+            <div class="modal-dialog">    
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title"><b>Groups which have already given this permission</b></h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <table>
+                                    <thead>
+                                        <th>Group Name</th>
+                                    </thead>
+                                    <tbody id="table-data">
+        
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+    
+    
+    {% block script %}
+        <!-- <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js" type="text/javascript"></script> -->
+        <script src="https://cdn.syncfusion.com/ej2/18.4.47/dist/ej2.min.js" type="text/javascript"></script>
+        <link href="https://cdn.syncfusion.com/ej2/material.css" rel="stylesheet">
+        <script>
+            $(document).on('keyup','#email', function(){
+                var fieldValue = $(this).val();
+                var currentId = $('#user_id').val();
+                if (fieldValue != ''){
+                    $.ajax({
+                        type: 'POST',
+                        url: "{% url 'validateAddUnique' %}",
+                        data: {fieldValue: fieldValue, currentId: currentId, tbl_name: 'User', tbl_pk: 'id', tbl_field: 'email', tbl_dlt_field: 'is_delete'},
+                        dataType: 'json',
+                        beforeSend: function(jqXHR, settings) {
+                            //Do something before send...
+                        },
+                        success: function(data, textStatus, jqXHR) {
+                            if(data.response){
+                                $('#emailValid').html('<strong class="text-danger">Email already exist. Try another one!</strong>');
+                                $('.saveButton').prop('disabled', true);
+                            }else{
+                                $('#emailValid').html('');
+                                $('.saveButton').prop('disabled', false);
+                            }
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            alert(textStatus + '. ' + errorThrown);
+                        }
+                    });
+                }
+            });
+
+            function showGroupsnWhichGivesPermisison(user_id, per_id){
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'showGroupsnWhichGivesPermisison' %}",
+                    data: {user_id: user_id, per_id: per_id},
+                    dataType: 'json',
+                    success: function(data, textStatus, jqXHR) {
+                        $("#showGroupsModal").modal('show');
+                        $("#table-data").html("");
+                        for (i = 0; i < data.length; i++) {
+                            $("#table-data").append("<tr><td><a href='/portal/atg-extra/Home_ViewGroup?GrpID="+data[i].group_id+"' target='_blank'>"+data[i].group_name+"</a></td></tr>");
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    }
+                });
+            }
+
+            function makeDisplayName() {
+                var firstName = $('input[name=first_name]').val();
+                var lastName = $('input[name=last_name]').val();
+                if(firstName == '' && lastName == '')
+                {
+                    $('input[name=display_name]').val(null);
+                }
+                else if(firstName == '')
+                {
+                    $('input[name=display_name]').val(lastName);
+                }
+                else if(lastName == '')
+                {
+                    $('input[name=display_name]').val(firstName);
+                }
+                else
+                {
+                    $('input[name=display_name]').val(lastName + ', ' + firstName);
+                }
+            }
+            $(function(){
+                $(document).on('change','#user_type', function(){
+                    value = $(this).val()
+                    let clear_values = [1,2,3,4,5,6,7,11,40]
+                        clear_values.forEach(function(entry) {
+                            $("#action_"+entry).prop('disabled', false)
+                            $("#action_"+entry).parent().find('p').removeClass("not-available")
+                        });
+                    if(value == 1){
+                        let values = [1,2,3,4,5,6,7,11,40]
+                        values.forEach(function(entry) {
+                            $("#action_"+entry).prop('disabled', true);
+                            $("#action_"+entry).parent().find('p').addClass("not-available");
+                        });
+                        $("#section_1").addClass("not-available");
+                        $('#sub_action_1,#sub_action_2').prop('disabled', true)
+                        $("#sub_action_1,#sub_action_2").parent().find('p').addClass("not-available")
+                        if($('#action_29').is(':checked')){
+                            $('#sub_action_2').prop('disabled', false)
+                            $("#sub_action_2").parent().find('p').removeClass("not-available")
+                        } 
+                    }else{
+                        let values = [5,6,7,11,40]
+                        values.forEach(function(entry) {
+                            $("#action_"+entry).prop('disabled', true)
+                            $("#action_"+entry).parent().find('p').addClass("not-available")
+                        });
+                        $("#section_1").removeClass("not-available");
+                        if($('#action_2').is(':checked')){
+                            $('#sub_action_1').prop('disabled', false)
+                            $("#sub_action_1").parent().find('p').removeClass("not-available")
+                        }
+                    }
+                });
+
+                $(document).on('click','#action_29',function(){
+                    if($('#action_29').is(':checked')){
+                        $('#sub_action_2').prop('disabled', false)
+                        $("#sub_action_2").parent().find('p').removeClass("not-available")
+                    }else{
+                        $('#sub_action_2').prop('disabled', true)
+                        $("#sub_action_2").parent().find('p').addClass("not-available")
+                    }                    
+                });
+                $(document).on('click','#action_2',function(){
+                    if($('#action_2').is(':checked')){
+                        $('#sub_action_1').prop('disabled', false)
+                        $("#sub_action_1").parent().find('p').removeClass("not-available")
+                    }else{
+                        $('#sub_action_1').prop('disabled', true)
+                        $("#sub_action_1").parent().find('p').addClass("not-available")
+                    }                    
+                });
+                if($('#action_2').is(':checked')){
+                    $('#sub_action_1').prop('disabled', false)
+                    $("#sub_action_1").parent().find('p').removeClass("not-available")
+                }
+                if($('#action_29').is(':checked')){
+                    $('#sub_action_2').prop('disabled', false)
+                    $("#sub_action_2").parent().find('p').removeClass("not-available")
+                }  
+            });
+
+            // On change user_type , sys_admin hide and show 
+            $(document).on('change','#user_type',function(){
+                value= $( "#user_type option:selected" ).val(); 
+                if (value == '0')
+                    {
+                        $("#sys_admin").removeAttr("disabled");
+                    }      
+                else{
+                    $("#sys_admin").attr("disabled", true);
+                }              
+                });
+                $(document).on('click','.resetbtn',function(){
+                $("#group_membership option:selected").removeAttr("selected");
+                $("#group_membership").multiselect('refresh');
+                getCurrDepartment();
+                {% if data.user_org_id %}
+                    $("#org_id").select2("val", {{ data.user_org_id }});
+                {% else %}
+                    $("#org_id").select2("val", "");
+                {% endif %}
+                {% if data.user_dep_id %}
+                    $("#dep_id").select2("val", {{ data.user_dep_id }});
+                {% else %}
+                    $("#dep_id").select2("val", "");
+                {% endif %}
+                {% if data.user_client_id %}
+                    $("#client_id").select2("val", {{ data.user_client_id }});
+                {% else %}
+                    $("#client_id").select2("val", "");
+                {% endif %}
+                {% if time_zone %}    
+                    $("#time_zone").select2("val", {{ time_zone|safe }} );
+                {% else %}
+                    $("#time_zone").select2("val", "");
+                {% endif %}
+                {% if default_page %}
+                    $("#default_home_page").select2("val",  {{ default_page|safe }});
+                {% else %}
+                    $("#default_home_page").select2("val", "");
+                {% endif %}
+                {% if redirect_to %}
+                    $("#redirect_to").select2("val", {{ redirect_to|safe }});
+                {% else %}
+                    $("#redirect_to").select2("val", "");
+                {% endif %}
+                });  
+                
+            /*---ACCOUNT MULTI SELECT DROPDOWN---*/
+            function loadAccountMultiSelectDropDown(){
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'accountListJsonData' %}",
+                    dataType: 'json',
+                    success: function(data, textStatus, jqXHR) {
+                        loadAccountMultiSelect.dataSource = data;
+                        setTimeout(function() {
+                            seletedLoadAccountMultiSelect(0);
+                        }, 4000);   
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    }
+                });
+            }
+            loadAccountMultiSelectDropDown();
+            var accountData = [];
+            var loadAccountMultiSelect = new ej.dropdowns.MultiSelect({
+                dataSource: accountData,
+                fields: { text: 'NAME', value: 'ID' },
+                placeholder: 'Select Account',
+                mode: 'CheckBox',
+                showSelectAll: true,
+                showDropDownIcon: true,
+                filterBarPlaceholder: 'Search Account',
+                popupHeight: '250px',
+                enabled: false
+            });
+            loadAccountMultiSelect.appendTo('#loadAccountMultiSelect');
+            
+
+            /* show Selected Values of Accounts */
+            function seletedLoadAccountMultiSelect(sysAdmin){
+                let user_id = {{user_id}};
+                $("#preloader").show();
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'selectedAccountListJsonData' %}",
+                    data: {
+                        user_id: user_id,
+                        sysAdmin: sysAdmin
+                    },
+                    dataType: 'json',
+                    success: function(data, textStatus, jqXHR) {
+                        $("#preloader").hide();
+                        if(sysAdmin){
+                            loadAccountMultiSelect.enabled = false;
+                        }else{
+                            loadAccountMultiSelect.enabled = true;
+                        }
+                        loadAccountMultiSelect.value = data;
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    }
+                });
+            }
+
+            // $('#sys_admin').click(function(){
+            //     if($(this).prop("checked") == true){
+            //         seletedLoadAccountMultiSelect(1);
+            //         var org_id = $('#org_id').val();
+            //     if ($('#sys_admin').is(":checked"))
+            //     {
+            //         sys_admin = 'on'
+            //     }
+            //     else{
+            //         var sys_admin = 'off';
+            //         debugger
+            //     }
+            //     debugger
+            //     $.ajax({
+            //         method: 'POST',
+            //         url: '{% url "orgUserExists" %}',
+            //         data:{
+            //             org_id:org_id,
+            //             sys_admin:sys_admin,
+            //         },
+            //         success: function(data){
+            //             if(data == 1){
+            //                 alert('User Already Exists');
+            //                 {% if data.user_org_id %}
+            //                 $("#org_id").select2("val", {{ data.user_org_id }});
+            //                 {% endif %}
+            //                 $('#sys_admin').prop("checked",false);
+            //                 $('#sys_admin').prop("disabled",true);
+            //                 resetFields();
+                            
+            //             }
+            //             if (data==0){
+            //                 $('#sys_admin').prop("disabled",false)
+            //             }
+            //         }
+            //     });
+            //     }
+            //     else if($(this).prop("checked") == false){
+            //         seletedLoadAccountMultiSelect(0);
+            //     }
+            // });
+            
+            function resetFields(){
+                seletedLoadAccountMultiSelect(0);
+            }
+              /*---CHECK USER TYPE AND DISABLE DROPDOWN---*/
+
+            {% comment %} function checkUserTypeAndDisable(){
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'sendUserType' %}",
+                    dataType: 'json',
+                    success: function(data, textStatus, jqXHR) {
+                        if(data == "superadmin"){
+                            console.log(data);
+                            //loadAccountMultiSelect.enabled = false;
+                          seletedLoadAccountMultiSelect(0);
+                        }     
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    }
+                });
+            } {% endcomment %}
+
+            $(document).ready(function() {
+                $("#org_id").select2("readonly", true);
+                let usType = {{what_type}};
+                setTimeout(function() {
+                    let sysCHk = $('#sys_admin').prop('checked');
+                    if (usType && sysCHk) {
+                        console.log(usType);
+                        loadAccountMultiSelect.enabled = false;
+                    }
+                }, 6050);
+
+            });
+
+            /*Can View Permission should be disabled in case of Agent*/
+            canViewTickets();
+            function canViewTickets(){
+                var x = document.getElementById("ticket_permission");
+                var y = $("#user_type").val();
+                if (y ==1){
+                    $("input[id='action_16']").removeAttr("disabled");
+                }
+                else{
+                    $("input[id='action_16']").attr("disabled", "disabled"); 
+                }
+            }
+            // function orgUserExists(){
+            //     user_id = {{user_id}};
+            //     var org_id = $('#org_id').val();
+            //     if ($('#sys_admin').is(":checked"))
+            //     {
+            //         sys_admin = 'on'
+            //     }
+            //     else{
+            //         var sys_admin = 'off';
+            //         debugger
+            //     }
+            //     debugger
+            //     $.ajax({
+            //         method: 'POST',
+            //         url: '{% url "orgUserExists" %}',
+            //         data:{
+            //             org_id:org_id,
+            //             sys_admin:sys_admin,
+            //         },
+            //         success: function(data){
+            //             if(data == 1){
+            //                 alert('User Already Exists');
+            //                 {% if data.user_org_id %}
+            //                 $("#org_id").select2("val", {{ data.user_org_id }});
+            //                 {% endif %}
+            //                 $('#sys_admin').prop("checked",false);
+            //                 $('#sys_admin').prop("disabled",true);
+            //                 resetFields();
+                            
+            //             }
+            //             if (data==0){
+            //                 $('#sys_admin').prop("disabled",false)
+            //             }
+            //         }
+            //     });
+            // }
+            // getOrg();
+            // function getOrg(){
+            //     user_id = {{user_id}};
+                
+            //     debugger
+            //     $.ajax({
+            //         method: 'POST',
+            //         url: '{% url "getOrg" %}',
+            //         data:{
+            //             user_id:user_id,
+            //         },
+            //         success: function(data){
+                        
+            //             if (data==2){
+                            
+            //             }
+            //             else{
+            //                 if(data == 1){
+            //                 $('#sys_admin').prop("checked",false);
+            //                 $('#sys_admin').prop("disabled",true);
+            //                 resetFields();
+                            
+            //             }
+            //             if (data==0){
+            //                 $('#sys_admin').prop("disabled",false)
+            //             }
+            //             }
+            //         }
+            //     });
+            // }
+            // getCurrDepartment();
+            // function getCurrDepartment(){
+            //     let option = "";
+            //     let option1 = "";
+            //     $('#dep_id').html('<option value="" readonly="readonly" >Select an Department <small class="text-primary">(None Selected)</small></option>{% if data.departments %}{% for dep in data.departments %}<option value="{{ dep.dep_id }}" {% if dep.dep_id == data.user_dep_id %}selected{% endif %}>{{ dep.dep_name }}</option>{% endfor %}{% endif %}' + option);
+            //     $('#group_membership').html('{% if data.group_list %}{% for group_id, group_display_name in data.group_list %}<option value="{{ group_id }}" {% if group_id in data.allowed_groups%}selected{% endif %}>{{ group_display_name }}</option>{% endfor %}{% endif %}' + option1);
+            // }
+            //     function getDepartment(){
+            //     debugger
+                
+            //     var org_id = $('#org_id').val();
+            //     $.ajax({
+            //         method:'POST',
+            //         url: "{% url 'getDepartment' %}",
+            //         data:{
+            //             org_id:org_id,
+            //         },
+            //         success: function(data){
+            //             $('#dep_id').select2('val',data.dep_id);
+            //             debugger
+            //             let option = "";
+                        
+            //             for (x in data.department) {
+            //             var dep = data.department[x]
+            //             //append new htmls inside options
+            //             option += '<option value="' + dep['dep_id'] + '">' + dep['dep_name'] + '</option>'
+                        
+            //         }
+            //         $('#dep_id').html('<option value="" readonly="readonly" >Select an Department <small class="text-primary">(None Selected)</small></option>' + option);
+            //         var option1 = "";
+            //         for (y in data.groups){
+            //             var group = data.groups[y]
+            //             option1 += '<option value="' + group['group_id'] + '">' + group['group_display_name'] + '</option>'
+            //         }
+            //          //add all inside div
+            //         $('#group_membership').html(option1); //add all inside div
+            //         $('#group_membership').multiselect('rebuild');    
+            //     }
+            //     })
+            // }
+        </script>
+    {% endblock %}
+
+

@@ -1,0 +1,82 @@
+    {% extends 'itrak/base.html' %}
+    {% load templates_extras %}
+
+    {% block body_block %}
+        {% load static %}
+    <main>
+        <!-- start: page -->
+        <section class="body-sign">
+            <div class="center-sign">
+                <a href="/portal/atg-extra/" class="logo pull-left">
+                    <img src="{% static 'itrak/images/logoNew.png' %}" height="54" alt="Porto Admin" />
+                </a>
+                <div class="panel panel-sign">
+                    <div class="panel-title-sign mt-xl text-right">
+                        <h2 class="title text-uppercase text-bold m-none"><i class="fa fa-user mr-xs"></i> Sign In</h2> 
+                    </div>
+                    <div class="panel-body">
+                        {# <center><h4>{{ request.user.user_org_id| getSiteAppearanceLoginScreen }}</h4></center> #}
+                        {% for message in messages %}
+                            <div class="alert {% if 'success' in message.tags %} alert-success {% elif 'warning' in message.tags %} alert-success {% elif 'error' in message.tags %} alert-danger {% endif %} alert-dismissible" role="alert">
+                                  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                        <form role="form" action="{% url 'signin' %}" method="post">
+                            {% csrf_token %}
+
+                            <div class="form-group mb-lg">
+                                <label>Email Address</label>
+                                <div class="input-group input-group-icon">
+                                    <input name="username" type="text" class="form-control input-lg" required />
+                                    <span class="input-group-addon">
+                                        <span class="icon icon-lg">
+                                            <i class="fa fa-user"></i>
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-lg">
+                                <div class="clearfix">
+                                    <label class="pull-left">Password</label>
+                                </div>
+                                <div class="input-group input-group-icon">
+                                    <input name="password" type="password" class="form-control input-lg" required/>
+                                    <span class="input-group-addon">
+                                        <span class="icon icon-lg">
+                                            <i class="fa fa-lock"></i>
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-8">
+                                    <div class="checkbox-custom checkbox-default">
+                                        <input id="RememberMe" name="remember_me" type="checkbox"/>
+                                        <label for="RememberMe">Remember Me</label>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4 text-right">
+                                    <button type="submit" class="btn btn-primary hidden-xs">Sign In</button>
+                                    <button class="btn btn-primary btn-block btn-lg visible-xs mt-lg" id="submitButton" type="submit ">Sign In</button>
+                                </div>
+                            </div>
+
+                            <span class="mt-lg mb-lg line-thru text-center text-uppercase">
+                                <span>--</span>
+                            </span>
+
+                            <p class="text-center"><a href="{% url 'forgetPassword' %}" class="pull-right">Forgot/Reset your password?</a></p>
+
+                        </form>
+                    </div>
+                </div>
+
+                <p class="text-center text-muted mt-md mb-md">&copy; Copyright 2019. All rights reserved.</p>
+            </div>
+        </section>
+        <!-- end: page -->
+    </main>
+    {% endblock %}

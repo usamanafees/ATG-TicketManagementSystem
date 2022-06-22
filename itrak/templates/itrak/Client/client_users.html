@@ -1,0 +1,159 @@
+{% extends 'itrak/base.html' %}
+
+{% block body_block %}
+    {% load static %}
+        <style>
+            table {
+                padding: 0px !important;
+            }
+        </style>
+            <section role="main" class="content-body">
+                <header class="page-header">
+                   <h2><i class="fa fa-building-o" aria-hidden="true"></i> Client</h2>
+                    <div class="right-wrapper pull-right">
+                        <ol class="breadcrumbs">
+                            <li>
+                                <a href="{% url 'home' %}">
+                                    <i class="fa fa-home"></i>
+                                </a>
+                            </li>
+                            <li><span>Client</span></li>
+                            <li><span>Client List</span></li>
+                        </ol>
+                        <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+                    </div>
+                </header>
+
+                <!-- start: page -->
+                    <section class="panel">
+                        <header class="panel-heading">
+                            <h2 class="panel-title">Client List with Users</h2>
+                            <div class="pull-right">
+                                <a href="{% url 'listClient' %}" class="btn btn-primary btn-hide" style="margin-top: -30px;">Hide Users</a>
+                            </div>
+                        </header>
+                        <div class="panel-body">
+                             {% for message in messages %}
+                                <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                            <p>Expand arrow to show Client users.</p>
+                            <div id="Grid"></div>
+                        </div>
+                    </section>
+                <!-- end: page -->
+            </section>
+        </div>
+        <div id="popup-modal-content"></div>
+        <form id="standard_form" name="standard_form" method="post" action="{% url 'export_users_by_client_xls' %}"></form>
+        
+{% endblock %}
+
+{% block script %}
+    <script>
+        $('#preloader').show();
+    </script>
+    <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js" type="text/javascript"></script>
+    <link href="https://cdn.syncfusion.com/ej2/material.css" rel="stylesheet"> -->
+    <script>
+        var dataManger = new ej.data.DataManager({
+            url: '{% url 'getClientUsers' %}',
+            adaptor: new ej.data.ODataAdaptor(),
+            crossDomain: true
+        });
+
+        new ej.data.DataManager({ url: '{% url 'getAllClientsJson' %}', adaptor: new ej.data.UrlAdaptor }) 
+        .executeQuery(new ej.data.Query()) 
+        .then((e) => { 
+            grid.dataSource = e.result; 
+            $('#preloader').hide();
+        }); 
+        
+        data =[]
+        var grid = new ej.grids.Grid({
+            dataSource: data,
+            allowPaging: true,
+            allowSorting: true,
+            toolbar: ['ExcelExport','Search'],
+            allowTextWrap: true,
+            columns: [
+                { field: 'client_cus_id', headerText: 'ID'},
+                { field: 'client_name', headerText: 'Client' },
+                { field: 'org_name', headerText: 'Org' },
+                { field: 'client_phone', headerText: 'Phone Number'},
+                { field: 'client_fax', headerText: 'Fax' },
+                { field: 'client_email', headerText: 'Email'},
+                { field: 'client_contact_person', headerText: 'Contact Person'},
+                { field: 'client_address1', headerText: 'Address'},
+            ],
+            childGrid: {
+                dataSource: dataManger,
+                queryString: 'client_id',
+                toolbar: ['Search'],
+                columns: [
+                    { field: 'username', headerText: 'ID', width: 120 },
+                    { field: 'first_name', headerText: 'First', width: 120 },
+                    { field: 'last_name', headerText: 'Last', width: 120 },
+                ]
+            },
+        });
+        grid.appendTo('#Grid');
+        grid.toolbarClick = function (args) {
+            if (args.item.id === 'Grid_excelexport') {
+                getXlsDownload();
+            }
+        };
+
+        function GetTicketsList(event, org_id){
+            event.preventDefault()
+            if(org_id == ''){
+                alert('Something went wrong. Please try again.');
+            }else{
+            $.ajax({
+                url:"{% url 'getModalOrgTicketsById' %}",
+                type:'POST',
+                data:{
+                    'org_id':org_id,
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                },
+                success:function(data){
+                    $('#popup-modal-content').html(data);
+                    $('#modalOrgTickets').modal("show");
+                },
+                error:function(){
+                    console.log('error')
+                },
+            });
+            }
+        }
+
+        function getXlsDownload(){
+            $('#standard_form').trigger('submit');
+        }
+
+        function GetOrgView(event, org_id){
+            event.preventDefault()
+            if(org_id == ''){
+                alert('Something went wrong. Please try again.');
+            }else{
+                $.ajax({
+                    url:"{% url 'getModalOrgViewById' %}",
+                    type:'POST',
+                    data:{
+                        'org_id':org_id,
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    },
+                    success:function(data){
+                        $('#popup-modal-content').html(data);
+                        $('#modalOrgView').modal("show");
+                    },
+                    error:function(){
+                        console.log('error')
+                    },
+                });
+            }
+        }
+    </script>
+{% endblock %}

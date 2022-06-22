@@ -1,0 +1,564 @@
+{% extends 'itrak/base.html' %}
+
+{% block body_block %}
+    {% load static %}
+    {% load templates_extras %}
+    {% load tz %} {# it will Load the Django TimeZone Library#}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+
+    <section role="main" class="content-body">
+        
+        <!-- <form action="" method="POST" onsubmit="return submitForm(this);">
+
+            <input type="tel"name ="phone" id="phone" value="">
+        
+            <input type="tel" class="hide" id="hiden">
+        
+            <button type="submit">Validate</button>
+        
+        </form> -->
+        <header class="page-header">
+            <h2><i class="fa fa-gears" aria-hidden="true"></i> My Settings</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+                    <li><span>Dashboard</span></li>
+                    <li><span>My Settings</span></li>
+                </ol>
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+        <!-- start: page -->
+        <div class="row">
+            <div class="col-md-12">
+                <section class="panel">
+                    <header class="panel-heading">
+                        <h2 class="panel-title">My Settings</h2>
+                    </header>
+                    <form action="{% url 'saveMySettings' %}" method="post" class="form-horizontal">
+                        {% csrf_token %}
+                        <div class="panel-body">
+                            {% for message in messages %}
+                                <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                {{ message }}
+                                </div>
+                            {% endfor %}
+                            <div class="form-group">
+                                <label class="col-md-3 col-sm-3 control-label"><b class="text-postion-top">&nbsp;</b><span class="required">*</span> Time Zone: </label>
+                                <div class="col-md-4 col-sm-5">
+                                    <b class="text-postion-top">Time Zone</b>
+                                    <select name="time_zone" id="time_zone" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Client", "allowClear": true }' required>
+                                        <option value="" readonly="readonly" >Select an TimeZone<small class="text-primary">(None Selected)</small></option>
+                                        {% if timezones %}
+                                            {% for tz in timezones %}
+                                                {% getFullTimezone tz as aa %}
+                                                <option value="{{ tz }}"
+                                                    {% if user %}
+                                                        {% if tz == user.m_time_zone %}
+                                                            selected
+                                                        {% endif %}
+                                                    {% endif %}
+                                                >{{ aa }}  {{ tz }}</option>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </select>
+                                </div>
+                            </div><br><br>
+                            <div class="form-group">
+                                <label class="col-md-3 col-sm-3 control-label"><b  class="text-postion-top"></b>Default Home Page: </label>
+                                <div class="col-md-4 col-sm-5">
+                                    <b  class="text-postion-top">Preferences</b>
+                                    <select name="default_home_page" id="default_home_page" data-plugin-selectTwo class="form-control">
+                                        <option value="home"
+                                        {% if user %}
+                                            {% if user.m_default_page == "home" %}
+                                                selected
+                                            {% endif %}
+                                        {% endif %}
+                                                    >Dashboard</option>
+                                        <option value="Home_MyTicket#assignee"
+                                        {% if user %}
+                                            {% if user.m_default_page == "Home_MyTicket#assignee" %}
+                                                selected
+                                            {% endif %}
+                                        {% endif %}
+                                        >Assigned To Me</option>
+                                        <option value="Home_MyTicket#submitter"
+                                        {% if user %}
+                                            {% if user.m_default_page == "Home_MyTicket#submitter" %}
+                                                selected
+                                            {% endif %}
+                                        {% endif %}
+                                        >My Tickets</option>
+                                        <option value="Home_MyTicket#next_action"
+                                        {% if user %}
+                                            {% if user.m_default_page == "Home_MyTicket#next_action" %}
+                                                selected
+                                            {% endif %}
+                                        {% endif %}
+                                        >Next Actioned To Me</option>
+                                        <option value="Home_MyTicket#submitter#"
+                                        {% if user %}
+                                            {% if user.m_default_page == "Home_MyTicket#submitter#" %}
+                                                selected
+                                            {% endif %}
+                                        {% endif %}
+                                        >Submitted By Me</option>
+                                        <option value="Home_MyTicket"
+                                        {% if user %}
+                                            {% if user.m_default_page == "Home_MyTicket" %}
+                                                selected
+                                            {% endif %}
+                                        {% endif %}
+                                        >Summary of All</option>
+                                        <option value="Home_GetReport"
+                                        {% if user %}
+                                            {% if user.m_default_page == "Home_GetReport" %}
+                                                selected
+                                            {% endif %}
+                                        {% endif %}
+                                        >Reports</option>
+                                        <option value="Home_SearchTicket"
+                                        {% if user %}
+                                            {% if user.m_default_page == "Home_SearchTicket" %}
+                                                selected
+                                            {% endif %}
+                                        {% endif %}
+                                        >Search Tickets</option>
+                                        <option value="Home_SubmitTicket"
+                                        {% if user %}
+                                            {% if user.m_default_page == "Home_SubmitTicket" %}
+                                                selected
+                                            {% endif %}
+                                        {% endif %}
+                                        >Submit Ticket</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3 col-sm-3 control-label">My Tickets screen: </label>
+                                <div class="col-md-4 col-sm-5">
+                                    <select name="ticket_screen" id="ticket_screen" data-plugin-selectTwo class="form-control">
+                                        <option value="1"
+                                        {% if user %}
+                                            {% if user.m_ticket_screen == 1 %}
+                                                selected
+                                            {% endif %}
+                                        {% endif %}
+                                        >Expanded</option>
+                                        <option value="0"
+                                        {% if user %}
+                                            {% if user.m_ticket_screen == 0 %}
+                                                selected
+                                            {% endif %}
+                                        {% endif %}
+                                        >Standard</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 col-sm-4 align-lable">
+                                    <span>display format</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-3 col-sm-3 control-label">Redirect To: </label>
+                                <div class="col-md-4 col-sm-5">
+                                    <select name="redirect_to" id="redirect_to" data-plugin-selectTwo class="form-control">
+                                        <option value="home"
+                                        {% if user %}
+                                            {% if user.m_redirect_to == "home" %}
+                                                selected
+                                            {% endif %}
+                                        {% endif %}
+                                        >Dashboard</option>
+                                        <option value="TicketView"
+                                        {% if user %}
+                                            {% if user.m_redirect_to == "TicketView" %}
+                                                selected
+                                            {% endif %}
+                                        {% endif %}
+                                        >Ticket View</option>
+                                        <option value="Home_MyTicket"
+                                        {% if user %}
+                                            {% if user.m_redirect_to == "Home_MyTicket" %}
+                                                selected
+                                            {% endif %}
+                                        {% endif %}
+                                        >My Tickets</option>
+                                        <option value="Home_SubmitTicket"
+                                        {% if user %}
+                                            {% if user.m_redirect_to == "Home_SubmitTicket" %}
+                                                selected
+                                            {% endif %}
+                                        {% endif %}
+                                        >Submit Ticket</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 col-sm-4 align-lable">
+                                    <span>after submit</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Dashboard Reload:</label>
+                                <div class="col-md-2 col-sm-3">
+                                    <input type="number" name="dashboard_reload" id="dashboard_reload"
+                                    {% if user.m_dashboard_reload %}
+                                        value="{{user.m_dashboard_reload}}"
+                                    {% else %}
+                                        value="0"
+                                    {% endif %}
+                                    class="form-control" min="0" max="99999">
+                                </div>
+                                <div class="col-md-5 col-sm-5 align-lable">
+                                    <span>Minutes (Blank or 0 to use<a data-toggle="tooltip" class="border-bottom-dotted" title="System Settings for Dashboard reload are: Disabled!"> System settings </a>)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" for="inputSuccess"></label>
+                                <div class="col-sm-8">
+                                    {% if user.m_show_reload == 0 %}
+                                        <div class="checkbox" id="checkbox">
+                                    {% else %}
+                                        <div class="checkbox" id="checkbox">
+                                    {% endif %}
+                                        <label>
+                                        <input type="checkbox" name="show_reload" value="1"
+                                        {% if user.m_show_reload == 1 %}
+                                            checked
+                                        {% endif %}
+                                        >
+                                            <i>Show Reload Timer on Dashboard page </i>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div><br>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label"><b  class="text-postion-top">&nbsp;</b> Phone:</label>
+                                <div id="phone_div" class="col-md-4 col-sm-5">
+                                    <b  class="text-postion-top">Personal Info</b>
+                                    <label readonly class="form-control" name="phone" id="phone"
+                                    >{% if user.m_phone %}
+                                        {{user.m_phone}}
+                                    {% endif %}
+                                    </label>
+                                    <input id="change_phone_number" onclick="changePhoneNumber();" type="button" value="Change" class="btn btn-primary">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Email:</label>
+                                <div class="col-md-4 col-sm-5">
+                                    <input type="email" name="email" id="email" class="form-control" placeholder="eg.: example@xyz.com"
+                                    {% if user.m_email %}
+                                        value="{{user.m_email}}"
+                                    {% endif %}
+                                    />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Mobile/SMS Email:</label>
+                                <div class="col-md-4 col-sm-5">
+                                    <input type="email" name="sms_email" id="sms_email" class="form-control" placeholder="eg.: 1234567890@SMSEmailAddress.com"
+                                    {% if user.m_mob_sms_email %}
+                                        value="{{user.m_mob_sms_email}}"
+                                    {% endif %}
+                                    />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" for="address1">Address 1:</label>
+                                <div class="col-md-4 col-sm-5">
+                                    <input type="text" class="form-control" name="address1" id="address1"
+                                    {% if user.m_address1 %}
+                                        value="{{user.m_address1}}"
+                                    {% endif %}
+                                    >
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" for="address2">Address 2:</label>
+                                <div class="col-md-4 col-sm-5">
+                                    <input type="text" class="form-control" name="address2" id="address2"
+                                    {% if user.m_address2 %}
+                                        value="{{user.m_address2}}"
+                                    {% endif %}
+                                    >
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" for="city_state_zip">City/State/Zip:</label>
+                                <div class="col-md-4 col-sm-5">
+                                    <input type="text" class="form-control alphabetsRequired" name="city" id="city"
+                                    {% if user.m_user_city %}
+                                        value="{{user.m_user_city}}"
+                                    {% endif %}
+                                    >
+                                </div>
+                                <div class="col-md-2 col-sm-2 all-space-auto">
+                                    <input type="text" class="form-control alphabetsRequired" name="state" id="state"
+                                    {% if user.m_user_state %}
+                                        value="{{user.m_user_state}}"
+                                    {% endif %}
+                                    >
+                                </div>
+                                <div class="col-md-2 col-sm-2 all-space-auto">
+                                    <input type="text" class="form-control" name="zip" id="zip"
+                                    {% if user.m_user_zip_code %}
+                                        value="{{user.m_user_zip_code}}"
+                                    {% endif %}
+                                    >
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" for="country">Country:</label>
+                                <div class="col-md-4 col-sm-5">
+                                    <input type="text" class="form-control alphabetsRequired" name="country" id="country"
+                                    {% if user.m_user_country %}
+                                        value="{{user.m_user_country}}"
+                                    {% endif %}
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                        <footer class="panel-footer">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <button class="btn btn-primary saveButton" id="save_phone_number">Update</button>
+                                    <button type="reset"  class="btn btn-default resetBtn">Reset</button>
+                                    <label class="required-lable"><span class="required">*</span> Required</label>
+                                </div>
+                            </div>
+                        </footer>
+                    </form>
+                </section>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+{% block script %}
+    <script>
+        $(document).ready(function(){
+            $('[data-toggle="tooltip"]').tooltip();
+            $('#dashboard_reload').keyup(function(){
+                if($(this).val().length && $(this).val()!='0')
+                    $('#checkbox').show();
+                else
+                    $('#checkbox').hide();
+            });
+        });
+
+         $(document).on('keypress','.alphabetsRequired', function(e){
+                if ((e.keyCode >= 65 && e.keyCode <= 90) || (e.keyCode >= 97 && e.keyCode <= 122) || e.keyCode == 32)
+                {
+                    return true;
+                }
+                return false;
+            });
+          $('.resetBtn').on('click', function(e){
+                {%if user.m_dashboard_reload %}
+                $("#dashboard_reload").select2("val",{{user.m_dashboard_reload}});
+                {%else%}
+                $("#dashboard_reload").select2("val","");
+                {%endif%}
+                {% if user.m_ticket_screen %}
+                $("#ticket_screen").select2("val", {{user.m_ticket_screen}} );
+                {%else%}
+                $("#ticket_screen").select2("val", "");
+                {%endif%}
+                {%if user.m_redirect_to %}
+                $("#redirect_to").select2("val", '{{user.m_redirect_to}}');
+                {%else%}
+                $("#redirect_to").select2("val","");
+                {%endif%}
+                {% if user.m_default_page %}
+                $("#default_home_page").select2("val", '{{ user.m_default_page }}');
+                {% else %}
+                $("#default_home_page").select2("val", "");
+                {% endif %}
+                {% if user.m_default_page %}
+                $("#time_zone").select2("val", '{{ user.m_time_zone }}');
+                {% else %}
+                $("#time_zone").select2("val", "");
+                {% endif %}
+            });
+
+            function changePhoneNumber(){
+                debugger
+                $('#phone').remove();
+                $('#change_phone_number').remove();
+                $('#phone_div').append('<div id="save_phone_div"><input class="form-control" type="tel" id="phone" name="phone"><input type="tel" class="hide" id="hiden"><input  class="form-control" type="hidden" id="dial_code" name="dial_code"><input id="save_phone_number" onClick="cancel();" type="button" value="Cancel" class="btn btn-danger"></div><div class="col-sm-4"><span id="phoneValid"></span></div>');
+//                 $("#phone").intlTelInput({
+//     // initialCountry: "us",
+//     // autoPlaceholder: true,
+//     separateDialCode: true,
+//     preferredCountries: ["fr", "us", "gb"],
+//     geoIpLookup: function (callback) {
+//         $.get('https://ipinfo.io', function () {
+//         }, "jsonp").always(function (resp) {
+//             var countryCode = (resp && resp.country) ? resp.country : "";
+//             callback(countryCode);
+//         });
+//     },
+//     utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/11.0.14/js/utils.js"
+// });
+
+
+// $("#hiden").intlTelInput({
+//     initialCountry: "us",
+//     dropdownContainer: 'body',
+//     utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/11.0.14/js/utils.js"
+// });
+
+
+// /* ADD A MASK IN phone INPUT (when document ready and when changing flag) FOR A BETTER USER EXPERIENCE */
+
+// var mask1 = $("#phone").attr('placeholder').replace(/[0-9]/g, 0);
+
+// $(document).ready(function () {
+//     $('#phone').mask(mask1)
+// });
+
+// $("#phone").on("countrychange", function (e, countryData) {
+//     // changePhoneNumber();
+//     $("#phone").removeAttr('placeholder');
+//     $("#phone").attr('placeholder');
+//     // changePhoneNumber();
+//     var mask1 = $("#phone").attr('placeholder').replace(/[0-9]/g, 0);
+//     $('#phone').mask(mask1);
+    
+//     debugger
+// });
+
+// $('input.hide').parent().hide();
+$(document).ready(function() {
+  var phoneInputID = "#phone";
+  var input = document.querySelector(phoneInputID);
+  var iti = window.intlTelInput(input, {
+    // allowDropdown: false,
+    // autoHideDialCode: false,
+    // autoPlaceholder: "off",
+    // dropdownContainer: document.body,
+    // excludeCountries: ["us"],
+    formatOnDisplay: true,
+    // geoIpLookup: function(callback) {
+    //   $.get("http://ipinfo.io", function() {}, "jsonp").always(function(resp) {
+    //     var countryCode = (resp && resp.country) ? resp.country : "";
+    //     callback(countryCode);
+    //   });
+    // },
+    // hiddenInput: "full_number",
+    // initialCountry: "auto",
+    // localizedCountries: { 'de': 'Deutschland' },
+    // nationalMode: true,
+    // onlyCountries: ['us', 'gb', 'ch', 'ca', 'do'],
+    placeholderNumberType: "FIXED_LINE",
+    preferredCountries: ['es'],
+    // separateDialCode: true,
+    utilsScript: "../../build/js/utils.js?1613236686837"
+  });
+
+
+  $(phoneInputID).on("countrychange", function(event) {
+    var numberType = iti.getNumberType();
+    iti.setNumber("");
+    // Get the selected country data to know which country is selected.
+    var selectedCountryData = iti.getSelectedCountryData();
+    var selectedCountryData1 = iti.getSelectedCountryData().dialCode;
+    $("#dial_code").val(selectedCountryData1);
+    // Get an example number for the selected country to use as placeholder.
+    newPlaceholder = intlTelInputUtils.getExampleNumber(selectedCountryData.iso2, true, intlTelInputUtils.numberFormat.INTERNATIONAL),
+
+      // Reset the phone number input.
+      iti.setNumber("");
+
+    // Convert placeholder as exploitable mask by replacing all 1-9 numbers with 0s
+    mask = newPlaceholder.replace(/[1-9]/g, "0");
+
+    // Apply the new mask for the input
+    $(this).mask(mask);
+    debugger
+  });
+
+
+  // When the plugin loads for the first time, we have to trigger the "countrychange" event manually, 
+  // but after making sure that the plugin is fully loaded by associating handler to the promise of the 
+  // plugin instance.
+  $(document).on('keyup','#phone', function(){
+//   $("#save_phone_number").click(function(){
+    // debugger
+    console.log(iti.getNumber());
+    console.log(iti.isValidNumber());
+    var x = (iti.getNumber());
+    var code = $("#phone").intlTelInput("getSelectedCountryData").dialCode;
+                // var df = document.getElementById("hiden").value = $("#phone").val().replace(/\s+/g, '');
+                // console.log($("#phone").intlTelInput("getNumber"));
+                var dialcode = $('#dial_code').val();
+                var phone = $('#phone').val();
+                // var doc =  document.getElementById("hiden").value
+                // debugger
+                if (iti.isValidNumber() == true){
+                    $('#phoneValid').html('');
+                debugger
+                
+                $('.saveButton').prop('disabled', false);
+                // var a = $('#phone').val(x);
+                debugger
+            }
+            else
+            {
+                $('#phoneValid').html('<strong class="text-danger">Enter Valid Phone Number</strong>');
+                $('.saveButton').prop('disabled', true);
+                // alert('Enter Valid Phone Number');
+                $("#phone").focus();
+            }
+    // debugger
+});
+}); 
+
+            }
+            function savePhoneNumber(){
+                
+                // var selectedCountryData1 = iti.getSelectedCountryData().dialCode;
+                var code = $("#phone").intlTelInput("getSelectedCountryData").dialCode;
+                // var df = document.getElementById("hiden").value = $("#phone").val().replace(/\s+/g, '');
+                console.log($("#phone").intlTelInput("getNumber"));
+                var dialcode = $('#dial_code').val();
+                var phone = $('#phone').val();
+                var doc =  document.getElementById("hiden").value
+                // debugger
+                if ($("#phone").intlTelInput("isValidNumber") == true){
+                debugger
+                $.ajax({
+                    method: "POST",
+                    url: "{% url 'savePhoneNumber' %}",
+                    data:{
+                        dialcode:dialcode,
+                        phone:phone,
+                    },
+                    headers: {'X-CSRFToken': '{{ csrf_token }}'},
+                    success: function(data){
+                        alert('Phone Number Change Successfully')
+                        cancel();
+                    }
+                });
+            }
+            else
+            {
+                alert('Enter Valid Phone Number');
+            }
+            }
+            function cancel(){
+                $('.saveButton').prop('disabled', false);
+                $('#phoneValid').remove();
+                $('#phone').remove();
+                $('#save_phone_div').remove();
+                $('#phone_div').append('<label readonly class="form-control" name="phone" id="phone">{% if user.m_phone %}{{user.m_phone}}{% endif %}</label><input id="change_phone_number" onclick="changePhoneNumber();" type="button" value="Change" class="btn btn-primary">');
+            }
+            
+
+    </script>
+{% endblock %}

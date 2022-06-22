@@ -1,0 +1,176 @@
+{% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+        {% load tz %} {# it will Load the Django TimeZone Library#}
+        {% load templates_extras %}
+        
+        <section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-building-o" aria-hidden="true"></i> Organization</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Report</span></li>
+								<li><span>List Scheduled</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+						<section class="panel">
+							<header class="panel-heading">
+
+								<h2 class="panel-title">Scheduled Report List</h2>
+							</header> 
+							<footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <a class="btn btn-primary saveButton" href="{% url 'addScheduledReport' %}">Add Scheduled Report</a>
+                                                </div>
+                                            </div>
+                                        </footer>
+							<div class="panel-body">
+                                 {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+{#                                data-url="{% static 'ajax/ajax-datatables-sample.json' %} "#}
+								<table class="table table-bordered table-striped datatable">
+									<thead>
+										<tr>
+											<th width="10%">Action</th>
+											<th width="15%">Schedule Name</th>
+											<th width="15%">Scheduled By</th>
+											<th width="10%">Frequency</th>
+											<th width="15%">Next Run Date</th>
+                                            <th width="10%">Last Generated</th>
+                                            <th width="15%">Comment</th>
+                                            <th width="10%">Active</th>
+										</tr>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					<!-- end: page -->
+				</section>
+                   <!-- Modal Warning -->
+        {# Delete Modal Popup on Delete#}
+        <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <p>You are about to delete a record, this procedure is irreversible.</p>
+                        <strong>Do you want to proceed?</strong>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <a class="btn btn-danger btn-ok">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endblock %} 
+    {% block script %}
+        <script>
+           $(document).ready(function() {
+                var oTable = $('.datatable').dataTable({
+                    // ...
+                    columnDefs: [
+                        {
+                            name: 'action',
+                            orderable: false,
+                            searchable: false,
+                            targets: [0]
+                        },
+                        {
+                            name: 'sch_rpt_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [1]
+                        },
+                        {
+                            name: 'sch_rpt_created_by.display_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [2]
+                        },
+						{
+                            name: 'schedule',
+                            orderable: true,
+                            searchable: true,
+                            targets: [3]
+                        },
+						{
+                            name: 'end_sch_rpt_date',
+                            orderable: true,
+                            searchable: true,
+                            targets: [4]
+                        },
+						{
+                            name: 'sch_rpt_created_at',
+                            orderable: true,
+                            searchable: true,
+                            "render": function (name) {
+                                var date = new Date(name);
+                                var month = date.getMonth() + 1;
+                                var hours = date.getHours();
+                                var minutes = date.getMinutes();
+                                var ampm = hours >= 12 ? 'pm' : 'am';
+                                hours = hours % 12;
+                                hours = hours ? hours : 12; // the hour '0' should be '12'
+                                minutes = minutes < 10 ? '0'+minutes : minutes;
+                                var strTime = hours + ':' + minutes + ' ' + ampm;
+                                return (month.toString().length > 1 ? month : "0" + month) + "/" + date.getDate() + "/" + date.getFullYear() +"&nbsp;"+ strTime;
+                                },
+                            targets: [5]
+                        },
+						{
+                            name: 'comment',
+                            orderable: true,
+                            searchable: true,
+                            targets: [6]
+                        },
+						{
+                            name: 'is_active',
+                            orderable: true,
+                            searchable: true,
+                            targets: [7]
+                        }
+
+                        
+                    ],
+                    "order": [[ 1, 'asc' ]],
+                    "processing": true,
+                    "serverSide": true,
+                    "lengthMenu": [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "All"] ],
+                    "stateSave": true,
+                    "ajax": "{% url 'sch_list_json' %}"
+                });
+                // ...
+            });
+        </script>
+         <script>
+        $('#confirm-delete').on('show.bs.modal', function(e) {
+            $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+        });
+        </script>
+    {% endblock %}   

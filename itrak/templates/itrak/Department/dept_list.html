@@ -1,0 +1,172 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-sitemap" aria-hidden="true"></i> Department</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Department</span></li>
+								<li><span>Department List</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+						<section class="panel">
+							<header class="panel-heading">
+                                <h2 class="panel-title">Department List</h2>
+                                <div class="pull-right">
+                                    <a href="{% url 'departmentUsers' %}" class="btn btn-primary" style="margin-top: -30px;">Show Users</a>
+                                </div>
+							</header>
+							<div class="panel-body">
+                                 {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+{#                                data-url="{% static 'ajax/ajax-datatables-sample.json' %} "#}
+								<table class="table table-bordered table-striped datatable">
+									<thead>
+										<tr>
+											<th width="15%">Action</th>
+											<th width="10%">ID</th>
+											<th width="30%">Department Name</th>
+											<th width="15%">Active</th>
+											<th width="15%">Internal?</th>
+											<th width="15%">Display</th>
+										</tr>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					<!-- end: page -->
+				</section>
+			</div>
+            <div id="popup-modal-content"></div>
+
+           <!-- Modal Warning -->
+        {# Delete Modal Popup on Delete#}
+        <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <p>You are about to delete a record, this procedure is irreversible.</p>
+                        <strong>Do you want to proceed?</strong>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <a class="btn btn-danger btn-ok">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <form id="standard_form" name="standard_form" method="post" action="{% url 'export_users_by_department_xls' %}"></form>
+    {% endblock %}
+
+    {% block script %}
+        <script>
+            $(document).ready(function() {
+                var oTable = $('.datatable').dataTable({
+                    // ...
+                    columnDefs: [
+                        {
+                            name: 'action',
+                            orderable: false,
+                            searchable: false,
+                            targets: [0]
+                        },
+                        {
+                            name: 'dep_id',
+                            orderable: true,
+                            searchable: true,
+                            targets: [1]
+                        },
+                        {
+                            name: 'dep_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [2]
+                        },
+                        {
+                            name: 'd_is_active',
+                            orderable: true,
+                            searchable: true,
+                            targets: [3]
+                        },
+                        {
+                            name: 'd_is_internal',
+                            orderable: true,
+                            searchable: true,
+                            targets: [4]
+                        },
+                        {
+                            name: 'display',
+                            orderable: false,
+                            searchable: false,
+                            targets: [5]
+                        }
+                    ],
+                    "order": [[ 1, 'asc' ]],
+                    "processing": true,
+                    "serverSide": true,
+                    "lengthMenu": [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "All"] ],
+                    "stateSave": true,
+                    "ajax": "{% url 'department_list_json' %}"
+                });
+                // ...
+            });
+        </script>
+        <script>
+        $('#confirm-delete').on('show.bs.modal', function(e) {
+            $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+        });
+
+        function GetUsersListByDep(event, dep_id){
+            event.preventDefault()
+            if(dep_id == ''){
+                alert('Something went wrong. Please try again.');
+            }else{
+                $.ajax({
+                    url:"{% url 'getModalDepUsersById' %}",
+                    type:'POST',
+                    data:{
+                        'dep_id':dep_id,
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    },
+                    success:function(data){
+                        $('#popup-modal-content').html(data);
+                        $('#modalDepUsers').modal("show");
+                    },
+                    error:function(){
+                        console.log('error')
+                    },
+                });
+            }
+        }
+        function getXlsDownload(id){
+            $('#standard_form').trigger('submit');
+        }
+        </script>
+    {% endblock %}

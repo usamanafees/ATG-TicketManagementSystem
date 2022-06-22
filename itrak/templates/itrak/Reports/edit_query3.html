@@ -1,0 +1,198 @@
+{% extends 'itrak/base.html' %}
+{% block body_block %}
+    {% load static %}
+    {% load tz %} {# it will Load the Django TimeZone Library#}
+    {% load templates_extras %}
+
+    <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-file" aria-hidden="true"></i> Edit Query</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+                    <li><span>Reports</span></li>
+                    <li><span>Edit Query</span></li>
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+
+        <div class="row">
+            <div class="col-md-12">
+                {% for message in messages %}
+                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+
+                <section class="panel">
+                    <header class="panel-heading">
+                        <h2 class="panel-title">Edit Query</h2>
+                    </header>
+
+                    <div class="panel-body">
+
+                        <center><h3>Build Query: Step 3 of 3 - Save Query</h3></center>
+                        <form id="newQueryForm" action="{% url 'updateFinalNewQuery' %}" method="post" class="form-horizontal">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                    <a id="btn-cancel" class="btn btn-primary">Cancel </a>
+                                    <a id="btn-back" class="btn btn-primary">< Back</a>
+                                    <a id="btn-finish" class="btn btn-primary">Finish</a>
+                                    <a id="btn-save-run" class="btn btn-primary">Update & Run</a>
+                                </div>
+                            </div>
+                            <br>
+                            <center><p class="font-italic">How do you want to save the query?</p></center>
+                            <br>
+                            <input type="hidden" name="query_id" value="{{ queryObj.qb_query_id }}">
+                            <div class="form-group">
+                                <label class="col-lg-2 col-md-2 col-sm-3  control-label"><span class="required">*</span> Query Name:</label>
+                                <div class="col-sm-5">
+                                    <input type="text" class="form-control" id="query_name" name="query_name" value="{{ queryObj.qb_query_name }}" required>
+                                </div>
+                                <input type="checkbox" name="createReport" id="createReport" value="1" {% if queryObj.qb_query_create_report == 1 %}checked{% endif %}>
+                                <label>Create Report</label>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-lg-2 col-md-2 col-sm-3 col-xs-3 share-tootltip control-label">
+                                	<div class="display-inline task-complete">
+                                		<span>Share</span>:
+	                                	<div class="custom-tooltip">
+	                                    	<div class="tooltip-header">
+	                                    		Share Checkbox
+	                                    	</div>
+	                                    	<div class="tooltip-body">
+	                                    		<p>By default queries are only available to the users who create them and System Administrators.  Selecting this 'Share' option will make the query available to everyone who can manage reports and view  Issues for your organization.</p>
+	                                    	</div>
+	                                    </div>
+	                                </div>
+                                </label>
+                                <div class="col-sm-5 col-xs-5">
+                                    <input type="checkbox" name="share" id="share" value="1" {% if queryObj.qb_query_is_share == 1 %}checked{% endif %}>
+                                </div>
+                            </div>
+                            <div class="form-group full-width-inner" id="share_div" style="display:none">
+                                <label class="col-lg-2 col-md-2 col-sm-3 share-tootltip  control-label">
+                               	 	<div class="display-inline task-complete">
+                                		<span>Share With</span>:
+	                                	<div class="custom-tooltip">
+	                                    	<div class="tooltip-header">
+	                                    		Share With Functionality
+	                                    	</div>
+	                                    	<div class="tooltip-body">
+	                                    		<p>Use the magnifying glass icon to select specific users and/or groups to have access to the query.</p>
+	                                    	</div>
+	                                    </div>
+	                                </div>
+                               </label>
+                                <div class="col-sm-5">
+                                    <select id="share_with" name="share_with" class="form-control" multiple>
+                                        {% if share_lists %}
+
+                                            {% for user in users%}
+                                                <option value="{{ user.id }}" {% if user.id in share_lists %}selected{% endif %}>{{ user.last_name }} {{ user.first_name }}</option>
+                                            {% endfor %}
+                                            {% else %}
+                                            {% for user in users %}
+                                            <option value="{{ user.id }}">{{ user.last_name }} {{ user.first_name }}</option>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-lg-2 col-md-2 col-sm-3 control-label">Description:</label>
+                                <div class="col-sm-5">
+                                    <textarea rows="4" cols="50" name="description" id="description" class="form-control">{{ queryObj.qb_query_description }}</textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <footer class="panel-footer">
+                        <div class="row">
+                            <div class="col-sm-12">
+                            	<label class="required-lable" style="margin-bottom: 10px;"><span class="required">*</span> Required</label>
+                            </div>
+                        </div>
+                    </footer>
+                </section>
+
+            </div>
+        </div>
+
+    </section>
+
+{% endblock %}
+
+{% block script %}
+<script>
+
+    $(document).ready(function () {
+        {% if queryObj.qb_query_is_share == 1 %}
+            $("#share_div").show();
+        {% endif %}
+    });
+
+
+$(function() {
+
+    $('#share_with').multiselect({
+        includeSelectAllOption: true,
+        maxHeight: 250,
+        selectAllText: 'Everyone'
+    });
+
+    $("#share_with").multiselect('selectAll', false);
+    $("#share_with").multiselect('updateButtonText');
+
+});
+
+    $("#share").change(function() {
+        if(this.checked) {
+            $("#share_div").show();
+        }else{
+            $("#share_div").hide();
+        }
+    });
+
+
+    $("#btn-cancel").click(function(){
+        window.location.href = "{% url 'reportWriterQueries' %}";
+    });
+
+    $("#btn-back").click(function(){
+        window.location.href = "{% url 'editQueryStep2' %}?qbQuery="+{{ query_id }};;
+    });
+
+    $("#btn-finish").click(function(){
+        if($('#query_name').val() == ''){
+            alert('Query Name cannot be Empty!');
+        }
+        else{
+            $('#newQueryForm').submit();
+        }
+    });
+
+    $("#btn-save-run").click(function(){
+        if($('#query_name').val() == ''){
+            alert('Query Name cannot be Empty!');
+        }
+        else{
+            $('#newQueryForm').attr('action',"{% url 'updateFinalNewQuery' %}?IsRun=True");
+            $('#newQueryForm').submit();
+        }
+
+    });
+
+
+</script>
+{% endblock %}

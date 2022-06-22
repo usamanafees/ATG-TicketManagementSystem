@@ -1,0 +1,108 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+        {% load tz %} {# it will Load the Django TimeZone Library#}
+        {% load templates_extras %}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-ticket" aria-hidden="true"></i> Ticket</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Ticket</span></li>
+								<li><span>Summary Report Results</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+						<section class="panel">
+							<header class="panel-heading">
+
+                                <h3 class="text-primary text-bold">Tickets by Ticket SubType - Results</h3>
+                            </header>
+							<div class="panel-body">
+                            	<a onClick="javascript:history.go(-1);" class="text-bold back-text"><span class="fa fa-arrow-circle-left"> </span> Back</a>
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12">
+                                        <h5 class="text-primary"><b>Tickets by Ticket SubType </b></h5>
+                                    </div>
+
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12">
+                                        <h5 class="text-primary">Recorded From {{ start_date }} To {{ end_date }} </h5>
+                                    </div>
+                                </div>
+ 								<table class="table table-bordered table-striped table-condensed mb-none" id="datatable-default">
+									<thead>
+										<tr>
+                                            <th>Ticket Type/Subtype</th>
+                                            <th>Opened Before</th>
+                                            <th>Opened</th>
+                                            <th>Close</th>
+                                            <th>Left Open on</th>
+										</tr>
+									</thead>
+                                    <thead>
+										<tr>
+                                            <th></th>
+                                            <th>{{ start_date}}</th>
+                                            <th>In Period</th>
+                                            <th>In Period</th>
+                                            <th>{{ end_date }}</th>
+										</tr>
+									</thead>
+									<tbody>
+                                        {% for parent_ttype in parent_ttypes %}
+                                            <tr class="gradeA">
+                                                <td colspan="5"><b>{{ parent_ttype.ticket_type__ttype_name }}</b></td>
+                                            </tr>
+                                            {% for ttype in ttypes %}
+                                                {% if ttype.ticket_subtype1__parent_id == parent_ttype.ticket_type_id %}
+                                                    <tr class="gradeA">
+                                                        <td>{{ ttype.ticket_subtype1__ttype_name }}</td>
+                                                        {% if tickets_open_before %}{% if ttype.ticket_subtype1_id in tickets_open_before_list %}{% for OB in tickets_open_before %}{% if OB.ticket_subtype1_id == ttype.ticket_subtype1_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ttype.ticket_subtype1_id }}&columnId=OB">{{ OB.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                        {% if tickets_open_in %}{% if ttype.ticket_subtype1_id in tickets_open_in_list %}{% for OI in tickets_open_in %}{% if OI.ticket_subtype1_id == ttype.ticket_subtype1_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ttype.ticket_subtype1_id }}&columnId=OI">{{ OI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                        {% if tickets_closed %}{% if ttype.ticket_subtype1_id in tickets_closed_list %}{% for CI in tickets_closed %}{% if CI.ticket_subtype1_id == ttype.ticket_subtype1_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ttype.ticket_subtype1_id }}&columnId=CI">{{ CI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                        {% if tickets_left_opened %}{% if ttype.ticket_subtype1_id in tickets_left_opened_list %}{% for LO in tickets_left_opened %}{% if LO.ticket_subtype1_id == ttype.ticket_subtype1_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ttype.ticket_subtype1_id }}&columnId=LO">{{ LO.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                            <tr class="gradeA">
+                                                <td><b>Total {{ parent_ttype.ticket_type__ttype_name }}</b></td>
+                                                <td><b>{% if parent_open_before %}{% for OB in parent_open_before %}{% if OB.ticket_subtype1__parent_id == parent_ttype.ticket_type_id %}<a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ parent_ttype.ticket_type_id }}&columnId=TOB">{{ OB.tcount }}</a>{% endif %}{% endfor %}{% else %}0{% endif %}</b></td>
+                                                <td><b>{% if parent_open_in %}{% for OI in parent_open_in %}{% if OI.ticket_subtype1__parent_id == parent_ttype.ticket_type_id %}<a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ parent_ttype.ticket_type_id }}&columnId=TOI">{{ OI.tcount }}</a>{% endif %}{% endfor %}{% else %}0{% endif %}</b></td>
+                                                <td><b>{% if parent_closed %}{% for CI in parent_closed %}{% if CI.ticket_subtype1__parent_id == parent_ttype.ticket_type_id %}<a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ parent_ttype.ticket_type_id }}&columnId=TCI">{{ CI.tcount }}</a>{% endif %}{% endfor %}{% else %}0{% endif %}</b></td>
+                                                <td><b>{% if parent_left_opened %}{% for LO in parent_left_opened %}{% if LO.ticket_subtype1__parent_id == parent_ttype.ticket_type_id %}<a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ parent_ttype.ticket_type_id }}&columnId=TLO">{{ LO.tcount }}</a>{% endif %}{% endfor %}{% else %}0{% endif %}</b></td>
+
+                                            </tr>
+                                            <tr class="gradeA"><td colspan="5"></td></tr>
+                                        {% endfor %}
+
+									</tbody>
+								</table>
+							</div>
+						</section>
+					<!-- end: page -->
+				</section>
+			</div>
+
+    {% endblock %}
+
+    {% block script %}
+        <script>
+        </script>
+    {% endblock %}
+
+

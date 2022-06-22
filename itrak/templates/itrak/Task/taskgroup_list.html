@@ -1,0 +1,122 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-tasks" aria-hidden="true"></i> Tasks</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Tasks</span></li>
+								<li><span>Tasks Group List</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+						<section class="panel">
+							<header class="panel-heading">
+								<h2 class="panel-title">Tasks Group List</h2>
+							</header>
+							<div class="panel-body"> 
+                                 {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                                <div id="Grid"></div>
+							</div>
+						</section>
+					<!-- end: page -->
+				</section>
+			</div>
+
+           <!-- Modal Warning -->
+        {# Delete Modal Popup on Delete#}
+        <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <p>You are about to delete a record, this procedure is irreversible.</p>
+                        <strong>Do you want to proceed?</strong>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <a class="btn btn-danger btn-ok">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% endblock %}
+
+    {% block script %}
+    <script>
+        $('#preloader').show();
+    </script>
+        <style>
+            table {
+                padding: 0px !important;
+            }
+        </style>
+        <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js" type="text/javascript"></script>
+        <link href="https://cdn.syncfusion.com/ej2/material.css" rel="stylesheet">
+        <script>    
+            var dataManger = new ej.data.DataManager({
+                url: '{% url 'getTasksByTaskGroup' %}',
+                adaptor: new ej.data.ODataAdaptor(),
+                crossDomain: true
+            });
+            
+            new ej.data.DataManager({ url: '{% url 'getAllTaskGroupJson' %}', adaptor: new ej.data.UrlAdaptor }) 
+            .executeQuery(new ej.data.Query()) 
+            .then((e) => { 
+                grid.dataSource = e.result; 
+                $('#preloader').hide();
+            }); 
+            data =[]
+            var grid = new ej.grids.Grid({
+                dataSource: data,
+                allowPaging: true,
+                allowSorting: true,
+                toolbar: ['Search'],
+                columns: [
+                    { field: 'action', headerText: 'Action', width: 125, disableHtmlEncode: false  },
+                    { field: 'taskgroup_description', headerText: 'Task Group', width: 600 }
+                ],
+                childGrid: {
+                    dataSource: dataManger,
+                    queryString: 'taskgroup_id',
+                    // toolbar: ['Search'],
+                    columns: [
+                        { field: 'task_description', headerText: 'Task', width: 120 },
+                        { field: 'process_options', headerText: 'Process Options', width: 300, disableHtmlEncode: false  }
+                    ]
+                },
+            });
+            grid.appendTo('#Grid');
+            
+        </script>
+        <script>
+        $('#confirm-delete').on('show.bs.modal', function(e) {
+            $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+        });
+        </script>
+    {% endblock %}

@@ -1,0 +1,306 @@
+{% extends 'itrak/base.html' %}
+{% block body_block %}
+    {% load static %}
+    {% load tz %} {# it will Load the Django TimeZone Library#}
+    {% load templates_extras %}
+
+    <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-file" aria-hidden="true"></i> Settings</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+                    <li><span>Reports</span></li>
+                    <li><span>Report Settings</span></li>
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+
+        <div class="row">
+            <div class="col-md-12">
+                {% for message in messages %}
+                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+
+                <section class="panel">
+                    <header class="panel-heading">
+                        <h2 class="panel-title">Report Defaults</h2>
+                    </header>
+
+                    <div class="panel-body">
+                        <form id="newQueryForm" action="{% url 'updateReportSettings' %}" method="post" class="form-horizontal">
+                            {% csrf_token %}
+                                <table class="table table-condensed writter-setting-table">
+                                    <tbody>
+                                        <tr>
+                                            <td class="DetailsLabel">Defaults:</td>
+                                            <td>
+                                                <table class="table table-bordered table-condensed">
+                                                    <thead>
+                                                        <tr>
+                                                            <th width="15%">Data Type</th>
+                                                            <th>Format</th>
+                                                            <th>Justification</th>
+                                                            <th width="15%">Width</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% if data_types %}
+                                                            {% for data_type in data_types %}
+                                                                <tr>
+                                                                    <td>
+                                                                        <input name="dataType" value="{{ data_type.rpt_data_type_name }}" hidden="true">
+                                                                        <p>{{ data_type.rpt_data_type_name }}</p>
+                                                                    </td>
+                                                                    <td>
+                                                                    {% if data_type.rpt_data_type_name == 'String' %}
+                                                                        <input name="format" value="{{ 19 }}" hidden="true">
+                                                                        <p class="text-primary">(under 1000 characters) </p>
+                                                                    {% elif data_type.rpt_data_type_name == 'Large String' %}
+                                                                        <input name="format" value="{{ 20 }}" hidden="true">
+                                                                        <p class="text-primary">(1000 characters and over) </p>
+                                                                    {% else %}
+                                                                        {% get_data_type_formats data_type.rpt_data_type_id  as formats %}
+                                                                        <select name="format" id="format{{ data_type.rpt_data_type_id }}" class="form-control">
+                                                                        {% for format in formats %}
+                                                                            {% select_report_setting_format_by_dataType data_type.rpt_data_type_id format.rpt_format_id request.user.id as getSavedFormat %}
+                                                                            {% if getSavedFormat %}
+                                                                                <option value="{{ format.rpt_format_id }}" selected>{{ format.rpt_format_name }}</option>
+                                                                            {% else %}
+                                                                                <option value="{{ format.rpt_format_id }}">{{ format.rpt_format_name }}</option>
+                                                                            {% endif %}
+                                                                        {% endfor %}
+                                                                        </select>
+                                                                    {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                    {% if justifications %}
+                                                                        <select name="justicifation" id="justicifation{{ data_type.rpt_data_type_id }}" class="form-control">
+                                                                        {% for justification in justifications %}
+                                                                            {% select_report_setting_justification_by_dataType data_type.rpt_data_type_id justification.rpt_justify_id request.user.id as getSavedJustification %}
+                                                                            {% if getSavedJustification %}
+                                                                                <option value="{{ justification.rpt_justify_id }}" selected>{{ justification.rpt_justify_name }}</option>
+                                                                            {% else %}
+                                                                                <option value="{{ justification.rpt_justify_id }}">{{ justification.rpt_justify_name }}</option>
+                                                                            {% endif %}
+                                                                        {% endfor %}
+                                                                        </select>
+                                                                    {% endif %}
+                                                                    </td>
+                                                                    <td>
+                                                                    {% select_report_setting_width_by_dataType data_type.rpt_data_type_id request.user.id as getSavedWidth %}
+                                                                    {% if getSavedWidth %}
+                                                                        <input class="form-control number-fields" type="text" name="width" id="width{{ data_type.rpt_data_type_id }}" value="{% if getSavedWidth != 0 %}{{getSavedWidth}}{% endif %}" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');"/>
+                                                                    {% else %}
+                                                                        <input class="form-control number-fields" type="text" name="width" id="width{{ data_type.rpt_data_type_id }}" value="0"
+                                                                     oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');" />
+                                                                    {% endif %}
+                                                                    </td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    </tbody>
+                                                </table>
+
+                                            </td>
+                                        </tr>
+                                        <tr></tr>
+                                        <tr>
+                                            <td class="DetailsLabel">&nbsp;</td>
+                                            <td class="DetailsData" align="left">
+                                                <div class="form-group row">
+                                                    <div class="col-md-2 col-sm-3 col-xs-4">
+                                                        <span class="static-left text-danger">*</span>
+                                                        {% if saved_settings %}
+                                                            <input type="text" name="max_no_records" id="max_no_records" value="{{ saved_settings.max_records_return }}" class="form-control" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');" required>
+                                                        {% else %}
+                                                            <input type="text" name="max_no_records" id="max_no_records" value="0" class="form-control" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');" required>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="col-md-9 col-sm-8 col-xs-7">
+                                                        <p class="text-primary align-text">Maximum number of records returned (Should be greater than 0 (zero))</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="DetailsFill">&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="DetailsLabel">&nbsp;</td>
+                                            <td class="DetailsData" align="left">
+                                                <div class="form-group row">
+                                                    <div class="col-md-2 col-sm-3 col-xs-4">
+                                                         <span class="static-left text-danger">*</span>
+                                                        {% if saved_settings %}
+                                                            <input type="text" name="no_records_print" id="no_records_print" value="{{ saved_settings.max_records_print }}" class="form-control" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');"required>
+                                                        {% else %}
+                                                            <input type="text" name="no_records_print" id="no_records_print" value="0" class="form-control" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');" required>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="col-md-9 col-sm-8 col-xs-7">
+                                                        <p class="text-primary align-text">Number of records printed per page (Unlimited=0 (zero))</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="DetailsFill">&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="DetailsLabel">&nbsp;</td>
+                                            <td class="DetailsData" align="left">
+                                                <div class="form-group row">
+                                                    <div class="col-md-2 col-sm-3 col-xs-4">
+                                                         <span class="static-left text-danger">*</span>
+                                                        {% if saved_settings %}
+                                                            <input type="text" name="no_records_display" id="no_records_display" value="{{ saved_settings.max_records_display }}" class="form-control" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');" required>
+                                                        {% else %}
+                                                            <input type="text" name="no_records_display" id="no_records_display" value="0" class="form-control" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');" required>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="col-md-9 col-sm-8 col-xs-7">
+                                                        <p class="text-primary align-text">Number of records displayed per page (Unlimited=0 (zero))</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="DetailsFill">&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <td align="left" colspan="3">
+                                                <footer class="panel-footer">
+                                                    <div class="row">
+                                                        <div class="col-md-12">
+                                                            <input type="submit" name="btn-update" id="btn-update" value="Update" class="btn btn-primary"> 
+                                                            <label class="required-lable"><span class="required">*</span> Required</label>
+                                                        </div>
+                                                    </div>
+                                                </footer>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                        </form>
+                    </div>
+                    <footer class="panel-footer">
+                        <div class="row">
+                            <div class="col-sm-6">
+                            </div>
+                        </div>
+                    </footer>
+                </section>
+
+            </div>
+        </div>
+
+    </section>
+
+    {# Delete Modal Popup on Delete#}
+    <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <p>You are about to delete a record, this procedure is irreversible.</p>
+                        <strong>Do you want to proceed?</strong>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <a class="btn btn-danger btn-ok">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+{% endblock %}
+
+{% block script %}
+
+    <script>
+        //Run the Query Builder Query
+        function runQBQuery(event) {
+            query_id = $('#qb_queries').val();
+            if(query_id == null){
+                alert('No Query Selected!')
+            }else if(query_id.length > 1){
+                alert('Multiple queries cannot be Selected. Please Select one')
+            }else{
+                window.location.href = "{% url 'qbQueryProcess' %}?qbQuery="+query_id;
+            }
+        }
+
+        //Edit the Query Builder Query
+        function editQBQuery(event) {
+            query_id = $('#qb_queries').val();
+            if(query_id == null){
+                alert('No Query Selected!')
+            }else if(query_id.length > 1){
+                alert('Multiple queries cannot be Selected. Please Select one')
+            }else{
+                window.location.href = "{% url 'editQueryStep1' %}?qbQuery="+query_id;
+            }
+        }
+
+        //Clone the Query Builder Query
+        function cloneQBQuery(event) {
+            query_id = $('#qb_queries').val();
+            if(query_id == null){
+                alert('No Query Selected!')
+            }else if(query_id.length > 1){
+                alert('Multiple queries cannot be Selected. Please Select one')
+            }else{
+                window.location.href = "{% url 'cloneQBQuery' %}?qbQuery="+query_id;
+            }
+        }
+
+        //Delete the Query Builder Query
+        function deleteQBQuery(event) {
+            query_id = $('#qb_queries').val();
+            if(query_id == null){
+                alert('No Query Selected!')
+            }else if(query_id.length > 1){
+                alert('Multiple queries cannot be Selected. Please Select one')
+            }else{
+                $('.qry-btn-delete').attr('data-toggle','modal');
+                $('.qry-btn-delete').attr('data-target','#confirm-delete');
+                qry_delete_href = "{% url 'deleteQBQuery' %}?qbQuery="+query_id;
+                $('.qry-btn-delete').attr('data-href',qry_delete_href);
+            }
+        }
+
+        $('#confirm-delete').on('show.bs.modal', function(e) {
+            $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+        });
+
+        $('#newQueryForm').on('submit', function(e){
+            $(".number-fields").each(function(){
+                 if(($(this).val() < 1 || $(this).val() > 500) && $(this).val() != '')
+                 {
+                    e.preventDefault();
+                    alert('Field width must be between 1 and 500');
+                    return false;
+                 }
+            });
+        });
+
+        function isEmpty(str)
+        {
+            return !str.replace(/\s|[0]/g, '').length;
+        }
+
+    </script>
+
+{% endblock %}

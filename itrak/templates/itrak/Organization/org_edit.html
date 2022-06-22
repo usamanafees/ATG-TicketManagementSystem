@@ -1,0 +1,850 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-building-o" aria-hidden="true"></i> Organization</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Organization</span></li>
+								<li><span>Edit Organization</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+                         <div class="row">
+                            <div class="col-md-12">
+                                {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                                <form id="summary-form" action="{% url 'updateOrg' %}" method="post" class="form-horizontal">
+                                    {% csrf_token %}
+                                    <section class="panel">
+                                        <header class="panel-heading">
+{#                                            <div class="panel-actions">#}
+{#                                                <a href="#" class="fa fa-caret-down"></a>#}
+{#                                                <a href="#" class="fa fa-times"></a>#}
+{#                                            </div>#}
+
+                                            <h2 class="panel-title">Edit Organization </h2>
+                                        </header>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary saveButton">Update</button>
+                                                    <button type="reset" class="btn btn-default">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                        <div class="panel-body">
+                                            <div class="validation-message">
+                                                <ul></ul>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label space_top_0">Organization ID: </label>
+                                                <div class="col-sm-5">
+                                                    <label>{{ data.org_id }}</label>
+                                                    <input type="hidden" name="org_id" value="{{ data.org_id }}" id="org_id"/>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label"><span class="required">*</span>Organization Name: </label>
+                                                <div class="col-sm-5">
+                                                    <input type="text" name="orgname" id="orgname" value="{{ data.org_name }}" class="form-control" title="Please enter a Organization Name." placeholder="eg.: ABC" required/>
+                                                </div>
+                                                <div class="col-sm-5">
+                                                    <span id="orgnameValid"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+												 <label class="col-sm-3 control-label" for="inputSuccess">Internal Only:</label>
+												 <div class="col-sm-8">
+													 <div class="checkbox">
+														 <label>
+															<input type="checkbox" name="is_internal" {% if data.is_internal == True %}checked{% endif %} />
+															   <i>Prevent viewing of other organizations' Tickets and Users</i>
+													 	 </label>
+													 </div>
+                                                </div>
+											  </div>
+                                            <div class="form-group">
+												<label class="col-sm-3 control-label" for="site_title">Site Title:</label>
+												<div class="col-sm-5">
+													<input type="text" class="form-control" name="site_title" value="{{ data.site_title }}" id="site_title">
+												</div>
+											</div>
+                                            <div class="form-group">
+												<label class="col-sm-3 control-label" for="contact_person">Contact Person:</label>
+												<div class="col-sm-5">
+													<input type="text" class="form-control" name="contact_person"  value="{{ data.org_contact_person }}" id="contact_person">
+												</div>
+											</div>
+                                            <div class="form-group">
+												<label class="col-sm-3 control-label" for="address1">Address 1:</label>
+												<div class="col-sm-5">
+													<input type="text" class="form-control" name="address1" value="{{ data.org_address1}}" id="address1">
+												</div>
+											</div>
+                                            <div class="form-group">
+												<label class="col-sm-3 control-label" for="address2">Address 2:</label>
+												<div class="col-sm-5">
+													<input type="text" class="form-control" name="address2" value="{{ data.org_address2}}" id="address2">
+												</div>
+											</div>
+                                            <div class="form-group">
+												<label class="col-sm-3 control-label" for="city_state_zip">City/State/Zip:</label>
+												<div class="col-sm-5">
+													<input type="text" class="form-control" name="city"  value="{{ data.org_city }}" id="city">
+												</div>
+                                               <div class="col-sm-2 col-xs-6 all-space-auto">
+													<input type="text" class="form-control" name="state"  value="{{ data.org_state}}" id="state">
+												</div>
+                                               <div class="col-sm-2 col-xs-6 all-space-auto">
+													<input type="text" class="form-control" name="zip"  value="{{ data.org_zip_code}}" id="zip">
+												</div>
+											</div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Email:</label>
+                                                <div class="col-sm-5">
+                                                    <input type="email" name="email"  value="{{ data.org_email}}" class="form-control" title="Please enter a valid email address." placeholder="eg.: example@xyz.com" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Phone:</label>
+                                                <div class="col-sm-5">
+                                                    <input name="phone"  value="{{ data.org_phone_no}}" id="phone" data-plugin-masked-input data-input-mask="(999) 999-9999" placeholder="(123) 123-1234" class="form-control">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">WWW Address:</label>
+                                                <div class="col-sm-5">
+                                                    <input type="url" name="www_address"  value="{{ data.org_www_address}}" id="www_address" title="Please enter a valid url." class="form-control" placeholder="eg.: https://google.com" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class=" col-md-3 control-label text-primary"></label>
+                                                <div class="col-lg-6">
+                                                    <strong class="form-control-static text-primary">From/Reply To</strong>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class=" col-md-3 control-label text-primary"></label>
+                                                <div class="col-lg-6">
+                                                    <p class="form-control-static text-primary">Email sent by the system to users in this Organization will use the following as the From / Reply To Email Address. (If blank or invalid, Outgoing Email System Defaults will be used)</p>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label" for="from_reply_name">Email Name:</label>
+                                                <div class="col-sm-5">
+                                                    <input type="text" class="form-control" name="from_reply_name"  value="{{ data.org_from_reply_address }}" id="from_reply_name">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Email Address:</label>
+                                                <div class="col-sm-5">
+                                                    <input type="email" id="from_reply_email" name="from_reply_email"  value="{{ data.org_from_reply_email }}" class="form-control" title="Please enter a valid email address." placeholder="eg.: example@xyz.com" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group"></div>
+                                            <div class="form-group"></div>
+                                            <div class="form-group">
+                                                <label class=" col-md-3 control-label text-primary"></label>
+                                                <div class="col-lg-8" style="padding-left: 45%;">
+                                                    <a class="mb-xs mt-xs mr-xs modal-sizes" href="#batchadd"><strong class="form-control-static text-primary">batch add contracts</strong></a>
+                                                    <strong class="form-control-static text-primary">|</strong>
+                                                    <a class="mb-xs mt-xs mr-xs modal-sizes" href="#contractadd"><strong class="form-control-static text-primary">add contract</strong></a>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Service Contracts:</label>
+                                                <div class="col-sm-8">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-bordered  table-tasks">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Contract Name</th>
+                                                                    <th>Begin Date</th>
+                                                                    <th>End Date</th>
+                                                                    <th>Hours</th>
+                                                                    <th>Hours Used</th>
+                                                                    <th>Hours Bal</th>
+                                                                    <th>Action</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- Modal Form For batch add Start-->
+                                            <div id="batchadd" class="modal-block modal-block-lg mfp-hide" >
+                                                <section class="panel">
+                                                    <header class="panel-heading">
+                                                        <h2 class="panel-title">Batch Add New Contracts</h2>
+                                                    </header>
+                                                    <div class="panel-body">
+                                                        <form id="modalForm" action="" method="post" class="form-horizontal">
+                                                            <div class="form-group ">
+                                                                <div class="task-complete">
+                                                                <label class="col-sm-3 control-label"><span class="required">*</span>Contract Name:</label>
+                                                                    <div class="custom-tooltip">
+                                                                        <div class="tooltip-header">
+                                                                            Generated Contract Name
+                                                                        </div>
+                                                                        <div class="tooltip-body">
+                                                                            <p>Generated Contract names will have a sequential 3 digit number appended to them,starting with 001.if you enter "ABC" for the Contract Name generated,contracts will have names of "ABC-001","ABC-002","ABC-003",etc</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-sm-5">
+                                                                        <input type="text" class="form-control input-sm"  name="batch_contract_name" id="batch_contract_name">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-4 col-sm-3">
+                                                                    <small id="contract_name_validation" class="text-danger align-text"></small>
+                                                                </div>      
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <div class="task-complete">
+                                                                <label class="col-sm-3 control-label" for=""><span class="required">*</span>Generate:</label>
+                                                                <div class="custom-tooltip">
+                                                                        <div class="tooltip-header">
+                                                                            Generated Contract
+                                                                        </div>
+                                                                        <div class="tooltip-body">
+                                                                            <p>Enter the number of contracts to genrate,and the numbers of months/years apart to genrate them.</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-sm-1">
+                                                                    <input type="number" class="form-control" name="bacth_genrate_number"  value="" id="bacth_genrate_number">
+                                                                </div>
+                                                                <label class="col-sm-1 control-label text-info" for="" style="" >contracts</label>
+                                                                <div class="col-sm-1 col-xs-4 all-space-auto">
+                                                                    <input type="number" class="form-control" name="batch_contract_no"  value="" id="batch_contract_no">
+                                                                </div>
+                                                                <div class="col-sm-1 col-xs-2 all-space-auto">
+                                                                    <select class="form-control" name="batch_dates_MY"  value="" id="batch_dates_MY">
+                                                                        <option value="0" selected="">Month</option>
+                                                                        <option value="1">Year</option>
+                                                                    </select>        
+                                                                </div>
+                                                                <label class="col-sm-1 control-label text-info cus_apart_txt" for="" style="">(s) apart.</label>
+                                                                <div class="col-md-4 col-sm-3">
+                                                                    <small id="generate_validation" class="text-danger align-text"></small>
+                                                                </div> 
+                                                                <div class="col-md-4 col-sm-3">
+                                                                    <small id="contract_validation" class="text-danger align-text"></small>
+                                                                </div> 
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <div class="task-complete">
+                                                                <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span>Starting On:</label>
+                                                                 <div class="custom-tooltip">
+                                                                        <div class="tooltip-header">
+                                                                            Starting On...
+                                                                        </div>
+                                                                        <div class="tooltip-body">
+                                                                            <p>Enter the date of the first contract.The dates of subsequent contracts will have be calculated from this date based on the interval above.</p>
+                                                                        </div>
+                                                                </div>
+                                                                </div>
+                                                                    <div class="col-sm-6 col-md-3">
+                                                                        <div class="input-group date" id="datePicker">
+                                                                            <input type="text" name="batch_date_start" required="required" id="batch_date_start" data-plugin-datepicker class="form-control data-datepicker" />
+                                                                                <span class="input-group-addon">
+                                                                                    <i class="fa fa-calendar"></i>
+                                                                                </span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-md-4 col-sm-3">
+                                                                        <small class="text-info align-text">mm-dd-yyyy</small>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <div class="task-complete">
+                                                                    <label class="col-sm-3 control-label"><span class="required">*</span> Hours Purchased:</label>
+                                                                    <div class="custom-tooltip">
+                                                                        <div class="tooltip-header">
+                                                                            Hours Purchased
+                                                                        </div>
+                                                                        <div class="tooltip-body">
+                                                                            <p>Each Contract generated will have this marry hours.</p>
+                                                                        </div>
+                                                                </div>
+                                                                    </div>
+                                                                        <div class="col-sm-5">
+                                                                            <input type="number" class="form-control input-sm"  name="batch_hours_purchased" id="batch_hours_purchased" onblur="" oninput="">
+                                                                        </div>
+                                                                    <div class="col-md-4 col-sm-3">
+                                                                        <small id="hours_purchased_validation" class="text-danger align-text"></small>
+                                                                    </div> 
+                                                                </div>
+                                                               <div class="modal-buton">
+                                                                    <input type="button" class="btn btn-primary" value="Genrate Contract" name="genrate" id="genrate">
+
+                                                                </div>
+                                                        </form>
+                                                    </div>
+                                                    <footer class="panel-footer">
+                                                        <div class="row">
+                                                            <div class="col-md-12 text-right">
+                                                                <button class="btn btn-primary modal-dismiss">Cancel</button>
+                                                            </div>
+                                                        </div>
+                                                    </footer>
+                                        
+                                                </section>
+                                            </div>
+                                            <!-- Modal Form For batch add End-->
+
+
+                                            <!-- Modal Form For Contract add Start-->
+                                            <div id="contractadd" class="modal-block modal-block-lg mfp-hide">
+                                                <section class="panel">
+                                                    <header class="panel-heading">
+                                                        <h2 class="panel-title">Add New Contracts</h2>
+                                                    </header>
+                                                    <div class="panel-body">
+                                                        <form id="  " action="" method="post" class="form-horizontal">
+                                                        {% csrf_token %}
+                                                            <div class="form-group ">
+                                                                <div class="task-complete">
+                                                                <label class="col-sm-3 control-label"><span class="required">*</span>Contract Name:</label>
+                                                                    <div class="col-sm-5">
+                                                                        <input type="text" class="form-control input-sm"  name="contract_name" id="contract_name">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-4 col-sm-3">
+                                                                    <small id="add_contract_name_validation" class="text-danger align-text"></small>
+                                                                </div>         
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <div class="task-complete">
+                                                                <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span>Begin Date:</label>
+                                                                </div>
+                                                                    <div class="col-sm-6 col-md-3">
+                                                                        <div class="input-group date" id="datePicker1">
+                                                                            <input type="text" name="contract_begin_date" id="contract_begin_date" data-plugin-datepicker class="form-control data-datepicker" />
+                                                                                <span class="input-group-addon">
+                                                                                    <i class="fa fa-calendar"></i>
+                                                                                </span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-md-4 col-sm-3">
+                                                                        <small class="text-info align-text">mm-dd-yyyy</small>
+                                                                    </div>
+                                                                    <div class="col-md-4 col-sm-3">
+                                                                        <small id="add_begin_date_validation" class="text-danger align-text"></small>
+                                                                    </div> 
+                                                                </div>
+                                                                <div class="form-group">
+                                                                <div class="task-complete">
+                                                                <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span>End Date:</label>
+                                                                </div>
+                                                                    <div class="col-sm-6 col-md-3">
+                                                                        <div class="input-group date" id="datePicker2">
+                                                                            <input type="text" name="contract_end_date" id="contract_end_date" data-plugin-datepicker class="form-control data-datepicker" />
+                                                                                <span class="input-group-addon">
+                                                                                    <i class="fa fa-calendar"></i>
+                                                                                </span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-md-4 col-sm-3">
+                                                                        <small class="text-info align-text">mm-dd-yyyy</small>
+                                                                    </div>
+                                                                    <div class="col-md-4 col-sm-3">
+                                                                        <small id="add_end_date_validation" class="text-danger align-text"></small>
+                                                                    </div> 
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <div class="task-complete">
+                                                                    <label class="col-sm-3 control-label"><span class="required">*</span> Hours Purchased:</label>
+                                                                    </div>
+                                                                        <div class="col-sm-5">
+                                                                            <input type="number" class="form-control input-sm"  name="contract_hours_purchased" id="contract_hours_purchased" onblur="" oninput="">
+                                                                        </div>
+                                                                    <div class="col-md-4 col-sm-3">
+                                                                        <small id="add_contract_hours_validation" class="text-danger align-text"></small>
+                                                                    </div>      
+                                                                </div>
+                                                               <div class="modal-buton">
+                                                                     <input type="button" class="btn btn-primary" value="Add Contract" name="btnDone" id="btnDone">
+
+                                                                </div>
+                                                        </form>
+                                                    </div>
+                                                    <footer class="panel-footer">
+                                                        <div class="row">
+                                                            <div class="col-md-12 text-right">
+                                                                <button class="btn btn-primary modal-dismiss">Cancel</button>
+                                                            </div>
+                                                        </div>
+                                                    </footer>
+                                        
+                                                </section>
+                                            </div>
+                                            <!-- Modal Form For Contract add End-->
+                                            
+                                            <div class="form-group"></div>
+                                            <div class="form-group"></div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Note:</label>
+                                                <div class="col-sm-8">
+                                                    <textarea id="note" name="note" value="{{ data.org_note}}"  rows="5" title="Your resume is too short." class="form-control" placeholder="Enter text here" ></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Email Notification:</label>
+                                                <div class="col-sm-8">
+                                                    <a href="{% url 'orgEmailNotification' %}?orgID={{data.org_id}}" target="_blank">View/Maintain Distribution List...</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary saveButton">Update</button>
+                                                    <button type="reset" class="btn btn-default">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                    </section>
+                                </form>
+                            </div>
+                        </div>
+					<!-- end: page -->
+				</section>
+			</div>
+ <!-- Delete Modal Popup on Task Manager Task Delete -->
+     <div class="modal fade" id="confirm-tsk-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                    <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                                </div>
+
+                                <div class="modal-body">
+                                    <p>You are about to delete a record, this procedure is irreversible.</p>
+                                    <strong>Do you want to proceed?</strong>
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                    <a class="btn btn-danger btn-ok">Delete</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+  <!-- Edit Modal Popup on  Servvice Contract Edit -->
+                <div class="modal fade" id="confirm-tsk-edit" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                    <h4 class="modal-title" id="myModalLabel">Edit Service Contract</h4>
+                                </div>
+
+                                <div class="modal-body">
+                                    <form id="modalForm" action="" method="post" class="form-horizontal">
+                                    <input type="hidden" name="edit_contract_org_id" id="edit_contract_org_id">
+                                                        {% csrf_token %}
+                                                            <div class="form-group ">
+                                                                <div class="task-complete">
+                                                                <label class="col-sm-3 control-label"><span class="required">*</span>Contract Name:</label>
+                                                                    <div class="col-sm-5">
+                                                                        <input type="text" class="form-control input-sm"  name="edit_contract_name" id="edit_contract_name">
+                                                                    </div>
+                                                                </div>      
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <div class="task-complete">
+                                                                <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span>Begin Date:</label>
+                                                                </div>
+                                                                    <div class="col-sm-6 col-md-3">
+                                                                        <div class="input-group date" id="datePicker">
+                                                                            <input type="text" name="edit_contract_begin_date"  id="edit_contract_begin_date" data-plugin-datepicker class="form-control data-datepicker" />
+                                                                                <span class="input-group-addon">
+                                                                                    <i class="fa fa-calendar"></i>
+                                                                                </span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-md-4 col-sm-3">
+                                                                        <small class="text-info align-text">mm-dd-yyyy</small>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                <div class="task-complete">
+                                                                <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span>End Date:</label>
+                                                                </div>
+                                                                    <div class="col-sm-6 col-md-3">
+                                                                        <div class="input-group date" id="datePicker">
+                                                                            <input type="text" name="edit_contract_end_date"  id="edit_contract_end_date" data-plugin-datepicker class="form-control data-datepicker" />
+                                                                                <span class="input-group-addon">
+                                                                                    <i class="fa fa-calendar"></i>
+                                                                                </span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-md-4 col-sm-3">
+                                                                        <small class="text-info align-text">mm-dd-yyyy</small>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <div class="task-complete">
+                                                                    <label class="col-sm-3 control-label"><span class="required">*</span> Hours Purchased:</label>
+                                                                    </div>
+                                                                        <div class="col-sm-5">
+                                                                            <input type="number" class="form-control input-sm"  name="edit_contract_hours_purchased" id="edit_contract_hours_purchased" onblur="" oninput="">
+                                                                        </div>
+                                                                </div>
+                                                               <div class="modal-buton">
+                                                                     <input type="button" class="btn btn-primary clear-btn modal-dismiss" value="Update"  onClick="updateServiceContractTask(event,edit_contract_org_id)">
+                                                                </div>
+                                                        </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                  
+    {% endblock %}
+
+    {% block script %}
+        <script>
+            $(document).on('keyup','#orgname', function(){
+              var fieldValue = $(this).val();
+              var currentId = $('#org_id').val();
+              if (fieldValue != ''){
+                  $.ajax({
+                    type: 'POST',
+                    url: "{% url 'validateEditUnique' %}",
+                    data: {fieldValue: fieldValue, currentId: currentId, tbl_name: 'Organization', tbl_pk: 'org_id', tbl_field: 'org_name', tbl_dlt_field: 'org_is_delete'},
+                    dataType: 'json',
+                    beforeSend: function(jqXHR, settings) {
+                        //Do something before send...
+                    },
+                    success: function(data, textStatus, jqXHR) {
+                        if(data.response){
+                            $('#orgnameValid').html('<strong class="text-danger">Organization Name already exist. Try another one!</strong>');
+                            $('.saveButton').prop('disabled', true);
+                        }else{
+                            $('#orgnameValid').html('');
+                            $('.saveButton').prop('disabled', false);
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    }
+                  });
+              }
+            });
+
+
+            var date = new Date();
+                var today = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                var row_counter=0; var row_edit=0; var task_order_start=1;var task_order_end=1; settimer = 1000;
+                $('#imgCancelled').hide();
+
+            var optComponent = {
+                format: 'mm-dd-yyyy',
+                container: '#datePicker',
+                endDate :null,
+            };
+
+            $(function(){
+                    // COMPONENT
+                    $( '#datePicker' ).datepicker( optComponent );
+                    $( '#datePicker' ).datepicker( 'setDate', today );
+                    $( '#datePicker1' ).datepicker( optComponent );
+
+                    $( '#datePicker2' ).datepicker( optComponent );
+
+                    var org_id = $('#org_id').val();
+                    initializaServiceContracts(org_id);
+            });
+
+            function initializaServiceContracts(org_id){
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'getserviceContractByOrgId' %}",
+                    data: {
+                        org_id: org_id,
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+                        },
+                    beforeSend: function(jqXHR, settings) {
+                        //Do something before send...
+                    },
+                    success:function(data){  
+                        $('.table-tasks tbody').html(data);                       
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    }
+                });
+            }
+
+            function clearServiceContractForm(){
+                $('#contract_name').val('');
+                $('#contract_begin_date').val('');
+                $('#contract_end_date').val('');
+                $('#contract_hours_purchased').val(''); 
+            }
+            function clearServiceContractFormforBatch(){
+                $('#batch_contract_name').val('');
+                $('#bacth_genrate_number').val('');
+                $('#batch_date_start').val('');
+                $('#batch_hours_purchased').val('');
+                $('#batch_contract_no').val('');
+            }
+
+            $(document).on('click','#btnDone',function (e) {
+                e.preventDefault();
+                var org_id = $('#org_id').val();
+                var contract_name = $('#contract_name').val();
+                var contract_begin_date = $('#contract_begin_date').val();
+                var contract_end_date = $('#contract_end_date').val();
+                var contract_hours_purchased = $('#contract_hours_purchased').val();
+                if(contract_name == '')
+                {
+                    $("#add_contract_name_validation").html('Please enter Contract Name');
+                }
+                else if (contract_name != '')
+                {
+                    $("#add_contract_name_validation").html('');
+                }
+
+                if(contract_begin_date == '')
+                {
+                    $("#add_begin_date_validation").html('Please enter Begin Date');
+                }
+                else if (contract_begin_date != '')
+                {
+                    $("#add_begin_date_validation").html('');
+                }
+                if(contract_end_date == '')
+                {
+                    $("#add_end_date_validation").html('Please enter End Date');
+                }
+                else if (contract_end_date != '')
+                {
+                    $("#add_end_date_validation").html('');
+                }
+
+                if(contract_hours_purchased == '')
+                {
+                    $("#add_contract_hours_validation").html('Please enter Hours Purchased');
+                }
+                else if (contract_hours_purchased != '')
+                {
+                    $("#add_contract_hours_validation").html('');
+                }
+                
+                if (contract_name != '' && contract_hours_purchased != '' && contract_begin_date!= '' && contract_end_date!= ''){
+                $.ajax({
+                    url:"{% url 'SaveOrgContract' %}",
+                    type:'POST',
+                    dataType: 'text',
+                    data:{
+                        org_id: org_id,
+                        contract_name: contract_name,
+                        contract_begin_date: contract_begin_date,
+                        contract_end_date: contract_end_date,
+                        contract_hours_purchased: contract_hours_purchased,
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+                    },
+                    success:function(data){
+                        $("#contractadd .modal-dismiss").click();
+                        clearServiceContractForm();
+                        initializaServiceContracts(org_id);
+                    },
+                    error:function(){
+                        console.log('error')
+                    },
+                });
+            }
+            });
+
+
+            $(document).on('click','#genrate',function (e) {
+                e.preventDefault();
+                var org_id = $('#org_id').val();
+                var batch_contract_name = $('#batch_contract_name').val();
+                var bacth_genrate_number = $('#bacth_genrate_number').val();
+                var batch_contract_no = $('#batch_contract_no').val();
+                var batch_dates_MY = $('#batch_dates_MY').val();
+                var batch_date_start = $('#batch_date_start').val();
+                var batch_hours_purchased = $('#batch_hours_purchased').val();
+                if(batch_contract_name == '')
+                {
+                    $("#contract_name_validation").html('Please enter Contract Name');
+                }
+                else if (batch_contract_name != '')
+                {
+                    $("#contract_name_validation").html('');
+                }
+                if(bacth_genrate_number == '')
+                {
+                    $("#generate_validation").html('Please enter Generate');
+                }
+                else if (bacth_genrate_number != '')
+                {
+                    $("#generate_validation").html('');
+                }
+                if(batch_contract_no == '')
+                {
+                    $("#contract_validation").html('Please enter Contract');
+                }
+                else if(batch_contract_no != '')
+                {
+                    $("#contract_validation").html('');
+                }
+                if(batch_hours_purchased == '')
+                {
+                    $("#hours_purchased_validation").html('Please enter Hours Purchased');
+                }
+                else if(batch_hours_purchased != '')
+                {
+                    $("#hours_purchased_validation").html('');
+                }
+                if (batch_contract_name != '' && batch_hours_purchased != '' && batch_contract_no != '' && bacth_genrate_number != ''){
+                    $("#contract_name_validation").hide();
+                $.ajax({
+                    url:"{% url 'SaveOrgBatchContract' %}",
+                    type:'POST',
+                    dataType: 'text',
+                    data:{
+                        org_id: org_id,
+                        batch_contract_name: batch_contract_name,
+                        bacth_genrate_number: bacth_genrate_number,
+                        batch_contract_no: batch_contract_no,
+                        batch_dates_MY: batch_dates_MY,
+                        batch_date_start: batch_date_start,
+                        batch_hours_purchased: batch_hours_purchased,
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+                    },
+                    success:function(data){
+                       console.log('successsss');
+                       $("#batchadd .modal-dismiss").click();
+                       clearServiceContractFormforBatch();
+                       initializaServiceContracts(org_id); 
+                       
+                    },
+                    error:function(){
+                        console.log('error')
+                    },
+                });
+            }
+            
+            });
+
+
+             //Delete the Service Contract Task
+            function deleteTMTask(org_contract_id) {
+                var org_id = $('#org_id').val();
+                     $.ajax({
+                        url:"{% url 'deleteServiceContractByOrgId' %}",
+                        type:'POST',
+                        dataType: 'text',
+                        data:{
+                            'org_contract_id': org_contract_id,
+                            'org_id':org_id,
+                            'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                        },
+                        success:function(data){
+                            initializaServiceContracts(org_id);
+                            $('#confirm-tsk-delete').modal('toggle') 
+                        },
+                        error:function(){
+                            console.log('error')
+                        },
+                    }); 
+            }
+              //Edit the Service Contract Task
+            function editServiceContractTask(e,org_contract_id) {
+                e.preventDefault()
+                var org_id = $('#org_id').val();
+                $.ajax({
+                url:"{% url 'getserviceContractByOrgContractId' %}",
+                type:'POST',
+                dataType: 'text',
+                data:{
+                    'org_contract_id': org_contract_id,
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                },
+                success:function(data){
+                   if(data)
+                    {       
+                        result = jQuery.parseJSON(data)
+                        $.each(result, function (index) {
+                            $('#edit_contract_org_id').val(result[index].org_contract_id)
+                            $('#edit_contract_name').val(result[index].org_contract_name)
+                            $('#edit_contract_begin_date').val(dateFormat(result[index].org_contract_begin_date,"mm-dd-yyyy"))
+                            $('#edit_contract_end_date').val(dateFormat(result[index].org_contract_end_date,"mm-dd-yyyy"))
+                            $('#edit_contract_hours_purchased').val(result[index].org_contract_hours_purchased)
+                        });
+                        $('#confirm-tsk-edit').modal('show');
+                    }
+                },
+                error:function(){
+                    console.log('error')
+                }, 
+            }); 
+            }
+                 //Update the Service Contract Task
+            function updateServiceContractTask(e,org_contract_id) {
+                e.preventDefault()
+                var org_contract_id = $('#edit_contract_org_id').val();
+                var org_id = $('#org_id').val();
+                var org_contract_name = $('#edit_contract_name').val();
+                var org_contract_begin_date = $('#edit_contract_begin_date').val();
+                var org_contract_end_date = $('#edit_contract_end_date').val();
+                var org_contract_hour_purchased = $('#edit_contract_hours_purchased').val();
+                $.ajax({
+                url:"{% url 'UpdateerviceContractByOrgContractId' %}",
+                type:'POST',
+                dataType: 'text',
+                data:{
+                    'org_id':org_id,
+                    'org_contract_id': org_contract_id,
+                    'org_contract_name': org_contract_name,
+                    'org_contract_begin_date': org_contract_begin_date,
+                    'org_contract_end_date': org_contract_end_date,
+                    'org_contract_hour_purchased': org_contract_hour_purchased,
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                },
+                success:function(data){
+                   initializaServiceContracts(org_id);
+                   $('#confirm-tsk-edit').modal('toggle') 
+                },
+                error:function(){
+                    console.log('error')
+                }, 
+            });  
+            }
+
+
+            $('#confirm-tsk-delete').on('show.bs.modal', function(e) {
+                $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+            });
+        </script>
+    
+    {% endblock %}

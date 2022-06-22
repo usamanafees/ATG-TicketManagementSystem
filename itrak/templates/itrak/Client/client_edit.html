@@ -1,0 +1,239 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-users" aria-hidden="true"></i> Client</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Client</span></li>
+								<li><span>Edit Client</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+                         <div class="row">
+                            <div class="col-md-12">
+                                {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                                <form id="summary-form" action="{% url 'updateClient' %}" method="post" class="form-horizontal">
+                                    {% csrf_token %}
+                                    <section class="panel">
+                                        <header class="panel-heading">
+{#                                            <div class="panel-actions">#}
+{#                                                <a href="#" class="fa fa-caret-down"></a>#}
+{#                                                <a href="#" class="fa fa-times"></a>#}
+{#                                            </div>#}
+
+                                            <h2 class="panel-title">Edit Client </h2>
+                                        </header>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary saveButton">Update</button>
+                                                    <button type="reset" class="btn btn-default resetBtn">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                        <div class="panel-body">
+                                            <div class="validation-message">
+                                                <ul></ul>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label"><span class="required">*</span>Client ID: </label>
+                                                <div class="col-sm-4">
+                                                    <input type="text" name="client_cus_id" id="client_cus_id" value="{{ data.client_cus_id }}" class="form-control" title="Please enter Client ID." placeholder="eg.: 123" required/>
+                                                    <input type="hidden" name="client_id" value="{{ data.client_id}}" id="client_id"/>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <span id="clientidValid"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label"><span class="required">*</span>Client: </label>
+                                                <div class="col-sm-4">
+                                                    <input type="text" name="client_name" id="client_name" value="{{ data.client_name }}" class="form-control" title="Please enter Client Name." placeholder="eg.: ABC" required/>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <span id="clientnameValid"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label" for="contact_person">Contact Person:</label>
+                                                <div class="col-sm-4">
+                                                    <input type="text" class="form-control" name="contact_person"  value="{{ data.client_contact_person }}" id="contact_person">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Email:</label>
+                                                <div class="col-sm-4">
+                                                    <input type="email" name="email"  value="{{ data.client_email}}" class="form-control" title="Please enter a valid email address." placeholder="eg.: example@xyz.com" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Phone:</label>
+                                                <div class="col-sm-4">
+                                                    <input name="phone"  value="{{ data.client_phone}}" id="phone" data-plugin-masked-input data-input-mask="(999) 999-9999" placeholder="(123) 123-1234" class="form-control">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">2nd Phone/Cell:</label>
+                                                <div class="col-sm-4">
+                                                    <input name="phone2"  value="{{ data.client_second_phone}}" id="phone2" data-plugin-masked-input data-input-mask="(999) 999-9999" placeholder="(123) 123-1234" class="form-control">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label" for="fax">Fax:</label>
+                                                <div class="col-sm-4">
+                                                    <input type="text" class="form-control" name="fax" value="{{ data.client_fax}}" id="fax">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label" for="address1">Address 1:</label>
+                                                <div class="col-sm-4">
+                                                    <input type="text" class="form-control" name="address1" value="{{ data.client_address1}}" id="address1">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label" for="address2">Address 2:</label>
+                                                <div class="col-sm-4">
+                                                    <input type="text" class="form-control" name="address2" value="{{ data.client_address2}}" id="address2">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label" for="city_state_zip">City/State/Zip:</label>
+                                                <div class="col-sm-4">
+                                                    <input type="text" class="form-control" name="city"  value="{{ data.client_city }}" id="city">
+                                                </div>
+                                               <div class="col-sm-2 col-xs-6 all-space-auto">
+                                                    <input type="text" class="form-control" name="state"  value="{{ data.client_state}}" id="state">
+                                                </div>
+                                               <div class="col-sm-2 col-xs-6 all-space-auto">
+                                                    <input type="text" class="form-control" name="zip"  value="{{ data.client_zip_code}}" id="zip">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Country:</label>
+                                                <div class="col-sm-4">
+                                                    <input type="text" name="country"  value="{{ data.client_country}}" id="country" title="Please enter country." class="form-control" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Organization </label>
+                                                <div class="col-md-4 col-sm-4">
+                                                    <select name="org_id" id="org_id" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Organization", "allowClear": true }'>
+                                                        <option value="" readonly="readonly" >Select an Organization <small class="text-primary">(None Selected)</small></option>
+                                                        {% if data.organizations %}
+                                                            {% for org in data.organizations %}
+                                                                <option value="{{ org.org_id }}" {% if org.org_id == data.client_org_id %}selected{% endif %}>{{ org.org_name }}</option>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Email Notification:</label>
+                                                <div class="col-sm-8">
+                                                    <a href="{% url 'clientEmailNotification' %}?clientID={{data.client_id}}" target="_blank">View/Maintain Distribution List...</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary saveButton">Update</button>
+                                                    <button type="reset" class="btn btn-default resetBtn">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                    </section>
+                                </form>
+                            </div>
+                        </div>
+					<!-- end: page -->
+				</section>
+			</div>
+
+    {% endblock %}
+
+    {% block script %}
+        <script>
+            $(document).on('keyup','#client_cus_id', function(){
+              var fieldValue = $(this).val();
+              var currentId = $('#client_id').val();
+              if (fieldValue != ''){
+                  $.ajax({
+                    type: 'POST',
+                    url: "{% url 'validateEditUnique' %}",
+                    data: {fieldValue: fieldValue, currentId: currentId, tbl_name: 'Client', tbl_pk: 'client_id', tbl_field: 'client_cus_id', tbl_dlt_field: 'cl_is_delete'},
+                    dataType: 'json',
+                    beforeSend: function(jqXHR, settings) {
+                        //Do something before send...
+                    },
+                    success: function(data, textStatus, jqXHR) {
+                        if(data.response){
+                            $('#clientidValid').html('<strong class="text-danger">Client ID already exist. Try another one!</strong>');
+                            $('.saveButton').prop('disabled', true);
+                        }else{
+                            $('#clientidValid').html('');
+                            $('.saveButton').prop('disabled', false);
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    }
+                  });
+              }
+            });
+
+            $(document).on('keyup','#client_name', function(){
+              var fieldValue = $(this).val();
+              var currentId = $('#client_id').val();
+              if (fieldValue != ''){
+                  $.ajax({
+                    type: 'POST',
+                    url: "{% url 'validateEditUnique' %}",
+                    data: {fieldValue: fieldValue, currentId: currentId, tbl_name: 'Client', tbl_pk: 'client_id', tbl_field: 'client_name', tbl_dlt_field: 'cl_is_delete'},
+                    dataType: 'json',
+                    beforeSend: function(jqXHR, settings) {
+                        //Do something before send...
+                    },
+                    success: function(data, textStatus, jqXHR) {
+                        if(data.response){
+                            $('#clientnameValid').html('<strong class="text-danger">Client Name already exist. Try another one!</strong>');
+                            $('.saveButton').prop('disabled', true);
+                        }else{
+                            $('#clientnameValid').html('');
+                            $('.saveButton').prop('disabled', false);
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    }
+                  });
+              }
+            });
+
+            $('.resetBtn').on('click', function(e){
+                $("#org_id").select2("val", "");
+            });
+
+        </script>
+    {% endblock %}
+
+

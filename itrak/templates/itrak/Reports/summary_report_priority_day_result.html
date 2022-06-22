@@ -1,0 +1,106 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+        {% load tz %} {# it will Load the Django TimeZone Library#}
+        {% load templates_extras %}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-ticket" aria-hidden="true"></i> Ticket</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Ticket</span></li>
+								<li><span>Summary Report Results</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+						<section class="panel">
+							<header class="panel-heading">
+
+                                <h3 class="text-primary text-bold">Tickets by Priority(Day) - Results</h3>
+                                
+							</header>
+							<div class="panel-body">
+                            	<a onClick="javascript:history.go(-1);" class="back-text text-bold"><span class="fa fa-arrow-circle-left"> </span> Back</a>
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12">
+                                        <h5 class="text-primary"><b>Tickets by Priority(Day) </b></h5>
+                                    </div>
+
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12">
+                                        <h5 class="text-primary">Recorded From {{ start_date }} To {{ end_date }} </h5>
+                                    </div>
+                                </div>
+ 								<table class="table table-bordered table-striped table-condensed mb-none" id="datatable-default">
+									<thead>
+										<tr>
+                                            <th>Priority</th>
+                                            <th>Sun</th>
+                                            <th>Mon</th>
+                                            <th>Tue</th>
+                                            <th>Wed</th>
+                                            <th>Thur</th>
+                                            <th>Fri</th>
+                                            <th>Sat</th>
+                                            <th>Total</th>
+										</tr>
+									</thead>
+                                    <tbody>
+                                        {% if priorities %}
+                                            {% for priority in priorities %}
+                                                <tr class="gradeA">
+                                                    <td>{{ priority.priority_name }}</td>
+                                                    {% if tickets_sunday %}{% if priority.priority_id in tickets_sunday_list %}{% for SUN in tickets_sunday %}{% if SUN.priority__priority_id == priority.priority_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ priority.priority_id }}&columnId=SUN">{{ SUN.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_monday %}{% if priority.priority_id in tickets_monday_list %}{% for MON in tickets_monday %}{% if MON.priority__priority_id == priority.priority_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ priority.priority_id }}&columnId=MON">{{ MON.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_tuesday %}{% if priority.priority_id in tickets_tuesday_list %}{% for TUE in tickets_tuesday %}{% if TUE.priority__priority_id == priority.priority_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ priority.priority_id }}&columnId=TUE">{{ TUE.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_wednesday %}{% if priority.priority_id in tickets_wednesday_list %}{% for WED in tickets_wednesday %}{% if WED.priority__priority_id == priority.priority_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ priority.priority_id }}&columnId=WED">{{ WED.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_thursday %}{% if priority.priority_id in tickets_thursday_list %}{% for THU in tickets_thursday %}{% if THU.priority__priority_id == priority.priority_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ priority.priority_id }}&columnId=THU">{{ THU.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_friday %}{% if priority.priority_id in tickets_friday_list %}{% for FRI in tickets_friday %}{% if FRI.priority__priority_id == priority.priority_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ priority.priority_id }}&columnId=FRI">{{ FRI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_saturday %}{% if priority.priority_id in tickets_saturday_list %}{% for SAT in tickets_saturday %}{% if SAT.priority__priority_id == priority.priority_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ priority.priority_id }}&columnId=SAT">{{ SAT.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if total_tickets %}{% if priority.priority_id in total_tickets_list %}{% for TOT in total_tickets %}{% if TOT.priority__priority_id == priority.priority_id %}<td><b><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ priority.priority_id }}&columnId=TOT">{{ TOT.tcount }}</a></b></td>{% endif %}{% endfor %}{% else %}<td><b>0</b></td>{% endif %}{% else %}<td><b>0</b></td>{% endif %}
+                                                </tr>
+                                            {% endfor %}
+                                            <tr class="gradeA">
+                                                <td><b>Totals: </b></td>
+                                                <td><b>{% if total_sunday.count == 0 %}0{% else %}<a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&columnId=TSUN">{{ total_sunday.count }}</a>{% endif %}</b></td>
+                                                <td><b>{% if total_monday.count == 0 %}0{% else %}<a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&columnId=TMON">{{ total_monday.count }}</a>{% endif %}</b></td>
+                                                <td><b>{% if total_tuesday.count == 0 %}0{% else %}<a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&columnId=TTUE">{{ total_tuesday.count }}</a>{% endif %}</b></td>
+                                                <td><b>{% if total_wednesday.count == 0 %}0{% else %}<a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&columnId=TWED">{{ total_wednesday.count }}</a>{% endif %}</b></td>
+                                                <td><b>{% if total_thursday.count == 0 %}0{% else %}<a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&columnId=TTHU">{{ total_thursday.count }}</a>{% endif %}</b></td>
+                                                <td><b>{% if total_friday.count == 0 %}0{% else %}<a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&columnId=TFRI">{{ total_friday.count }}</a>{% endif %}</b></td>
+                                                <td><b>{% if total_saturday.count == 0 %}0{% else %}<a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&columnId=TSAT">{{ total_saturday.count }}</a>{% endif %}</b></td>
+                                                <td><b>{% if grand_total.count == 0 %}0{% else %}<a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&columnId=TTOT">{{ grand_total.count }}</a>{% endif %}</b></td>
+                                            </tr>
+                                        {% endif %}
+
+									</tbody>
+								</table>
+							</div>
+						</section>
+					<!-- end: page -->
+				</section>
+			</div>
+
+    {% endblock %}
+
+    {% block script %}
+        <script type="text/javascript">
+
+        </script>
+    {% endblock %}
+
+

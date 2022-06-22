@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+{% load templates_extras %}
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="google-site-verification" content="-a9ac5M6L6R6mPy410OqyVtbc2qi-CUV2s_FsbT6E5E" />
+            <!-- Mobile Metas -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        {% if not request.user.username %}
+            <title>Login | ATG Extra</title>
+        {% else %}
+            <title>ATG Extra</title>
+        {% endif %}
+
+        <!-- Web Fonts  -->
+        <link href="http://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800|Shadows+Into+Light" rel="stylesheet" type="text/css">
+
+        <!-- Vendor CSS -->
+        <link rel="stylesheet" href="{% static 'itrak/vendors/bootstrap/css/bootstrap.css' %}" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+        {% if request.user.username %}
+        <link rel="stylesheet" href="{% static 'itrak/vendors/magnific-popup/magnific-popup.css' %}" />
+        <link rel="stylesheet" href="{% static 'itrak/vendors/bootstrap-datepicker/css/datepicker3.css' %}" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.min.css" />
+            <!-- Specific Page Vendor CSS -->
+		<link rel="stylesheet" href="{% static 'itrak/vendors/pnotify/pnotify.custom.css' %}" />
+		<link rel="stylesheet" href="{% static 'itrak/vendors/select2/select2.css' %}" />
+        <link rel="stylesheet" href="{% static 'itrak/vendors/bootstrap-colorpicker/css/bootstrap-colorpicker.css' %}" />
+        <link rel="stylesheet" href="{% static 'itrak/vendors/bootstrap-timepicker/css/bootstrap-timepicker.css' %}" />
+        <link rel="stylesheet" href="{% static 'itrak/vendors/dropzone/css/basic.css' %}" />
+        <link rel="stylesheet" href="{% static 'itrak/vendors/dropzone/css/dropzone.css' %}" />
+        <link rel="stylesheet" href="{% static 'itrak/vendors/drag-drop/DDStyle.css' %}" />
+    	<link rel="stylesheet" href="{% static 'itrak/vendors/jquery-datatables-bs3/assets/css/datatables.css' %}" />
+        {% endif %}
+
+        <!-- Specific Page Vendor CSS -->
+		<link rel="stylesheet" href="{% static 'itrak/vendors/bootstrap-fileupload/bootstrap-fileupload.min.css' %}" />
+        <link rel="stylesheet" href="{% static 'itrak/vendors/jquery-ui/css/ui-lightness/jquery-ui-1.10.4.custom.css' %}" />
+    	<link rel="stylesheet" href="{% static 'itrak/vendors/codemirror/lib/codemirror.css' %}" />
+		<link rel="stylesheet" href="{% static 'itrak/vendors/codemirror/theme/monokai.css' %}" />
+
+        {#        Summernote Editor#}
+        <link rel="stylesheet" href="{% static 'itrak/vendors/summernote/summernote.css' %}" />
+		<link rel="stylesheet" href="{% static 'itrak/vendors/summernote/summernote-bs3.css' %}" />
+        <link rel="stylesheet" href="{% static 'itrak/vendors/codemirror/lib/codemirror.css' %}" />
+		<link rel="stylesheet" href="{% static 'itrak/vendors/codemirror/theme/monokai.css' %}" />
+
+        <!-- Specific Tree View CSS -->
+		<link rel="stylesheet" href="{% static 'itrak/vendors/jstree/themes/default/style.css' %}" />
+
+        <!-- Theme CSS -->
+        <link rel="stylesheet" href="{% static 'itrak/css/theme.css' %}" />
+
+        <!-- Alertify CSS -->
+        <link rel="stylesheet" href="{% static 'itrak/css/alertify.bootstrap.css' %}" />
+        <link rel="stylesheet" href="{% static 'itrak/css/alertify.core.css' %}" />
+        <link rel="stylesheet" href="{% static 'itrak/css/alertify.default.css' %}" />
+
+        <!-- Skin CSS -->
+        <link rel="stylesheet" href="{% static 'itrak/css/skins/default.css' %}" />
+
+         <!-- Theme Custom CSS -->
+        <link rel="stylesheet" href="{% static 'itrak/css/theme-custom.css' %}">
+        {% if user.is_authenticated %}
+        {% getSiteAppearanceFavicon request.user.user_org_id request.user.id as response %}
+        {% if response %}
+            <link rel="shortcut icon" href="{{  request.user.user_org_id| getSiteAppearanceFavicon:request.user.id }}" />
+        {% else %}
+            <link rel="shortcut icon" href="{% static 'itrak/images/logo.png' %}" />
+        {% endif %}
+        {% endif %}
+        <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.3/css/intlTelInput.min.css" /> -->
+  <!-- JS -->
+  <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.3/js/intlTelInput.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.3/js/utils.min.js"></script> -->
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/11.0.14/css/intlTelInput.css" rel="stylesheet" /> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.12/js/intlTelInput.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.11/jquery.mask.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.12/css/intlTelInput.css" rel="stylesheet" />
+  </head>

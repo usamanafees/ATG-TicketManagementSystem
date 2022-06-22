@@ -1,0 +1,33 @@
+<div class="form-group">
+    <label class="col-md-3 col-sm-3 control-label"></label>
+    <div class="col-md-8 col-sm-8 bg-info" style="padding: 20px 20px">
+        {% for clientinfo in result %}
+        <div class="form-group">
+            <label class="col-sm-2">Record Locator: </label>
+            <div class="col-sm-4">
+                <input type="text" name="record_locator" id="record_locator" value="{{ clientinfo.record_locator }}" class="form-control" title="Plase enter Record Locator." placeholder="eg.: ABC" />
+            </div>
+            <label class="col-sm-2">Caller Name: </label>
+            <div class="col-sm-4">
+                <input type="text" name="caller_name" id="caller_name" class="form-control" title="Plase enter Caller Name." placeholder="eg.: XYZ" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2">Caller Phone: </label>
+            <div class="col-sm-4">
+                <input name="caller_phone" id="caller_phone" data-plugin-masked-input data-input-mask="(999) 999-9999" placeholder="(123) 123-1234" class="form-control">
+            </div>
+            <label class="col-sm-2">Caller Email: </label>
+            <div class="col-sm-4">
+                <input type="email" name="caller_email" id="caller_email" class="form-control" title="Please enter a valid email address." placeholder="eg.: example@xyz.com" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2">Passenger Name: </label>
+            <div class="col-sm-4">
+                <input type="text" name="passenger_name" id="passenger_name" class="form-control" title="Plase enter Passenger Name." placeholder="eg.: ABC" />
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>

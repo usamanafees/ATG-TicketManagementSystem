@@ -1,0 +1,179 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-tasks" aria-hidden="true"></i> Business Rules</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Business Rules</span></li>
+								<li><span>Business Rules List</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+						<section class="panel">
+							<header class="panel-heading">
+
+								<h2 class="panel-title">Business Rules</h2>
+							</header>
+							<div class="panel-body">
+                                 {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+{#                                data-url="{% static 'ajax/ajax-datatables-sample.json' %} "#}
+								<table class="table table-bordered table-striped datatable">
+									<thead>
+										<tr>
+											<th width="10%">Action</th>
+											<th width="5%">Organization</th>
+											<th width="5%">Department</th>
+											<th width="10%">Client</th>
+											<th width="10%">Ticket Type</th>
+											<th width="10%">Priority</th>
+											<th width="25%">Submit Time</th>
+											<th width="10%">Submit Day</th>
+											<th width="15%">Assign To</th>
+                                            <th width="15%">Modified On</th>
+                                            <th width="15%">Active</th>
+										</tr>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					<!-- end: page -->
+				</section>
+			</div>
+
+           <!-- Modal Warning -->
+        {# Delete Modal Popup on Delete#}
+        <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <p>You are about to delete a record, this procedure is irreversible.</p>
+                        <strong>Do you want to proceed?</strong>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <a class="btn btn-danger btn-ok">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% endblock %}
+
+    {% block script %}
+        <script>
+            $(document).ready(function() {
+                var oTable = $('.datatable').dataTable({
+                    // ...
+                    columnDefs: [
+                        {
+                            name: 'action',
+                            orderable: false,
+                            searchable: false,
+                            targets: [0]
+                        },
+                        {
+                            name: 'br_org_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [1]
+                        },
+                        {
+                            name: 'br_dep_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [2]
+                        },
+                        {
+                            name: 'br_client_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [3]
+                        },
+                        {
+                            name: 'br_ticket_type',
+                            orderable: true,
+                            searchable: true,
+                            targets: [4]
+                        },
+                        {
+                            name: 'br_priority_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [5]
+                        },
+                        {
+                            name: 'submit_time',
+                            orderable: false,
+                            searchable: true,
+                            targets: [6]
+                        },
+                        {
+                            name: 'submit_day',
+                            orderable: false,
+                            searchable: true,
+                            targets: [7]
+                        },
+                        {
+                            name: 'br_ticket_assign_to_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [8]
+                        },
+                        {
+                            name: 'modified_at',
+                            orderable: false,
+                            searchable: true,
+                            targets: [9]
+                        },
+                        {
+                            name: 'is_active',
+                            orderable: false,
+                            searchable: true,
+                            targets: [10]
+                        },
+
+                    ],
+                    "order": [[ 1, 'asc' ]],
+                    "processing": true,
+                    "serverSide": true,
+                    "lengthMenu": [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "All"] ],
+                    "stateSave": true,
+                    "ajax": "{% url 'business_rules_json' %}"
+                });
+                // ...
+            });
+        </script>
+        <script>
+        $('#confirm-delete').on('show.bs.modal', function(e) {
+            $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+        });
+        </script>
+    {% endblock %}

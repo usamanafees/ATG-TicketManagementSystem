@@ -1,0 +1,45 @@
+<!-- Modal Form For Report Data Set-->
+{% load templates_extras %}
+    <div class="popup-modal-content">
+        <div id="modalReportDataSet" class="modal modal-block modal-block-primary modal-dialog">
+            <section class="panel">
+                <header class="panel-heading">
+                    <h2 class="panel-title">Data Set Field List</h2>
+                </header>
+                <div class="panel-body">
+                {% if pairs %}
+                    <table class="table table-bordered table-task-modal">
+                        <thead>
+                            <tr>
+                                <th>Data Set Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pair in pairs %}
+                                <tr>
+                                    <th>{{ pair.ds_pair_name }}</th>
+                                </tr>
+                                {% get_pair_fields_by_pair pair.ds_pair_id as pairFields %}
+                                {% if pairFields %}
+                                    {% for pairField in pairFields %}
+                                    <tr>
+                                        <td>{{ pairField.df_name }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+                </div>
+                <footer class="panel-footer">
+                    <div class="row">
+                        <div class="col-md-12 text-right">
+                            <button class="btn btn-default modal-dismiss" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </footer>
+            </section>
+        </div>
+    </div>
+<!-- Modal Form For Report Data Set End-->

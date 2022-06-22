@@ -1,0 +1,362 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+        {% load tz %} {# it will Load the Django TimeZone Library#}
+        {% load templates_extras %}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-ticket" aria-hidden="true"></i> Ticket</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Ticket</span></li>
+								<li><span>Summary Report Results</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+						<section class="panel">
+							<header class="panel-heading">
+
+                                <h3 class="text-primary text-bold">Tickets by Priority - Results</h3>
+                                <div class="row">
+                                    <div class="col-md-6 col-sm-6">
+                                        <h4>
+                                            <a onClick="javascript:history.go(-1);" class="text-bold"><span class="fa fa-arrow-circle-left"> </span> Back</a>
+                                        </h4>
+                                    </div>
+                                </div>
+							</header>
+							<div class="panel-body">
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12">
+                                        <h5 class="text-primary"><b>Tickets by Priority </b></h5>
+                                    </div>
+
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12">
+                                        <h5 class="text-primary">Recorded From {{ start_date }} To {{ end_date }} </h5>
+                                    </div>
+                                </div>
+ 								<table class="table table-bordered table-striped table-condensed mb-none" id="datatable-default">
+									<thead>
+										<tr>
+                                            <th>Priority</th>
+                                            <th>Opened Before</th>
+                                            <th>Opened</th>
+                                            <th>Close</th>
+                                            <th>Left Open on</th>
+										</tr>
+									</thead>
+                                    <thead>
+										<tr>
+                                            <th></th>
+                                            <th>{{ start_date}}</th>
+                                            <th>In Period</th>
+                                            <th>In Period</th>
+                                            <th>{{ end_date }}</th>
+										</tr>
+									</thead>
+									<tbody>
+                                        {% if priorities and sort_by == '1' %}
+                                            {% for priority in priorities %}
+                                                <tr class="gradeA">
+                                                    <td>{{ priority.priority_name }}</td>
+                                                    {% if tickets_open_before %}{% if priority.priority_name in tickets_open_before_list %}{% for OB in tickets_open_before %}{% if OB.priority__priority_name == priority.priority_name %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&priorityId={{ priority.priority_id }}&columnId=OB">{{ OB.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_open_in %}{% if priority.priority_name in tickets_open_in_list %}{% for OI in tickets_open_in %}{% if OI.priority__priority_name == priority.priority_name %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&priorityId={{ priority.priority_id }}&columnId=OI">{{ OI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_closed %}{% if priority.priority_name in tickets_closed_list %}{% for CI in tickets_closed %}{% if CI.priority__priority_name == priority.priority_name %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&priorityId={{ priority.priority_id }}&columnId=CI">{{ CI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_left_opened %}{% if priority.priority_name in tickets_left_opened_list %}{% for LO in tickets_left_opened %}{% if LO.priority__priority_name == priority.priority_name %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&priorityId={{ priority.priority_id }}&columnId=LO">{{ LO.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                </tr>
+                                            {% endfor %}
+                                        {% endif %}
+                                        {% if priorities and sort_by == '2' %}
+                                            {% for priority in priorities %}
+                                                <tr class="gradeA">
+                                                    <td>{{ priority.priority_name }}</td>
+                                                    {% if tickets_open_before %}{% if priority.priority_name in tickets_open_before_list %}{% for OB in tickets_open_before %}{% if OB.priority__priority_name == priority.priority_name %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&priorityId={{ priority.priority_id }}&columnId=OB">{{ OB.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    <td>0</td>
+                                                    <td>0</td>
+                                                    <td>0</td>
+                                                </tr>
+                                            {% endfor %}
+                                            {% for priority in priorities %}
+                                                <tr class="gradeA">
+                                                    <td>{{ priority.priority_name }}</td>
+                                                    <td>0</td>
+                                                    {% if tickets_open_in %}{% if priority.priority_name in tickets_open_in_list %}{% for OI in tickets_open_in %}{% if OI.priority__priority_name == priority.priority_name %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&priorityId={{ priority.priority_id }}&columnId=OI">{{ OI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_closed %}{% if priority.priority_name in tickets_closed_list %}{% for CI in tickets_closed %}{% if CI.priority__priority_name == priority.priority_name %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&priorityId={{ priority.priority_id }}&columnId=CI">{{ CI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_left_opened %}{% if priority.priority_name in tickets_left_opened_list %}{% for LO in tickets_left_opened %}{% if LO.priority__priority_name == priority.priority_name %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&priorityId={{ priority.priority_id }}&columnId=LO">{{ LO.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                </tr>
+                                            {% endfor %}
+                                        {% endif %}
+                                        {% if priorities and sort_by == '3' %}
+                                            {% for priority in priorities %}
+                                                <tr class="gradeA">
+                                                    <td>{{ priority.priority_name }}</td>
+                                                    <td>0</td>
+                                                    {% if tickets_open_in %}{% if priority.priority_name in tickets_open_in_list %}{% for OI in tickets_open_in %}{% if OI.priority__priority_name == priority.priority_name %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&priorityId={{ priority.priority_id }}&columnId=OI">{{ OI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    <td>0</td>
+                                                    <td>0</td>
+                                                </tr>
+                                            {% endfor %}
+                                            {% for priority in priorities %}
+                                                <tr class="gradeA">
+                                                    <td>{{ priority.priority_name }}</td>
+                                                    {% if tickets_open_before %}{% if priority.priority_name in tickets_open_before_list %}{% for OB in tickets_open_before %}{% if OB.priority__priority_name == priority.priority_name %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&priorityId={{ priority.priority_id }}&columnId=OB">{{ OB.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    <td>0</td>
+                                                    {% if tickets_closed %}{% if priority.priority_name in tickets_closed_list %}{% for CI in tickets_closed %}{% if CI.priority__priority_name == priority.priority_name %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&priorityId={{ priority.priority_id }}&columnId=CI">{{ CI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_left_opened %}{% if priority.priority_name in tickets_left_opened_list %}{% for LO in tickets_left_opened %}{% if LO.priority__priority_name == priority.priority_name %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&priorityId={{ priority.priority_id }}&columnId=LO">{{ LO.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                </tr>
+                                            {% endfor %}
+                                        {% endif %}
+                                        {% if priorities and sort_by == '4' %}
+                                            {% for priority in priorities %}
+                                                <tr class="gradeA">
+                                                    <td>{{ priority.priority_name }}</td>
+                                                    <td>0</td>
+                                                    <td>0</td>
+                                                    {% if tickets_closed %}{% if priority.priority_name in tickets_closed_list %}{% for CI in tickets_closed %}{% if CI.priority__priority_name == priority.priority_name %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&priorityId={{ priority.priority_id }}&columnId=CI">{{ CI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    <td>0</td>
+                                                </tr>
+                                            {% endfor %}
+                                            {% for priority in priorities %}
+                                                <tr class="gradeA">
+                                                    <td>{{ priority.priority_name }}</td>
+                                                    {% if tickets_open_before %}{% if priority.priority_name in tickets_open_before_list %}{% for OB in tickets_open_before %}{% if OB.priority__priority_name == priority.priority_name %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&priorityId={{ priority.priority_id }}&columnId=OB">{{ OB.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_open_in %}{% if priority.priority_name in tickets_open_in_list %}{% for OI in tickets_open_in %}{% if OI.priority__priority_name == priority.priority_name %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&priorityId={{ priority.priority_id }}&columnId=OI">{{ OI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    <td>0</td>
+                                                    {% if tickets_left_opened %}{% if priority.priority_name in tickets_left_opened_list %}{% for LO in tickets_left_opened %}{% if LO.priority__priority_name == priority.priority_name %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&priorityId={{ priority.priority_id }}&columnId=LO">{{ LO.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                </tr>
+                                            {% endfor %}
+                                        {% endif %}
+                                        {% if priorities and sort_by == '5' %}
+                                            {% for priority in priorities %}
+                                                <tr class="gradeA">
+                                                    <td>{{ priority.priority_name }}</td>
+                                                    <td>0</td>
+                                                    <td>0</td>
+                                                    <td>0</td>
+                                                    {% if tickets_left_opened %}{% if priority.priority_name in tickets_left_opened_list %}{% for LO in tickets_left_opened %}{% if LO.priority__priority_name == priority.priority_name %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&priorityId={{ priority.priority_id }}&columnId=LO">{{ LO.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                </tr>
+                                            {% endfor %}
+                                            {% for priority in priorities %}
+                                                <tr class="gradeA">
+                                                    <td>{{ priority.priority_name }}</td>
+                                                    {% if tickets_open_before %}{% if priority.priority_name in tickets_open_before_list %}{% for OB in tickets_open_before %}{% if OB.priority__priority_name == priority.priority_name %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&priorityId={{ priority.priority_id }}&columnId=OB">{{ OB.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_open_in %}{% if priority.priority_name in tickets_open_in_list %}{% for OI in tickets_open_in %}{% if OI.priority__priority_name == priority.priority_name %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&priorityId={{ priority.priority_id }}&columnId=OI">{{ OI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_closed %}{% if priority.priority_name in tickets_closed_list %}{% for CI in tickets_closed %}{% if CI.priority__priority_name == priority.priority_name %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&priorityId={{ priority.priority_id }}&columnId=CI">{{ CI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    <td>0</td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% endif %}
+
+									</tbody>
+								</table>
+							</div>
+						</section>
+					<!-- end: page -->
+				</section>
+			</div>
+
+    {% endblock %}
+
+    {% block script %}
+        <script>
+            $(document).on('change','.ticket_type', function(){
+              var tid = $(this).val();
+              var ttype = $(this).attr('id');
+              if (tid != ''){
+                  $.ajax({
+                    type: 'POST',
+                    url: '/getTicketTypeChildById/',
+                    data: {ttype_id: tid},
+                    dataType: 'json',
+                    beforeSend: function(jqXHR, settings) {
+                        //Do something before send...
+                    },
+                    success: function(data, textStatus, jqXHR) {
+                        if(data.response) {
+                            result = jQuery.parseJSON(data['response'])
+                            if(ttype == 'ticket_type_parent') {
+                                $('#subtype1').html('<option value="" > </option>')
+                                $('#subtype2').html('<option value="" > </option>')
+                                $('#subtype3').html('<option value="" > </option>')
+                                $('#subtype4').html('<option value="" > </option>')
+                                $.each(result, function (index) {
+                                    $('#subtype1').append('<option value="' + result[index].pk + '">' + result[index].fields.ttype_name + '</option>')
+                                });
+                            }else if(ttype == 'subtype1'){
+                                $('#subtype2').html('<option value="" > </option>')
+                                $('#subtype3').html('<option value="" > </option>')
+                                $('#subtype4').html('<option value="" > </option>')
+                                $.each(result, function (index) {
+                                    $('#subtype2').append('<option value="' + result[index].pk + '">' + result[index].fields.ttype_name + '</option>')
+                                });
+                            }else if(ttype == 'subtype2'){
+                                $('#subtype3').html('<option value="" > </option>')
+                                $('#subtype4').html('<option value="" > </option>')
+                                $.each(result, function (index) {
+                                    $('#subtype3').append('<option value="' + result[index].pk + '">' + result[index].fields.ttype_name + '</option>')
+                                });
+                            }else if(ttype == 'subtype3'){
+                                $('#subtype4').html('<option value="" > </option>')
+                                $.each(result, function (index) {
+                                    $('#subtype4').append('<option value="'+result[index].pk+'">'+result[index].fields.ttype_name+'</option>')
+                                });
+                            }
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    }
+                  });
+              }
+
+            });
+
+            function saveSearchTicket(event) {
+                event.preventDefault();
+                if($('#search_title').val() == ''){
+                    alert('No value entered for Search Title!');
+                }else{
+                    $('#summary-form').attr('action', "{% url 'ticketSaveSearch' %}");
+                    $('#summary-form').submit();
+                }
+            }
+
+        </script>
+        <script type="text/javascript">
+            $(function() {
+
+                var start = moment().subtract(365, 'days');
+                var end = moment();
+
+                function cb_open(start, end) {
+                    $('#date_opened').val(start.format('MM/DD/YYYY') + ' - ' + end.format('MM/DD/YYYY'));
+                }
+
+                $('#date_opened').daterangepicker({
+                    startDate: start,
+                    endDate: end,
+                    autoUpdateInput: false,
+                    locale: {
+                      cancelLabel: 'Clear'
+                    },
+                    ranges: {
+                       'Today': [moment(), moment()],
+                       'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                       'This Week': [moment().startOf('week'), moment().endOf('week')],
+                       'Last Week': [moment().subtract(6, 'days'), moment()],
+                       'This Month': [moment().startOf('month'), moment().endOf('month')],
+                       'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                       'This Year': [moment().startOf('year'), moment().endOf('year')],
+                       'Last Year': [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')]
+                    }
+                }, cb_open);
+                cb_open(start, end);
+                $('#date_opened').val('');
+
+                $('#date_opened').on('cancel.daterangepicker', function(ev, picker) {
+                  $(this).val('');
+                });
+
+                function cb_close(start, end) {
+                    $('#date_closed').val(start.format('MM/DD/YYYY') + ' - ' + end.format('MM/DD/YYYY'));
+                }
+
+                $('#date_closed').daterangepicker({
+                    startDate: start,
+                    endDate: end,
+                    autoUpdateInput: false,
+                    locale: {
+                      cancelLabel: 'Clear'
+                    },
+                    ranges: {
+                       'Today': [moment(), moment()],
+                       'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                       'This Week': [moment().startOf('week'), moment().endOf('week')],
+                       'Last Week': [moment().subtract(6, 'days'), moment()],
+                       'This Month': [moment().startOf('month'), moment().endOf('month')],
+                       'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                       'This Year': [moment().startOf('year'), moment().endOf('year')],
+                       'Last Year': [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')]
+                    }
+                }, cb_close);
+                cb_close(start, end);
+                $('#date_closed').val('');
+
+                $('#date_closed').on('cancel.daterangepicker', function(ev, picker) {
+                  $(this).val('');
+                });
+
+                function cb_task(start, end) {
+                    $('#task_completion_date').val(start.format('MM/DD/YYYY') + ' - ' + end.format('MM/DD/YYYY'));
+                }
+
+                $('#task_completion_date').daterangepicker({
+                    startDate: start,
+                    endDate: end,
+                    autoUpdateInput: false,
+                    locale: {
+                      cancelLabel: 'Clear'
+                    },
+                    ranges: {
+                       'Today': [moment(), moment()],
+                       'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                       'This Week': [moment().startOf('week'), moment().endOf('week')],
+                       'Last Week': [moment().subtract(6, 'days'), moment()],
+                       'This Month': [moment().startOf('month'), moment().endOf('month')],
+                       'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                       'This Year': [moment().startOf('year'), moment().endOf('year')],
+                       'Last Year': [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')]
+                    }
+                }, cb_task);
+                cb_task(start, end);
+                $('#task_completion_date').val('');
+
+                $('#task_completion_date').on('cancel.daterangepicker', function(ev, picker) {
+                  $(this).val('');
+                });
+
+            });
+
+            $(document).on('click', '.delete_record', function(e) {
+                // cancel submit
+                e.preventDefault();
+                r_id = ($(this).attr('data-id'));
+                $(this).closest('tr').remove();
+                if (r_id != ''){
+                  $.ajax({
+                        type: 'POST',
+                        url: '/deleteSavedSearch/',
+                        data: {save_id: r_id},
+                        dataType: 'json',
+                        beforeSend: function(jqXHR, settings) {
+                            //Do something before send...
+                        },
+                        success: function(data, textStatus, jqXHR) {
+
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            alert(textStatus + '. ' + errorThrown);
+                        }
+                      });
+                }
+            })
+
+        </script>
+    {% endblock %}
+
+

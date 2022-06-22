@@ -1,0 +1,29 @@
+<section class="panel">
+    <header class="panel-heading">
+        <h2 class="panel-title">Add User<span class="btn btn-danger modal-dismiss" style="float:right;">X</span></h2>
+    </header>
+    <div class="panel-body">
+        <form action="{% url 'saveOrgUserNotificationPermissions' %}" method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-lg-12">
+                    <select class="custom-select" name="user_id" size="20" style="width: 50%;height: 200px" required>
+                        {% for user in orgUsers %}
+                            {%if user.id in bookedUsers %}
+                                
+                            {%else%}
+                                <option value="{{user.id}}">{{user.display_name}}</option>
+                            {%endif%}
+                        {%endfor%}
+                    </select>
+                </div>
+            </div>
+            <input type="hidden" name="org_id" id="org_id" value="{{org_id}}">
+            
+            <div style="float:right">
+                <input type="submit" value="Save" class="btn btn-primary">
+                <input type="button" value="Reset" onclick="" class="btn btn-default">
+            </div>
+        </form>
+    </div>
+</section>

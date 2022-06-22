@@ -1,0 +1,22 @@
+{% load check_permissions %}
+    {% for record in records %}
+        <tr>  
+            <td>
+                {%if "wf_Can_edit_Tasks_in_Tickets"|check_action_permission:user.id %}<a href="javascript:void(0);" class="edit_record" data-id="{{ record.task_order_val }}" >edit</a> | {%endif%}<a href="" class="delete_record" data-id="{{ record.task_order_val }}" >del</a> | <a href="" class="detail-record" data-id="{{ record.task_order_val }}" >details</a>
+            </td>
+            <td nowrap="" align="right">{{ record.task_order_val }}</td>
+            <td><input type="text" id="task-modal-task-id{{ record.task_order_val }}" name="task-modal-task-id[]" value="{{ record.task_id_text_val }}" readonly class="form-control"></td>
+            <td><input type="text" id="task-modal-task-assign-to{{ record.task_order_val }}" name="task-modal-task-assign-to[]" value="{{ record.task_assign_to_text_val }}" readonly class="form-control"></td>
+            <td><input type="text" id="task-due-date{{ record.task_order_val }}" name="tmanager_due_date[]" value="{{ record.task_due_date_val }}" readonly class="form-control"></td>
+            <td><input type="text" id="task-modal-task-dependency{{ record.task_order_val }}" name="task-modal-task-dependency[]" value="{{ record.task_dependency_order_val }}" readonly class="form-control"></td>
+            <td><input type="text" id="task-modal-task-type{{ record.task_order_val }}" name="task-modal-task-type[]" value="{{ record.task_type_text_val }}" readonly class="form-control"></td>
+        </tr>
+    {% endfor %}
+
+<script>
+
+$(document).ready(function() {
+
+});
+
+</script>

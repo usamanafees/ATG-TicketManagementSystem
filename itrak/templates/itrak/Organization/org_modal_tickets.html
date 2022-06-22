@@ -1,0 +1,53 @@
+ Modal Form For Org Tickets-->
+ {% load templates_extras %}
+<div class="popup-modal-content">
+    <div id="modalOrgTickets" class="modal modal-block modal-block-primary modal-dialog custom-lg-modal">
+        <section class="panel">
+            <header class="panel-heading">
+                <h2 class="panel-title">Organization Tickets</h2>
+            </header>
+            <div class="panel-body cus_panel_body">
+                {% if tickets %}
+                    <table class="table table-bordered table-task-modal">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Opened</th>
+                            <th>Status</th>
+                            <th>Issue Type</th>
+                            <th>Subject</th>
+                            <th>Assigned To</th>
+                            <th>Priority</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {% for ticket in tickets %}
+                            <tr>
+                                <td>{{ ticket.ticket_id }}</td>
+                                {% get_tickets_dateTime_by_timezone ticket.ticket_created_at request.user.id as dateTime %}
+                                <td>{{ dateTime }}</td>
+                                <!-- <td>{{ ticket.ticket_created_at|date:'d-M-Y' }}</td> -->
+                                <td>{% if ticket.ticket_status == 0 %}Open{% else %}Closed{% endif %}</td>
+                                <td>{{ ticket.ticket_type.ttype_name }}</td>
+                                <td>{{ ticket.subject }}</td>
+                                <td>{{ ticket.ticket_assign_to }}</td>
+                                <td>{{ ticket.priority.priority_name }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>No Record Found</p>
+                {% endif %}
+            </div>
+            <footer class="panel-footer">
+                <div class="row">
+                    <div class="col-md-12 text-right">
+                    <button class="btn btn-default modal-dismiss" data-dismiss="modal">Close</button>
+                </div>
+                </div>
+            </footer>
+        </section>
+    </div>
+</div>
+<!-- Modal Form For Org Tickets End

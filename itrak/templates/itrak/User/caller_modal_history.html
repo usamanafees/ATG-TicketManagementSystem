@@ -1,0 +1,60 @@
+ <!-- Modal Form For Org Detail-->
+{% load templates_extras %}
+    <div class="popup-modal-content">
+        <!-- Modal Form For Hig History-->
+            <div id="modalCallerHistory" class="modal-dialog modal-lg">
+            <section class="panel">
+                <header class="panel-heading">
+                    <h2 class="panel-title">Tickets for&nbsp;{{callerN}}</h2>
+                </header>
+                <div class="panel-body">
+                    <div class="responsive-table">
+                    <strong>Tickets Sorted By:Status/SubStatus, Priority, Date Opened</strong>
+                        <table class="table table-bordered">
+                        <tr>
+                            <th>Ticket#</th>
+                            <th>Opened</th>
+                            <th>Status</th>
+                            <th>Ticket Type</th>
+                            <th>Subject</th>
+                            <th>Assigned To</th>
+                            <th>Activity Date</th>
+                            <th>Priority</th>
+                        </tr>
+                        {% if tickets %}
+                            {% for ticket in tickets %}
+                            {% get_tickets_dateTime_by_timezone ticket.ticket_modified_at request.user.id as dateTime %}
+                                <tr>
+                                    <td>{{ ticket.ticket_id }}</td>
+                                    <td>{% if ticket.ticket_status == 0 %} Open {% else %} Close {% endif %}</td>
+                                    <td>{{ ticket.ticket_sub_status.sub_status_text }}</td>
+                                    <td>{{ ticket.ticket_type.ttype_name }}</td>
+                                    <td>{{ ticket.subject }}</td>
+                                    <td>{{ ticket.ticket_assign_to.display_name }}</td>
+                                    <td>{{ dateTime }}</td>
+                                    <!-- <td>{{ ticket.ticket_modified_at|date:'m/d/Y H:i a' }}</td> -->
+                                    <td>{{ ticket.priority.priority_name }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                                <tr>
+                                    <td colspan="8">No Record Found</td>
+                                </tr>
+                        {% endif %}
+                    </table>
+                    </div>
+                    </div>
+                <footer class="panel-footer">
+                    <div class="row">
+                        <div class="col-md-12 text-right">
+{#                            <button class="btn btn-primary modal-confirm">Save</button>#}
+                            <button class="btn btn-default modal-dismiss" data-dismiss="modal">Cancel</button>
+                        </div>
+                    </div>
+                </footer>
+            </section>
+        </div>
+        <!-- Modal Form For Org History End-->
+    </div>
+
+<!-- Modal Form For Org Detail End

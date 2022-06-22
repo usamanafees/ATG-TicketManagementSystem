@@ -1,0 +1,625 @@
+    {% extends 'itrak/base.html' %}
+    {% load templates_extras %}
+
+    {% block body_block %}
+        {% load static %}
+            <section role="main" class="content-body">
+                <header class="page-header">
+                    <h2>Dashboard</h2>
+
+                    <div class="right-wrapper pull-right">
+                        <ol class="breadcrumbs">
+                            <li>
+                                <a href="{% url 'home' %}">
+                                    <i class="fa fa-home"></i>
+                                </a>
+                            </li>
+                            <li><span>Dashboard</span></li>
+                        </ol>
+
+                        <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+                    </div>
+                </header>
+                {% for message in messages %}
+                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    {{ message }}
+                    </div>
+                {% endfor %}
+                <center><h4>{{request.user.user_org_id| getSiteAppearanceHomeScreen:request.user.id}}</h4></center>
+                <center><h4>{{request.user.user_org_id| getSiteAppearanceHomeAgent:request.user.id}}</h4></center>
+                {% if timezone_count > 0 %}
+                    <p class="referesh-time text-right">
+                        {% if reload_time == 0 or show_reload == 0 %}
+                            <b>{{time}} <a id="refreshBtn" style="color: #000"><i class="fa fa-refresh"></i></a></b>
+                        {% else %}
+                            <b>{{time}} <span id="time"></span> <a id="refreshBtn" style="color: #000"><i class="fa fa-refresh"></i></a></b>
+                        {% endif %}<p><br>
+                {% endif %}
+                <div class="row">
+                    <div class="col-md-6">
+                        {% if panel_left %}
+                            {% for p in panel_left %}
+                                <div class="column-full">
+                                    <section class="panel custom-panel">
+                                        <header class="panel-heading">
+                                            <div class="panel-actions">
+                                                {% if p.d_expanded == 1 %}
+                                                    <a href="#" class="fa fa-caret-down"></a>
+                                                {% else %}
+                                                    <a href="#" class="fa fa-caret-up"></a>
+                                                {% endif %}
+                                                <a href="#" class="fa fa-times"></a>
+                                                {% if p.d_data_display == 1 %}
+                                                    {% if p.d_panel__panelGraph_url == 'monthlyPerformance' %}
+                                                        <a style="color:black; display:none" id="leftCart{{ forloop.counter }}" onclick="leftshowChart({{ forloop.counter }});" class="fa fa-bar-chart"></a>
+                                                        <a style="color:black" id="lefttable{{ forloop.counter }}" onclick="leftshowTable({{ forloop.counter }});" class="fa fa-table"></a>
+                                                    {% elif p.d_panel__panelGraph_url == 'currentQtrPerformance' %}
+                                                        <a style="color:black; display:none" id="leftCart{{ forloop.counter }}" onclick="leftshowChart({{ forloop.counter }});" class="fa fa-bar-chart"></a>
+                                                        <a style="color:black" id="lefttable{{ forloop.counter }}" onclick="leftshowTable({{ forloop.counter }});" class="fa fa-table"></a>
+                                                    {% else %}
+                                                        <a style="color:black" id="leftCart{{ forloop.counter }}" onclick="leftshowChart({{ forloop.counter }});" class="fa fa-bar-chart"></a>
+                                                        <a style="color:black" id="lefttable{{ forloop.counter }}" onclick="leftshowTable({{ forloop.counter }});" class="fa fa-table"></a>
+                                                    {% endif %}
+                                                {% elif p.d_data_display == 2 %}
+                                                    {% if p.d_panel__panelGraph_url != 'monthlyPerformance' and p.d_panel__panelGraph_url != 'currentQtrPerformance' %}
+                                                        <a style="color:grey;" id="leftCart{{ forloop.counter }}" onclick="leftshowChart({{ forloop.counter }});" class="fa fa-bar-chart"></a>
+                                                        <a style="color:black" id="lefttable{{ forloop.counter }}" onclick="leftshowTable({{ forloop.counter }});" class="fa fa-table"></a>
+                                                    {% endif %}
+                                                {% elif p.d_data_display == 3 %}
+                                                    {% if p.d_panel__panelGraph_url == 'monthlyPerformance' %}
+                                                        <a style="color:grey;" id="lefttable{{ forloop.counter }}" onclick="leftshowTable({{ forloop.counter }});" class="fa fa-table"></a>
+                                                    {% elif p.d_panel__panelGraph_url == 'currentQtrPerformance' %}
+                                                        <a style="color:grey;" id="lefttable{{ forloop.counter }}" onclick="leftshowTable({{ forloop.counter }});" class="fa fa-table"></a>
+                                                    {% else %}
+                                                        <a style="color:black;" id="leftCart{{ forloop.counter }}" onclick="leftshowChart({{ forloop.counter }});" class="fa fa-bar-chart"></a>
+                                                        <a style="color:grey;" id="lefttable{{ forloop.counter }}" onclick="leftshowTable({{ forloop.counter }});" class="fa fa-table"></a>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </div>
+                                            <h2 class="panel-title" id="left-chart-heading{{ forloop.counter }}"></h2>
+                                        </header>
+                                        {% if p.d_expanded == 1 %}
+                                            <div class="panel-body">
+                                        {% else %}
+                                            <div class="panel-body" style="display: none;">
+                                        {% endif %}
+                                            {% if p.d_data_display == 2 %}
+                                                <canvas id="left-myChart{{ forloop.counter }}" style="display:none"></canvas>
+                                            {% else %}
+                                                <canvas id="left-myChart{{ forloop.counter }}"></canvas>
+                                            {% endif %}
+                                            <div class="top-legend-div">
+                                                {% if p.d_data_display == 3 %}
+                                                    <div id="left-lengend-div{{ forloop.counter }}" style="display:none"><div class="table-responsive"></div></div>
+                                                {% else %}
+                                                    <div id="left-lengend-div{{ forloop.counter }}"><div class="table-responsive"></div></div>
+                                                {% endif %}
+                                            </div>
+                                            </div>
+                                    </section>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        {% if panel_right %}
+                            {% for p in panel_right %}
+                                <div class="column-full">
+                                    <section class="panel custom-panel">
+                                        <header class="panel-heading">
+                                            <div class="panel-actions">
+                                                {% if p.d_expanded == 1 %}
+                                                    <a href="#" class="fa fa-caret-down"></a>
+                                                {% else %}
+                                                    <a href="#" class="fa fa-caret-up"></a>
+                                                {% endif %}
+                                                <a href="#" class="fa fa-times"></a>
+                                                {% if p.d_data_display == 1 %}
+                                                    {% if p.d_panel__panelGraph_url == 'monthlyPerformance' %}
+                                                        <a style="color:black; display:none" id="rightCart{{ forloop.counter }}" onclick="rightshowChart({{ forloop.counter }});" class="fa fa-bar-chart"></a>
+                                                        <a style="color:black" id="righttable{{ forloop.counter }}" onclick="rightshowTable({{ forloop.counter }});" class="fa fa-table"></a>
+                                                    {% elif p.d_panel__panelGraph_url == 'currentQtrPerformance' %}
+                                                        <a style="color:black; display:none" id="rightCart{{ forloop.counter }}" onclick="rightshowChart({{ forloop.counter }});" class="fa fa-bar-chart"></a>
+                                                        <a style="color:black" id="righttable{{ forloop.counter }}" onclick="rightshowTable({{ forloop.counter }});" class="fa fa-table"></a>
+                                                    {% else %}
+                                                        <a style="color:black" id="rightCart{{ forloop.counter }}" onclick="rightshowChart({{ forloop.counter }});" class="fa fa-bar-chart"></a>
+                                                        <a style="color:black" id="righttable{{ forloop.counter }}" onclick="rightshowTable({{ forloop.counter }});" class="fa fa-table"></a>
+                                                    {% endif %}
+                                                {% elif p.d_data_display == 2 %}
+                                                    {% if p.d_panel__panelGraph_url != 'monthlyPerformance' and p.d_panel__panelGraph_url != 'currentQtrPerformance' %}
+                                                        <a style="color:grey;" id="rightCart{{ forloop.counter }}" onclick="rightshowChart({{ forloop.counter }});" class="fa fa-bar-chart"></a>
+                                                        <a style="color:black" id="righttable{{ forloop.counter }}" onclick="rightshowTable({{ forloop.counter }});" class="fa fa-table"></a>
+                                                    {% endif %}
+                                                {% elif p.d_data_display == 3 %}
+                                                    {% if p.d_panel__panelGraph_url == 'monthlyPerformance' %}
+                                                        <a style="color:grey;" id="righttable{{ forloop.counter }}" onclick="rightshowTable({{ forloop.counter }});" class="fa fa-table"></a>
+                                                    {% elif p.d_panel__panelGraph_url == 'currentQtrPerformance' %}
+                                                        <a style="color:grey;" id="righttable{{ forloop.counter }}" onclick="rightshowTable({{ forloop.counter }});" class="fa fa-table"></a>
+                                                    {% else %}
+                                                        <a style="color:black;" id="rightCart{{ forloop.counter }}" onclick="rightshowChart({{ forloop.counter }});" class="fa fa-bar-chart"></a>
+                                                        <a style="color:grey;" id="righttable{{ forloop.counter }}" onclick="rightshowTable({{ forloop.counter }});" class="fa fa-table"></a>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </div>
+                                            <h2 class="panel-title" id="right-chart-heading{{ forloop.counter }}"></h2>
+                                        </header>
+                                        {% if p.d_expanded == 1 %}
+                                            <div class="panel-body">
+                                        {% else %}
+                                            <div class="panel-body" style="display: none;">
+                                        {% endif %}
+
+                                                {% if p.d_data_display == 2 %}
+                                                    <canvas id="right-myChart{{ forloop.counter }}" style="display:none"></canvas>
+                                                {% else %}
+                                                    <canvas id="right-myChart{{ forloop.counter }}"></canvas>
+                                                {% endif %}
+                                                 <div class="top-legend-div">
+                                                {% if p.d_data_display == 3 %}
+                                                    <div id="right-lengend-div{{ forloop.counter }}" style="display:none"><div class="table-responsive"></div></div>
+                                                {% else %}
+                                                    <div id="right-lengend-div{{ forloop.counter }}"><div class="table-responsive"></div></div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </section>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- start: page -->
+                <div id="modalLG" class="modal-block modal-block-lg mfp-hide">
+                </div>
+                <!-- end: page -->
+            </section>
+        </div>
+
+
+    <a class="mb-xs mt-xs mr-xs modal-sizes" href="#modalLG" id="gt_helper"></a>
+    <input type="hidden" id="in_helper">
+    {% endblock %}
+{% block script %}
+    <script>
+        $(document).ready(function () {
+            {% if panel_left %}
+                {% for p in panel_left %}
+                    $('#left-chart-heading{{ forloop.counter }}').text('{{p.d_panel__panelGraph_text}}');
+                    {% if p.d_panel__panelGraph_url == 'monthlyPerformance' %}
+                        $('#left-myChart{{ forloop.counter }}').css('display','none');
+                        $.ajax({
+                            type: 'POST',
+                            url: '{% url p.d_panel__panelGraph_url%}',
+                            success: function (responce) {
+                                //alert(responce);
+                                //console.log(responce);
+                                var text = '';
+                                    text += '<div class="table-responsive"><table class="table table-striped table-bordered" style="width:100%">' +
+                                        '<thead>' +
+                                        '<tr>' +
+                                        '<th> </th>' +
+                                        '<th>Opened</th>' +
+                                        '<th>Closed</th>' +
+                                        '<th>Reopned</th>' +
+                                        '</tr>' +
+                                        '</thead><tbody>';
+                                    for(i=0;i<responce[Object.keys(responce)[0]].length;i++){
+                                        text += '<tr>' +
+                                            '<td>'+ responce[Object.keys(responce)[0]][i] +' '+ responce[Object.keys(responce)[1]][i] +'</td>' +
+                                            '<td>'+ responce[Object.keys(responce)[2]][i] +'</td>' +
+                                            '<td>'+ responce[Object.keys(responce)[3]][i] +'</td>' +
+                                            '<td>'+ responce[Object.keys(responce)[4]][i] +'</td>' +
+                                            '</tr>'
+                                    }
+                                    text += '</tbody></table></div>';
+
+                                $("#left-lengend-div{{ forloop.counter }}").html(text);
+                            }
+                        });
+                    {% elif p.d_panel__panelGraph_url == 'currentQtrPerformance' %}
+                        $('#left-myChart{{ forloop.counter }}').css('display','none');
+                        $.ajax({
+                            type: 'POST',
+                            url: '{% url p.d_panel__panelGraph_url%}',
+                            success: function (responce) {
+                                //alert(responce);
+                                //console.log(responce);
+                                var text = '';
+                                    text += '<div class="table-responsive"><table class="table table-striped table-bordered" style="width:100%">' +
+                                        '<thead>' +
+                                        '<tr>' +
+                                        '<th> </th>' +
+                                        '<th>Opened</th>' +
+                                        '<th>Closed</th>' +
+                                        '<th>Reopned</th>' +
+                                        '<th>Avg Resolution</th>' +
+                                        '</tr>' +
+                                        '</thead><tbody>';
+                                    for(i=0;i<responce[Object.keys(responce)[0]].length;i++){
+                                        text += '<tr>' +
+                                            '<td>'+ responce[Object.keys(responce)[0]][i] +' '+ responce[Object.keys(responce)[1]][i] +'</td>' +
+                                            '<td>'+ responce[Object.keys(responce)[2]][i] +'</td>' +
+                                            '<td>'+ responce[Object.keys(responce)[3]][i] +'</td>' +
+                                            '<td>'+ responce[Object.keys(responce)[4]][i] +'</td>' +
+                                            '<td>'+ responce[Object.keys(responce)[5]][i] +'</td>' +
+                                            '</tr>'
+                                    }
+                                    text += '</tbody></table></div>';
+
+                                $("#left-lengend-div{{ forloop.counter }}").html(text);
+                            }
+                        });
+                    {% else %}
+                        $.ajax({
+                            type: 'POST',
+                            url: '{% url p.d_panel__panelGraph_url %}',
+                            success: function (responce) {
+                                //alert(responce[Object.keys(responce)[0]])
+                                var ctx = document.getElementById('left-myChart{{ forloop.counter }}').getContext('2d');
+                                var myChart = new Chart(ctx, {
+                                type: 'bar',
+                                    data: {
+                                    labels: responce[Object.keys(responce)[0]],
+                                    datasets: [{
+                                        data: responce[Object.keys(responce)[1]],
+                                        backgroundColor: [
+                                            'rgb(255, 0, 0)',
+                                            'rgb(126, 251, 1)',
+                                            'rgb(1, 251, 251)',
+                                            'rgb(251, 0, 255)',
+                                            'rgb(0, 201, 0)',
+                                            'rgb(11, 0, 11)',
+                                            'rgb(201, 0, 0)',
+                                            'rgb(0, 255, 0)',
+                                            'rgb(0, 0, 251)',
+                                            'rgb(0, 0, 255)',
+                                            'rgb(123, 321, 312)',
+                                            'rgb(321, 123, 123)',
+                                            'rgb(312, 321, 231)',
+                                            'rgb(112, 1, 110)',
+                                        ],
+                                        borderColor: [
+                                            'rgb(255, 0, 0)',
+                                            'rgb(126, 251, 1, )',
+                                            'rgb(1, 251, 251)'
+                                        ],
+                                        borderWidth: 1
+                                    }]
+                                    },
+                                    options:{
+                                        onClick: function(event,array){
+                                            $.ajax({
+                                                type: 'POST',
+                                                url: '{% url p.d_panel__panelGraph_url %}',
+                                                data: {user: array[0]['_view']['label']},
+                                                success: function (responce) {
+                                                    //alert(responce);
+                                                    //console.log(responce);
+                                                    $('#gt_helper')[0].click();
+                                                    $('#modalLG').html('');
+                                                    $('#modalLG').html(responce);
+                                                }
+                                            })
+                                        },
+                                        legendCallback: function(chart) {
+                                            var text = '';
+                                            var option_text = '{% url p.d_panel__panelGraph_url %}';
+                                            $('#in_helper').val(option_text);
+                                            text += '<div class="table-responsive"><table class="table table-striped table-bordered" style="width:100%">' +
+                                                '<thead>' +
+                                                '<tr>' +
+                                                '<th>'+ Object.keys(responce)[0] +'</th>' +
+                                                '<th>'+ Object.keys(responce)[1] +'</th>' +
+                                                '</tr>' +
+                                                '</thead><tbody>';
+                                            for(i=0;i<responce[Object.keys(responce)[0]].length;i++){
+                                                text += '<tr>' +
+                                                    '<td>'+ responce[Object.keys(responce)[0]][i] +'</td>' +
+                                                    '<td><a class="mb-xs mt-xs mr-xs modal-sizes" href="#modalLG" onclick="getRecord(\''+option_text+'\',\''+responce[Object.keys(responce)[0]][i]+'\')">'+ responce[Object.keys(responce)[1]][i] +'</a></td>' +
+                                                    '</tr>'
+                                            }
+                                            text += '</tbody></table></div>';
+
+                                            return text
+                                        },
+                                        legend:{
+                                            display: false,
+                                            position: 'bottom'
+                                        },
+                                        scales: {
+                                            xAxes: [{
+                                                barPercentage: 0.2
+                                            }],
+                                            yAxes:[{
+                                                ticks:{
+                                                    beginAtZero:true
+                                                }
+                                            }]
+                                        }
+                                    }
+                                });
+                                $("#left-lengend-div{{ forloop.counter }}").html(myChart.generateLegend())
+                            }
+                        });
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+            {% if panel_right %}
+                {% for p in panel_right %}
+                    $('#right-chart-heading{{ forloop.counter }}').text('{{p.d_panel__panelGraph_text}}');
+                    {% if p.d_panel__panelGraph_url == 'monthlyPerformance' %}
+                        $('#right-myChart{{ forloop.counter }}').css('display','none');
+                        $.ajax({
+                            type: 'POST',
+                            url: '{% url p.d_panel__panelGraph_url %}',
+                            success: function (responce) {
+                                //alert(responce);
+                                //console.log(responce);
+                                var text = '';
+                                    text += '<div class="table-responsive"><table class="table table-striped table-bordered" style="width:100%">' +
+                                        '<thead>' +
+                                        '<tr>' +
+                                        '<th> </th>' +
+                                        '<th>Opened</th>' +
+                                        '<th>Closed</th>' +
+                                        '<th>Reopned</th>' +
+                                        '</tr>' +
+                                        '</thead><tbody>';
+                                    for(i=0;i<responce[Object.keys(responce)[0]].length;i++){
+                                        text += '<tr>' +
+                                            '<td>'+ responce[Object.keys(responce)[0]][i] +' '+ responce[Object.keys(responce)[1]][i] +'</td>' +
+                                            '<td>'+ responce[Object.keys(responce)[2]][i] +'</td>' +
+                                            '<td>'+ responce[Object.keys(responce)[3]][i] +'</td>' +
+                                            '<td>'+ responce[Object.keys(responce)[4]][i] +'</td>' +
+                                            '</tr>'
+                                    }
+                                    text += '</tbody></table></div>';
+
+                                $("#right-lengend-div{{ forloop.counter }}").html(text);
+                            }
+                        });
+                    {% elif p.d_panel__panelGraph_url == 'currentQtrPerformance' %}
+                        $('#right-myChart{{ forloop.counter }}').css('display','none');
+                        $.ajax({
+                            type: 'POST',
+                            url: '{% url p.d_panel__panelGraph_url %}',
+                            success: function (responce) {
+                                //alert(responce);
+                                //console.log(responce);
+                                var text = '';
+                                    text += '<div class="table-responsive"><table class="table table-striped table-bordered" style="width:100%">' +
+                                        '<thead>' +
+                                        '<tr>' +
+                                        '<th> </th>' +
+                                        '<th>Opened</th>' +
+                                        '<th>Closed</th>' +
+                                        '<th>Reopned</th>' +
+                                        '<th>Avg Resolution</th>' +
+                                        '</tr>' +
+                                        '</thead><tbody>';
+                                    for(i=0;i<responce[Object.keys(responce)[0]].length;i++){
+                                        text += '<tr>' +
+                                            '<td>'+ responce[Object.keys(responce)[0]][i] +' '+ responce[Object.keys(responce)[1]][i] +'</td>' +
+                                            '<td>'+ responce[Object.keys(responce)[2]][i] +'</td>' +
+                                            '<td>'+ responce[Object.keys(responce)[3]][i] +'</td>' +
+                                            '<td>'+ responce[Object.keys(responce)[4]][i] +'</td>' +
+                                            '<td>'+ responce[Object.keys(responce)[5]][i] +'</td>' +
+                                            '</tr>'
+                                    }
+                                    text += '</tbody></table></div>';
+
+                                $("#right-lengend-div{{ forloop.counter }}").html(text);
+                            }
+                        });
+                    {% else %}
+                        $.ajax({
+                            type: 'POST',
+                            url: '{% url p.d_panel__panelGraph_url %}',
+                            success: function (responce) {
+                                //alert(responce[Object.keys(responce)[0]])
+                                var ctx = document.getElementById('right-myChart{{ forloop.counter }}').getContext('2d');
+                                var myChart = new Chart(ctx, {
+                                type: 'bar',
+                                    data: {
+                                    labels: responce[Object.keys(responce)[0]],
+                                    datasets: [{
+                                        data: responce[Object.keys(responce)[1]],
+                                        backgroundColor: [
+                                            'rgb(255, 0, 0)',
+                                            'rgb(126, 251, 1)',
+                                            'rgb(1, 251, 251)',
+                                            'rgb(251, 0, 255)',
+                                            'rgb(0, 201, 0)',
+                                            'rgb(11, 0, 11)',
+                                            'rgb(201, 0, 0)',
+                                            'rgb(0, 255, 0)',
+                                            'rgb(0, 0, 251)',
+                                            'rgb(0, 0, 255)',
+                                            'rgb(123, 321, 312)',
+                                            'rgb(321, 123, 123)',
+                                            'rgb(312, 321, 231)',
+                                            'rgb(112, 1, 110)',
+                                        ],
+                                        borderColor: [
+                                            'rgb(255, 0, 0)',
+                                            'rgb(126, 251, 1, )',
+                                            'rgb(1, 251, 251)'
+                                        ],
+                                        borderWidth: 1
+                                    }]
+                                    },
+                                    options:{
+                                        onClick: function(event,array){
+                                            $.ajax({
+                                                type: 'POST',
+                                                url: '{% url p.d_panel__panelGraph_url %}',
+                                                data: {user: array[0]['_view']['label']},
+                                                success: function (responce) {
+                                                    //alert(responce);
+                                                    //console.log(responce);
+                                                    $('#gt_helper')[0].click();
+                                                    $('#modalLG').html('');
+                                                    $('#modalLG').html(responce);
+                                                }
+                                            })
+                                        },
+                                        legendCallback: function(chart) {
+                                            var text = '';
+                                            var option_text = '{{p.d_panel__panelGraph_url}}';
+                                            $('#in_helper').val(option_text);
+                                            text += '<div class="table-responsive"><table class="table table-striped table-bordered" style="width:100%">' +
+                                                '<thead>' +
+                                                '<tr>' +
+                                                '<th>'+ Object.keys(responce)[0] +'</th>' +
+                                                '<th>'+ Object.keys(responce)[1] +'</th>' +
+                                                '</tr>' +
+                                                '</thead><tbody>';
+                                            for(i=0;i<responce[Object.keys(responce)[0]].length;i++){
+                                                text += '<tr>' +
+                                                    '<td>'+ responce[Object.keys(responce)[0]][i] +'</td>' +
+                                                    '<td><a class="mb-xs mt-xs mr-xs modal-sizes" href="#modalLG" onclick="getRecord(\''+option_text+'\',\''+responce[Object.keys(responce)[0]][i]+'\')">'+ responce[Object.keys(responce)[1]][i] +'</a></td>' +
+                                                    '</tr>'
+                                            }
+                                            text += '</tbody></table></div>';
+
+                                            return text
+                                        },
+                                        legend:{
+                                            display: false,
+                                            position: 'bottom'
+                                        },
+                                        scales: {
+                                            xAxes: [{
+                                                barPercentage: 0.2
+                                            }],
+                                            yAxes:[{
+                                                ticks:{
+                                                    beginAtZero:true
+                                                }
+                                            }]
+                                        }
+                                    }
+                                });
+                                $("#right-lengend-div{{ forloop.counter }}").html(myChart.generateLegend())
+                            }
+                        });
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        });
+        function leftshowChart(chartNo){
+            if( $('#leftCart'+chartNo+'').css('color') == 'rgb(128, 128, 128)'){
+                $('#leftCart'+chartNo+'').css('color','black');
+                $('#left-myChart'+chartNo+'').show();
+            } else if($('#leftCart'+chartNo+'').css('color') == 'rgb(0, 0, 0)' && $('#lefttable'+chartNo+'').css('color') == 'rgb(128, 128, 128)'){
+                $('#leftCart'+chartNo+'').css('color','grey');
+                $('#left-myChart'+chartNo+'').hide();
+                $('#lefttable'+chartNo+'').css('color','black');
+                $('#left-lengend-div'+chartNo+'').show();
+            } else if($('#leftCart'+chartNo+'').css('color') == 'rgb(0, 0, 0)'){
+                $('#leftCart'+chartNo+'').css('color','grey');
+                $('#left-myChart'+chartNo+'').hide();
+            }
+        }
+
+        function rightshowChart(chartNo){
+            if( $('#rightCart'+chartNo+'').css('color') == 'rgb(128, 128, 128)'){
+                $('#rightCart'+chartNo+'').css('color','black');
+                $('#right-myChart'+chartNo+'').show();
+            } else if($('#rightCart'+chartNo+'').css('color') == 'rgb(0, 0, 0)' && $('#righttable'+chartNo+'').css('color') == 'rgb(128, 128, 128)'){
+                $('#rightCart'+chartNo+'').css('color','grey');
+                $('#right-myChart'+chartNo+'').hide();
+                $('#righttable'+chartNo+'').css('color','black');
+                $('#right-lengend-div'+chartNo+'').show();
+            } else if($('#rightCart'+chartNo+'').css('color') == 'rgb(0, 0, 0)'){
+                $('#rightCart'+chartNo+'').css('color','grey');
+                $('#right-myChart'+chartNo+'').hide();
+            }
+        }
+
+        function leftshowTable(chartNo){
+            if( $('#lefttable'+chartNo+'').css('color') == 'rgb(128, 128, 128)'){
+                $('#lefttable'+chartNo+'').css('color','black');
+                $('#left-lengend-div'+chartNo+'').show();
+            } else if($('#lefttable'+chartNo+'').css('color') == 'rgb(0, 0, 0)' && $('#leftCart'+chartNo+'').css('color') == 'rgb(128, 128, 128)'){
+                $('#lefttable'+chartNo+'').css('color','grey');
+                $('#left-lengend-div'+chartNo+'').hide();
+                $('#leftCart'+chartNo+'').css('color','black');
+                $('#left-myChart'+chartNo+'').show();
+            } else if($('#lefttable'+chartNo+'').css('color') == 'rgb(0, 0, 0)'){
+                $('#lefttable'+chartNo+'').css('color','grey');
+                $('#left-lengend-div'+chartNo+'').hide();
+            }
+        }
+
+        function rightshowTable(chartNo){
+            if( $('#righttable'+chartNo+'').css('color') == 'rgb(128, 128, 128)'){
+                $('#righttable'+chartNo+'').css('color','black');
+                $('#right-lengend-div'+chartNo+'').show();
+            } else if($('#righttable'+chartNo+'').css('color') == 'rgb(0, 0, 0)' && $('#rightCart'+chartNo+'').css('color') == 'rgb(128, 128, 128)'){
+                $('#righttable'+chartNo+'').css('color','grey');
+                $('#right-lengend-div'+chartNo+'').hide();
+                $('#rightCart'+chartNo+'').css('color','black');
+                $('#right-myChart'+chartNo+'').show();
+            } else if($('#righttable'+chartNo+'').css('color') == 'rgb(0, 0, 0)'){
+                $('#righttable'+chartNo+'').css('color','grey');
+                $('#right-lengend-div'+chartNo+'').hide();
+            }
+        }
+
+        function getRecord(request_address,user){
+
+            {#request_address = request_address.replace(/[^a-z0-9\s]/gi, '').replace(/[_\s]/g, '-');#}
+
+            $.ajax({
+                type: 'POST',
+                url: request_address,
+                data: {user: user},
+                success: function (responce) {
+                    //alert(responce);
+                    //console.log(responce);
+                    $('#gt_helper')[0].click();
+                    $('#modalLG').html('');
+                    $('#modalLG').html(responce);
+                }
+            })
+        }
+
+        $('#refreshBtn').click(function(){
+            location.reload();
+        });
+
+        {% if reload_time > 0 %}
+            //add +1 just for modulus
+            var time = ({{reload_time}} * 60)+1
+    
+            setInterval( function() {
+                
+                time--;
+                
+                if(time <= 60)
+                {
+                    $('#time').html('(Refresh in '+ time + ' seconds)');    
+                }
+                else
+                {
+                    t2 = time % 60;
+
+                    if(t2 == 0)
+                    {
+                        t2 = time / 60;
+                        $('#time').html('(Refresh in '+ t2 + ' minutes)');
+                    }
+                }
+                
+                if (time === 0) {
+                    
+                    location.reload()
+                }    
+                
+                
+            }, 1000 );
+        {% endif %}
+    </script>
+{% endblock %}

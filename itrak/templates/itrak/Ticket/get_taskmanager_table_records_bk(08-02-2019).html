@@ -1,0 +1,68 @@
+
+    {% load static %}
+    {% load tz %} {# it will Load the Django TimeZone Library#}
+    {% load templates_extras %}
+
+    {% for record in records %}
+
+        <tr id="tbl_row{{ record.task_order_val }}">
+            <td>
+                {% if record.task_completion_datetime %}
+                    {% if record.task_is_cancel == 1 %}
+                        <img alt="Cancelled" src="{% static 'itrak/images/RedCircleLine.gif' %} " border="0" style="">
+                    {% else %}
+                        {% if record.task_type_val == 1 or record.task_type_val == '1' %}
+                            {% if record.task_response_status == 2 or record.task_response_status == '2' %}
+                                <span style="color: red; font-weight: bold; font-size: 10px;text-align: center">No</span>
+                            {% elif record.task_response_status == 3 or record.task_response_status == '3' %}
+                                <span style="color: black; font-weight: bold; font-size: 10px;text-align: center">N/A</span>
+                            {% else %}
+                                <span style="color: green; font-weight: bold; font-size: 10px;text-align: center">Yes</span>
+                            {% endif %}
+                        {% else %}
+                            <img alt="Completed" src="{% static 'itrak/images/check.gif' %} " border="0" style="">
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            </td>
+            <td>{{ record.task_id_text_val }}</td>
+            <td>{{ record.task_assign_to_text_val }}</td>
+            <td>
+                {% if record.task_completion_datetime %}
+                    {{ record.task_completion_datetime }}
+                {% else %}
+                    {% if record.task_dependency_val == 0 %}
+                        {% if record.task_type_val == 1 or record.task_type_val == '1' %}
+                            <a href='javascript:void(0)' onclick="directTaskResponseAction(event,{{ record.task_order_val }},'yes');">Yes </a>
+                            <a href='javascript:void(0)' onclick="directTaskResponseAction(event,{{ record.task_order_val }},'no');"> | No</a>
+                            <a href='javascript:void(0)' onclick="directTaskResponseAction(event,{{ record.task_order_val }},'na');"> | N/A</a>
+                        {% else %}
+                            <a href='javascript:void(0)' onclick="directCompleteTask(event,{{ record.task_order_val }});"> task complete?</a>
+                        {% endif %}
+                    {% elif record.task_dependency_val == 1 and record.task_dependency_order_val == depend_value  %}
+                        {% if record.task_type_val == 1 or record.task_type_val == '1' %}
+                            <a href='javascript:void(0)' onclick="directTaskResponseAction(event,{{ record.task_order_val }},'yes');">Yes </a>
+                            <a href='javascript:void(0)' onclick="directTaskResponseAction(event,{{ record.task_order_val }},'no');"> | No</a>
+                            <a href='javascript:void(0)' onclick="directTaskResponseAction(event,{{ record.task_order_val }},'na');"> | N/A</a>
+                        {% else %}
+                            <a href='javascript:void(0)' onclick="directCompleteTask(event,{{ record.task_order_val }});"> task complete?</a>
+                        {% endif %}
+                    {% else %}
+                    {% endif %}
+                {% endif %}
+            </td>
+            <td>{% if record.task_laborhour_hours and record.task_laborhour_hours != '0' %}{{ record.task_laborhour_hours }}{% else %}00{% endif %}:{% if record.task_laborhour_minutes and record.task_laborhour_minutes != '0' %}{{ record.task_laborhour_minutes }}{% else %}00{% endif %}</td>
+{#            <td><input type="text" id="table-task-id{{ record.task_order_val }}" value="{{ record.task_id_text_val }}" readonly class="form-control"></td>#}
+{#            <td><input type="text" id="table-task-assign-to{{ record.task_order_val }}" value="{{ record.task_assign_to_text_val }}" readonly class="form-control"></td>#}
+{#            <td><input type="text" id="table-task-type{{ record.task_order_val }}" value="{% if record.task_completion_datetime %}{{ record.task_completion_datetime }}{% else %}{% if record.task_type_val == 1 %}Yes | No | N/A{% else %}<a href='javascript:void(0)'task complete?</a>{% endif %}{% endif %}" {% if record.task_completion_datetime != '' %}readonly{% endif %} class="form-control"></td>#}
+{#            <td><input type="text" id="table-labor-hour{{ record.task_order_val }}" value="{% if record.task_laborhour_hours %}{{ record.task_laborhour_hours }}{% else %}00{% endif %}:{% if record.task_laborhour_minutes %}{{ record.task_laborhour_minutes }}{% else %}00{% endif %}" readonly class="form-control"></td>#}
+        </tr>
+    {% endfor %}
+
+<script>
+
+$(document).ready(function() {
+
+});
+
+</script>

@@ -1,0 +1,207 @@
+{% extends 'itrak/base.html' %}
+
+{% block body_block %}
+    {% load static %}
+
+    <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-gears" aria-hidden="true"></i> Incoming Email</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+                    <li><span>Incoming Email</span></li>
+                    <li><span>Email Tokens</span></li>
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+
+        <!-- start: page -->
+        <div class="row">
+            <div class="col-md-12">
+                <section class="panel">
+                    <header class="panel-heading">
+                        <h2 class="panel-title">Email Tokens</h2>
+                    </header>
+                    <div class="panel-body">
+                        {% for message in messages %}
+                            <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            {{ message }}
+                            </div>
+                        {% endfor %}
+                        
+                        <p>The Incoming Email module comes with several field tokens you can include in the body text to set values on your Tickets. In addition, you may add and name tokens to represent and update user defined fields, if they are enabled.</p>
+                        <br>
+                        <h4>Field Tokens</h4>
+                        <hr>
+                        <table class="table mb-none">
+                            <thead>
+                                <tr>
+                                    <th>Action</th>
+                                    <th>Active</th>
+                                    <th>Field</th>
+                                    <th>Token Identifier</th>
+                                    <th>Input Type</th>
+                                    <th>Example</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for fieldToken in fieldTokens %}
+                                    <tr>
+                                        <td>
+                                            <a class="mb-xs mt-xs mr-xs modal-sizes" onclick="edit_field_token_modal({{ fieldToken.ft_id }});" href="#modalLG" data-id="{{ fieldToken.ft_field_name }}"><i class="fa fa-pencil"></i></a>{% if fieldToken.ft_is_deletable == 1 %} | <a href="#" data-href="Admin_FieldTokenDel?FTID={{fieldToken.ft_id}}" data-toggle="modal" data-target="#confirm-delete"><i class="fa fa-trash-o"></i></a>{% endif %}
+                                        </td>
+                                        <td><input type="checkbox" {% if fieldToken.ft_is_active == 1 %}checked{% endif %}></td>
+                                        <td>{{fieldToken.ft_field_name}}</td>
+                                        <td>{{fieldToken.ft_token_identifier}}</td>
+                                        <td>Text</td>
+                                        <td>[[{{fieldToken.ft_field_name}}:this is some text]]</td>
+                                    </tr>
+                                {% endfor%}
+                            </tbody>
+                        </table>
+                        <br>
+                        <br>
+                        <h4>User Defined Field Tokens</h4>
+                        <p>Tokens may be created for any Ticket - based user defined field that you have previously created.This flexibility allows you to add a token to the body text of the email that will set that field's value dynamically on your Ticket. Add those here:</p>
+                        <hr>
+                        <form action="{% url 'saveFieldToken' %}" method="post">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label class="col-md-2 control-label"><span class="required">*</span>UDF: </label>
+                                <div class="col-sm-5">
+                                    <select class="form-control" name="ft_field_name" id="ft_field_name">
+                                        <option value="Assigned-To">Assigned-To</option>
+                                        <option value="Next-Action">Next-Action</option>
+                                        <option value="Priority">Priority</option>
+                                        <option value="Substatus">Substatus</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-2 control-label"><span class="required">*</span>Token Identifier: </label>
+                                <div class="col-sm-5">
+                                    <input class="form-control input-large" type="text" name="ft_token_identifier" id="ft_token_identifier" size="50" maxlength="50" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-9">
+                                    <button class="btn btn-primary saveButton">Save</button>
+                                    <button type="reset" class="btn btn-default">Reset</button>
+                                </div>
+                            </div>
+                        </form>
+                        <br>
+                        <br>
+                        <h4>Command Tokens</h4>
+                        <p>Command tokens can be included in the body text of an incoming email to cause a particular action to be performed.</p>
+                        <hr>
+                        <table class="table mb-none">
+                            <thead>
+                                <tr>
+                                    <th>Action</th>
+                                    <th>Active</th>
+                                    <th>Command</th>
+                                    <th>Token Identifier</th>
+                                    <th>Example</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for commandToken in commandTokens %}
+                                    <tr>
+                                        <td>
+                                            <a class="mb-xs mt-xs mr-xs modal-sizes" onclick="edit_command_token_modal({{ commandToken.ct_id }});" href="#modalLG" data-id="{{ commandToken.ct_command_name }}"><i class="fa fa-pencil"></i></a>
+                                        </td>
+                                        <td>
+                                            <input type="checkbox" {% if commandToken.ct_is_active == 1 %}checked{% endif %}>
+                                        </td>
+                                        <td>{{commandToken.ct_command_name}}</td>
+                                        <td>{{commandToken.ct_token_identifier}}</td>
+                                        <td>[[{{commandToken.ct_command_name}}]]</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <div id="modalLG" class="modal-block modal-block-lg mfp-hide"></div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </section>
+    <!-- Modal Warning -->
+    {# Delete Modal Popup on Delete#}
+    <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                </div>
+
+                <div class="modal-body">
+                    <p>You are about to delete a record, this procedure is irreversible.</p>
+                    <strong>Do you want to proceed?</strong>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <a class="btn btn-danger btn-ok">Delete</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+{% endblock %}
+{% block script %}
+    <script>
+        function edit_command_token_modal(id){
+            $.ajax({
+                url:"{% url 'getModalCommadToken' %}",
+                type:'POST',
+                data:{
+                    'ct_id':id,
+                },
+                success:function(data){
+                    $('#modalLG').html('');
+                    $('#modalLG').html(data);
+                },
+                error:function(){
+                    console.log('error')
+                },
+            });
+        }
+        function modal_command_token_reset(id){
+            edit_command_token_modal(id);
+        }
+        function edit_field_token_modal(id){
+            $.ajax({
+                url:"{% url 'getModalFieldToken' %}",
+                type:'POST',
+                data:{
+                    'ft_id':id,
+                },
+                success:function(data){
+                    $('#modalLG').html('');
+                    $('#modalLG').html(data);
+                },
+                error:function(){
+                    console.log('error')
+                },
+            });
+        }
+        function modal_field_token_reset(id){
+            edit_field_token_modal(id);
+        }
+        $('#confirm-delete').on('show.bs.modal', function(e) {
+            $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+        });
+    </script>
+{% endblock %}

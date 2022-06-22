@@ -1,0 +1,273 @@
+    {% include "itrak/includes/header.html" %}
+   {% include "itrak/includes/top_bar.html" %}
+
+	<body>
+
+        {% block body_block %}
+        {% load static %}
+        {% load templates_extras %}
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-ticket" aria-hidden="true"></i> Report</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Report</span></li>
+								<li><span>Query Results</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+						<section class="panel">
+							<header class="panel-heading custom-style">
+                                {% if records.count > 0 %}
+                                    <div class="right-detail">
+                                        <h5 class="text-danger text-bold">
+                                            Export To Excel: <a href="javascript:getXlsDownload(0)" id="xlsbrief_list" class="">Brief</a> | <a href="javascript:getXlsDownload(1)" id="xlsdetail_list" class="">Detailed</a>
+                                        </h5>
+                                    </div>
+                                {% endif %}
+                           </header>
+							<div class="panel-body h5_mar_0">
+								<a href="{% url 'reportWriterReports' %}" class="back-text"><span class="fa fa-arrow-circle-left"> </span> Return to Report Selection</a>
+                                <div class="row">
+                                    <div class="col-md-3 col-sm-3">
+                                        <h5 class="text-primary"><b>Report Name: </b></h5>
+                                    </div>
+                                    <div class="col-md-4 col-sm-4">
+                                        <span class="text-primary col-md-10 col-sm-10">{{ report_name }}</span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3 col-sm-3">
+                                        <h5 class="text-primary"><b>Report Title: </b></h5>
+                                    </div>
+                                    <div class="col-md-4 col-sm-4">
+                                        <span class="text-primary col-md-10 col-sm-10">{{ report_title }}</span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3 col-sm-3">
+                                        <h5 class="text-primary"><b>Description: </b></h5>
+                                    </div>
+                                    <div class="col-md-4 col-sm-4">
+                                        <span class="text-primary col-md-10 col-sm-10">{{ report_description }}</span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3 col-sm-3">
+                                        <h5 class="text-primary"><b>Grouping: </b></h5>
+                                    </div>
+                                    <div class="col-md-4 col-sm-4">
+                                        <span class="text-primary col-md-10 col-sm-10">{% if groups %}{% for group in group %}{% endfor %}{{ group }}{% else %}No Specified{% endif %}</span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3 col-sm-3">
+                                        <h5 class="text-primary"><b>Sort: </b></h5>
+                                    </div>
+                                    <div class="col-md-4 col-sm-4">
+                                        <span class="text-primary col-md-10 col-sm-10">{% if groups %}{% for group in group %}{% endfor %}{{ group }}{% else %}No Specified{% endif %}</span>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-3 col-sm-3">
+                                        <h5 class="text-primary"><b>Number of Records: </b></h5>
+                                    </div>
+                                    <div class="col-md-4 col-sm-4">
+                                        <span class="text-primary col-md-10 col-sm-10">{{ records.count }}</span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3 col-sm-3">
+                                        <h5 class="text-primary"><b>Returned: </b></h5>
+                                    </div>
+                                    <div class="col-md-4 col-sm-4">
+                                        <span class="text-primary col-md-10 col-sm-10"></span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3 col-sm-3">
+                                        <h5 class="text-primary"><b>Report Run Date: </b></h5>
+                                    </div>
+                                    <div class="col-md-4 col-sm-4">
+                                        <span class="text-primary col-md-10 col-sm-10">{% now "m/d/Y h:i A" %}</span>
+                                    </div>
+                                </div>
+                                <form id="standard_form" name="standard_form" method="post" action="{% url 'export_tickets_xls' %}">
+                                    <input type="hidden" id="xlsType" name="xlsType" value="0">
+                                </form>
+                                <div style="overflow-x:auto;">
+    								<table class="table table-bordered table-striped table-condensed mb-none" id="datatable-default">
+                                    <thead>
+                                        <tr>
+                                            {% for head in report_headers %}
+                                                <th width="{% if head.column_width %}{{ head.column_width }}{% else %}0{% endif %}" style="min-width:fit-content;text-align:{% if head.justification == '1' %}center{% elif head.justification == '2' %}left{% else %}right{% endif %}">
+                                                    {{ head.column_name }}
+                                                </th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% if groups_sorting %}
+                                        {% for group_sort_array in groups_sorting %}
+                                            <h1>{{ groups|length }}</h1>
+                                            {% getGroupFieldFormatingByColumnName records group_sort_array fields_formating report_query_pair_id as group_records %}
+                                            {% if group_records %}
+                                                {% for record in group_records %}
+                                                    {% getGroupFieldRecordsDictByIndex record as group_record %}
+                                                    {% if group_record.header == 1 %}
+                                                        <tr>
+                                                            <td width="{% if group_record.column_width %}{{ group_record.column_width }}{% else %}0{% endif %}" style="min-width:fit-content;border-right:none;text-align:{% if group_record.justification == '1' %}center{% elif group_record.justification == '2' %}left{% else %}right{% endif %}">
+                                                                <strong>{{ group_record.group_record_name }}</strong>
+                                                            </td>
+                                                            <td colspan="{{ group_record.colspan }}"></td>
+                                                        </tr>
+                                                    {% endif %}
+                                                    {% getGroupChildFields record records selected_columns as report_group_fields %}
+                                                    {% if report_group_fields %}
+                                                        {% for record in report_group_fields %}
+                                                            <tr>
+                                                                {% for key, value in record.items %}
+                                                                    {% getFieldFormatingByColumnName fields_formating forloop.counter0 as format %}
+                                                                    <td width="{% if format.column_width %}{{ format.column_width }}{% else %}0{% endif %}" style="min-width:fit-content;text-align:{% if format.justification == '1' %}center{% elif format.justification == '2' %}left{% else %}right{% endif %}">
+                                                                        {% if key == 'ticket_id' %}
+                                                                            {% if value %}
+                                                                                <a href="Home_ViewTicket?tickID={% get_encrypted_id value %}" target="_blank" >{{ value }}</a>
+                                                                            {% endif %}
+                                                                        {% else %}
+                                                                            {% if value %}{{ value }}{% endif %}
+                                                                        {% endif %}
+                                                                    </td>
+                                                                {% endfor %}
+                                                            </tr>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                    {% if group_record.footer == 1 %}
+                                                        <tr>
+                                                            <td width="{% if group_record.column_width %}{{ group_record.column_width }}{% else %}0{% endif %}" style="min-width:fit-content;border-right:none;text-align:{% if group_record.justification == '1' %}center{% elif group_record.justification == '2' %}right{% else %}left{% endif %}">
+                                                                <strong>{{ group_record.group_record_name }} Total: {{ group_record.tcount }}</strong>
+                                                            </td>
+                                                            <td colspan="{{ group_record.colspan }}"></td>
+                                                        </tr>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+{#                                    {% if grouped_records %}#}
+{#                                        {% for grouped_record in grouped_records %}#}
+{#                                            {% getGroupFieldRecordsDictByIndex grouped_record as group_record %}#}
+{#                                            {% if group_record.header == 1 %}#}
+{#                                                <tr>#}
+{#                                                    <td width="{% if group_record.column_width %}{{ group_record.column_width }}{% else %}0{% endif %}" style="min-width:fit-content;border-right:none;text-align:{% if group_record.justification == '1' %}center{% elif group_record.justification == '2' %}left{% else %}right{% endif %}">#}
+{#                                                        <strong>{{ group_record.group_record_name }}</strong>#}
+{#                                                    </td>#}
+{#                                                    <td colspan="{{ group_record.colspan }}"></td>#}
+{#                                                </tr>#}
+{#                                            {% endif %}#}
+{#                                            {% getGroupChildFields grouped_record records selected_columns as report_group_fields %}#}
+{#                                            {% if report_group_fields %}#}
+{#                                                {% for record in report_group_fields %}#}
+{#                                                    <tr>#}
+{#                                                        {% for key, value in record.items %}#}
+{#                                                            {% getFieldFormatingByColumnName fields_formating forloop.counter0 as format %}#}
+{#                                                            <td width="{% if format.column_width %}{{ format.column_width }}{% else %}0{% endif %}" style="min-width:fit-content;text-align:{% if format.justification == '1' %}center{% elif format.justification == '2' %}left{% else %}right{% endif %}">#}
+{#                                                                {% if key == 'ticket_id' %}#}
+{#                                                                    {% if value %}#}
+{#                                                                        <a href="Home_ViewTicket?tickID={% get_encrypted_id value %}" target="_blank" >{{ value }}</a>#}
+{#                                                                    {% endif %}#}
+{#                                                                {% else %}#}
+{#                                                                    {% if value %}{{ value }}{% endif %}#}
+{#                                                                {% endif %}#}
+{#                                                            </td>#}
+{#                                                        {% endfor %}#}
+{#                                                    </tr>#}
+{#                                                {% endfor %}#}
+{#                                            {% endif %}#}
+{#                                            {% if group_record.footer == 1 %}#}
+{#                                                <tr>#}
+{#                                                    <td width="{% if group_record.column_width %}{{ group_record.column_width }}{% else %}0{% endif %}" style="min-width:fit-content;border-right:none;text-align:{% if group_record.justification == '1' %}center{% elif group_record.justification == '2' %}right{% else %}left{% endif %}">#}
+{#                                                        <strong>{{ group_record.group_record_name }} Total: {{ group_record.tcount }}</strong>#}
+{#                                                    </td>#}
+{#                                                    <td colspan="{{ group_record.colspan }}"></td>#}
+{#                                                </tr>#}
+{#                                            {% endif %}#}
+{#                                        {% endfor %}#}
+{#                                    {% endif %}#}
+{#                                    {% if records %}#}
+{#                                        {% for record, format in report_records %}#}
+{#                                            <tr>#}
+{#                                                {% for key, value in record.items %}#}
+{#                                                    {% getFieldFormatingByColumnName fields_formating forloop.counter0 as format %}#}
+{#                                                    <td width="{% if format.column_width %}{{ format.column_width }}{% else %}0{% endif %}" style="min-width:fit-content;text-align:{% if format.justification == '1' %}center{% elif format.justification == '2' %}left{% else %}right{% endif %}">#}
+{#                                                        {% if key == 'ticket_id' %}#}
+{#                                                            {% if value %}#}
+{#                                                                <a href="Home_ViewTicket?tickID={% get_encrypted_id value %}" target="_blank" >{{ value }}</a>#}
+{#                                                            {% endif %}#}
+{#                                                        {% else %}#}
+{#                                                            {% if value %}{{ value }}{% endif %}#}
+{#                                                        {% endif %}#}
+{#                                                    </td>#}
+{#                                                {% endfor %}#}
+{#                                            </tr>#}
+{#                                        {% endfor %}#}
+{#                                    {% endif %}#}
+                                    </tbody>
+								</table>
+                                </div>
+
+							</div>
+						</section>
+					<!-- end: page -->
+				</section>
+			</div>
+
+           <!-- Modal Warning -->
+        {# Delete Modal Popup on Delete#}
+        <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <p>You are about to delete a record, this procedure is irreversible.</p>
+                        <strong>Do you want to proceed?</strong>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <a class="btn btn-danger btn-ok">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% endblock %}
+
+    </body>
+    {% include "itrak/includes/footer.html" %}
+    {% block script %}
+        <script>
+            function getXlsDownload(id){
+                $('#xlsType').val(id)
+               $('#standard_form').trigger('submit');
+            }
+        </script>
+
+
+    {% endblock %}
+

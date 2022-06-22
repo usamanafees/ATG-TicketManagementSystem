@@ -1,0 +1,411 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-tasks" aria-hidden="true"></i> Business Rules</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Business Rules</span></li>
+								<li><span>Add Business Rules</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+                         <div class="row">
+                            <div class="col-md-12">
+                                {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                                <form id="summary-form" action="{% url 'saveBusinessRules' %}" method="post" class="form-horizontal business-add-form">
+                                    {% csrf_token %}
+                                    <section class="panel">
+                                        <header class="panel-heading">
+{#                                            <div class="panel-actions">#}
+{#                                                <a href="#" class="fa fa-caret-down"></a>#}
+{#                                                <a href="#" class="fa fa-times"></a>#}
+{#                                            </div>#}
+
+                                            <h2 class="panel-title">Add Business Rules</h2>
+                                        </header>
+
+                                        <div class="panel-body">
+                                            <div class="validation-message">
+                                                <ul></ul>
+                                        </div>
+                                        {% if user_id == 3108 %}
+                                        <div class="form-group">
+                                        <label class="col-md-3 col-sm-3 control-label">Organization: </label>
+                                            <div class="col-md-9 col-sm-9">
+                                                <div class="col-md-6 col-sm-7">
+                                                    <select name="BR_organizations" id="BR_organizations"   data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Organization", "allowClear": true }'>
+                                                        <option value="" readonly="readonly">Select an Organization </option>
+                                                        {% if organizations %}
+                                                            {% for organization in organizations %}
+                                                                <option value="{{ organization.org_id }}">{{ organization.org_name }}</option>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% else %}
+                                        <div class="form-group">
+                                            <div class="col-md-9 col-sm-9">
+                                                <div class="col-md-6 col-sm-7">
+                                                    <input type="hidden" value="{{organizations}}" name="BR_organizations" id="BR_organizations">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                         <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Department: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="BR_departments" id="BR_departments" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Department", "allowClear": true }'>
+                                                        <option value="" readonly="readonly">Select Department </option>
+                                                            {% if departments %}
+                                                                {% for department in departments %}
+                                                                    <option value="{{ department.dep_id }}">{{ department.dep_name }}</option>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                         <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Client: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="BR_clients" id="BR_clients"  data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Client", "allowClear": true }'>
+                                                        <option value="" readonly="readonly">Select Client </option>
+                                                            {% if clients %}
+                                                                {% for client in clients %}
+                                                                    <option value="{{ client.client_id }}">{{ client.client_name }}</option>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                           <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Ticket Type: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                         <select name="ticket_type" id="ticket_type_parent"  data-plugin-selectTwo class="form-control populate ticket_type placeholder" data-plugin-options='{ "placeholder": "Select Ticket Type", "allowClear": true }'>
+                                                        <option value="" readonly="readonly" >Select Ticket Type </option>
+                                                            {% if ticketTypes %}
+                                                                {% for ticketType in ticketTypes %}
+                                                                    <option value="{{ ticketType.ttype_id }}">{{ ticketType.ttype_name }}</option>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Subtype 1:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="subtype1" id="subtype1" data-plugin-selectTwo class="form-control populate ticket_type ticket_type_parent placeholder" data-plugin-options='{ "placeholder": "Select SubType1", "allowClear": true }'>
+                                                            <option value="" > </option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Subtype 2:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="subtype2" id="subtype2" data-plugin-selectTwo class="form-control populate ticket_type subtype1 placeholder" data-plugin-options='{ "placeholder": "Select Subtype2", "allowClear": true }'>
+                                                            <option value="" > </option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Subtype 3:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="subtype3" id="subtype3" data-plugin-selectTwo class="form-control populate ticket_type subtype2 placeholder" data-plugin-options='{ "placeholder": "Select Subtype3", "allowClear": true }'>
+                                                            <option value="" > </option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Subtype 4:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="subtype4" id="subtype4" data-plugin-selectTwo class="form-control populate ticket_type subtype3 placeholder" data-plugin-options='{ "placeholder": "Select Subtype4", "allowClear": true }'>
+                                                            <option value="" > </option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                    <label class="col-md-3 col-sm-3 control-label">Priority:{{ ttype.ttype_name }} </label>
+                                                    <div class="col-md-9 col-sm-9">
+                                                        <div class="col-md-6 col-sm-7">
+                                                            <select name="BR_priorities" id="BR_priorities" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Priority", "allowClear": true }'>
+                                                        <option value="" readonly="readonly" >Select Priority</option>
+                                                                {% if priorities %}
+                                                                    {% for priority in priorities %}
+                                                                        <option value="{{ priority.priority_id }}">{{ priority.priority_name }}</option>
+                                                                    {% endfor %}
+                                                                {% endif %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                <div class="form-group cus_business_rulesForm" style="width: 103%;">
+                                    <label for="" class="col-sm-3 control-label">Submitted Between:</label>
+                                    <div class="col-md-9 col-sm-9 more-left-space">
+                                        <select class="form-control input-tiny" value="{{data.start_hour}}" name="inp_starthour" id="inp_starthour">
+                                            <option {% if data.start_hour == "00" %} selected {% endif %} value="00">00</option>
+                                            <option {% if data.start_hour == "01" %} selected {% endif %} value="01">01</option>
+                                            <option {% if data.start_hour == "02" %} selected {% endif %} value="02">02</option>
+                                            <option {% if data.start_hour == "03" %} selected {% endif %} value="03">03</option>
+                                            <option {% if data.start_hour == "04" %} selected {% endif %} value="04">04</option>
+                                            <option {% if data.start_hour == "05" %} selected {% endif %} value="05">05</option>
+                                            <option {% if data.start_hour == "06" %} selected {% endif %} value="06">06</option>
+                                            <option {% if data.start_hour == "07" %} selected {% endif %} value="07">07</option>
+                                            <option {% if data.start_hour == "08" %} selected {% endif %} value="08">08</option>
+                                            <option {% if data.start_hour == "09" %} selected {% endif %} value="09">09</option>
+                                            <option {% if data.start_hour == "10" %} selected {% endif %} value="10">10</option>
+                                            <option {% if data.start_hour == "11" %} selected {% endif %} value="11">11</option>
+                                            <option {% if data.start_hour == "12" %} selected {% endif %} value="12">12</option>
+                                        </select>
+                                        <strong> : </strong>
+                                        <select class="form-control input-tiny" value="{{data.start_minutes}}" name="inp_startminutes" id="inp_startminutes">
+                                        {% for i in range1 %}
+                                            <option {{i}} >0{{i}}</option>
+                                        {% endfor %}
+
+                                        {% for i in range %}
+                                        <option {{i}} >{{i}}</option>
+                                        {% endfor %}
+                                        </select>
+                                        <select class="form-control input-tiny" value="{{data.start_AM_PM}}" name="inp_startAMPM" id="inp_startAMPM">
+                                            <option  {% if data.start_AM_PM == "AM" %} selected {% endif %}>AM</option>
+                                            <option {% if data.start_AM_PM == "PM" %} selected {% endif %} >PM</option>
+                                        </select>
+                                        <label for="" class="control-label">&nbsp; and &nbsp;</label>
+                                        <select class="form-control input-tiny" value="{{data.end_hour}}" name="inp_endhour" id="inp_endhour">
+                                            <option {% if data.end_hour == "00" %} selected {% endif %} value="00">00</option>
+                                            <option {% if data.end_hour == "01" %} selected {% endif %} value="01">01</option>
+                                            <option {% if data.end_hour == "02" %} selected {% endif %} value="02">02</option>
+                                            <option {% if data.end_hour == "03" %} selected {% endif %} value="03">03</option>
+                                            <option {% if data.end_hour == "04" %} selected {% endif %} value="04">04</option>
+                                            <option {% if data.end_hour == "05" %} selected {% endif %} value="05">05</option>
+                                            <option {% if data.end_hour == "06" %} selected {% endif %} value="06">06</option>
+                                            <option {% if data.end_hour == "07" %} selected {% endif %} value="07">07</option>
+                                            <option {% if data.end_hour == "08" %} selected {% endif %} value="08">08</option>
+                                            <option {% if data.end_hour == "09" %} selected {% endif %} value="09">09</option>
+                                            <option {% if data.end_hour == "10" %} selected {% endif %} value="10">10</option>
+                                            <option {% if data.end_hour == "11" %} selected {% endif %} value="11">11</option>
+                                            <option {% if data.end_hour == "12" %} selected {% endif %} value="12">12</option>
+                                        </select>
+                                        <strong> : </strong>
+                                        <select class="form-control input-tiny" value="{{data.end_minutes}}" name="inp_endminutes" id="inp_endminutes">
+                                            {% for i in range1 %}
+                                                <option {{i}} >0{{i}}</option>
+                                            {% endfor %}
+
+                                            {% for i in range %}
+                                                <option {{i}}>{{i}}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <select class="form-control input-tiny" value="{{data.end_AM_PM}}" name="inp_endAMPM" id="inp_endAMPM">
+                                            <option {% if data.end_AM_PM == "AM" %} selected {% endif %}>AM</option>
+                                            <option {% if data.end_AM_PM == "PM" %} selected {% endif %}>PM</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                        <div class="cus_select_days_box box-set-details">
+                                                <div class="form-group" >
+                                                    <label class="col-md-3 col-sm-3 control-label" style="padding-right: 18px;">Submitted On: </label>
+                                                    <div class="col-md-9 col-sm-9">
+                                                        <div class="col-md-6 col-sm-7">
+                                                            <input type="checkbox" name="inp_Monday" {% if data.monday == "on" %} checked {% endif %} id="inp_Monday" class="">
+                                                            Monday
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="" class="col-sm-3 control-label">&nbsp;</label>
+                                                    <div class="col-md-9 col-sm-9">
+                                                        <div class="col-md-6 col-sm-7">
+                                                            <input type="checkbox" name="inp_Tuesday" {% if data.tuesday == "on" %} checked {% endif %} id="inp_Tuesday" class="">
+                                                            Tuesday
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="" class="col-sm-3 control-label">&nbsp;</label>
+                                                    <div class="col-md-9 col-sm-9">
+                                                        <div class="col-md-6 col-sm-7">
+                                                            <input type="checkbox" name="inp_Wednesday" {% if data.wednesday == "on" %} checked {% endif %} id="inp_Wednesday" class="">
+                                                            Wednesday
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="" class="col-sm-3 control-label"></label>
+                                                    <div class="col-md-9 col-sm-9">
+                                                        <div class="col-md-6 col-sm-7">
+                                                            <input type="checkbox" name="inp_Thursday" {% if data.thursday == "on" %} checked {% endif %} id="inp_Thursday" class="">
+                                                            Thursday
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="" class="col-sm-3 control-label"></label>
+                                                    <div class="col-md-9 col-sm-9">
+                                                        <div class="col-md-6 col-sm-7">
+                                                            <input type="checkbox" name="inp_Friday" {% if data.friday == "on" %} checked {% endif %} id="inp_Friday" class="">
+                                                            Friday
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="" class="col-sm-3 control-label"></label>
+                                                    <div class="col-md-9 col-sm-9">
+                                                        <div class="col-md-6 col-sm-7">
+                                                            <input type="checkbox" name="inp_Saturday" {% if data.saturday == "on" %} checked {% endif %} id="inp_Saturday" class="">
+                                                            Saturday
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="" class="col-sm-3 control-label"></label>
+                                                    <div class="col-md-9 col-sm-9">
+                                                        <div class="col-md-6 col-sm-7">
+                                                            <input type="checkbox" name="inp_Sunday" {% if data.sunday == "on" %} checked {% endif %} id="inp_Sunday" class="">
+                                                            Sunday
+                                                        </div>
+                                                    </div>
+                                                </div><br>
+                                        </div>
+                                                <div class="form-group">
+                                                        <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span>Auto-Assign To: </label>
+                                                        <div class="col-md-9 col-sm-9">
+                                                            <div class="col-md-6 col-sm-7">
+                                                                <select name="assigned_to" id="assigned_to"  required="required" title="Select Auto-Assign" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Auto-Assign", "allowClear": true }'>
+                                                                    <option value="" readonly="readonly">Select Auto-Assign </option>
+                                                                    {% if users %}
+                                                                        {% for user in users %}
+                                                                            <option value="{{ user.id }}">{{ user.display_name }}</option>
+                                                                        {% endfor %}
+                                                                    {% endif %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                </div>
+                                        </div>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary saveButton">Save</button>
+                                                    <button type="reset" class="btn btn-default resetBtn">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                    </section>
+                                </form>
+                            </div>
+                        </div>
+					<!-- end: page -->
+				</section>
+			</div>
+
+    {% endblock %}
+
+    {% block script %}
+        <script>
+            $(document).on('change','.ticket_type', function(){
+                 console.log('asfdas');
+              var tid = $(this).val();
+              var ttype = $(this).attr('id');
+
+              if (tid != ''){
+                  $.ajax({
+                    type: 'POST',
+                    url: "{% url 'getTicketTypeChildById' %}",
+                    data: {ttype_id: tid},
+                    dataType: 'json',
+                    beforeSend: function(jqXHR, settings) {
+                        //Do something before send...
+                    },
+                    success: function(data, textStatus, jqXHR) {
+                        if(data.response) {
+                            result = jQuery.parseJSON(data['response'])
+                            if(ttype == 'ticket_type_parent') {
+                                $('#subtype1').html('<option value="" > </option>')
+                                $('#subtype2').html('<option value="" > </option>')
+                                $('#subtype3').html('<option value="" > </option>')
+                                $('#subtype4').html('<option value="" > </option>')
+                                $.each(result, function (index) {
+                                    $('#subtype1').append('<option value="' + result[index].pk + '">' + result[index].fields.ttype_name + '</option>')
+                                });
+                            }else if(ttype == 'subtype1'){
+                                $('#subtype2').html('<option value="" > </option>')
+                                $('#subtype3').html('<option value="" > </option>')
+                                $('#subtype4').html('<option value="" > </option>')
+                                $.each(result, function (index) {
+                                    $('#subtype2').append('<option value="' + result[index].pk + '">' + result[index].fields.ttype_name + '</option>')
+                                });
+                            }else if(ttype == 'subtype2'){
+                                $('#subtype3').html('<option value="" > </option>')
+                                $('#subtype4').html('<option value="" > </option>')
+                                $.each(result, function (index) {
+                                    $('#subtype3').append('<option value="' + result[index].pk + '">' + result[index].fields.ttype_name + '</option>')
+                                });
+                            }else if(ttype == 'subtype3'){
+                                $('#subtype4').html('<option value="" > </option>')
+                                $.each(result, function (index) {
+                                    $('#subtype4').append('<option value="'+result[index].pk+'">'+result[index].fields.ttype_name+'</option>')
+                                });
+                            }
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    }
+                  });
+              }
+
+            });
+
+             $('.resetBtn').on('click', function(e){
+                    $("#BR_organizations").select2("val", "");
+                    $("#BR_departments").select2("val", "");
+                    $("#BR_clients").select2("val", "");
+                    $("#ticket_type_parent").select2("val", "");
+                    $("#subtype1").select2("val", "");
+                    $("#subtype2").select2("val", "");
+                    $("#subtype3").select2("val", "");
+                    $("#subtype4").select2("val", "");
+                    $("#BR_priorities").select2("val", "");
+                    $("#assigned_to").select2("val", "");
+
+                });
+
+        </script>
+{% endblock %}
+
+

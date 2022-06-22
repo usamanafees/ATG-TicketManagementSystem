@@ -1,0 +1,210 @@
+{% extends 'itrak/base.html' %}
+{% block body_block %}
+    {% load static %}
+    {% load tz %} {# it will Load the Django TimeZone Library#}
+    {% load templates_extras %}
+
+    <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-file" aria-hidden="true"></i> New Report</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+                    <li><span>Reports</span></li>
+                    <li><span>New Report</span></li>
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+
+        <div class="row">
+            <div class="col-md-12">
+                {% for message in messages %}
+                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+
+                <section class="panel">
+                    <header class="panel-heading">
+                        <h2 class="panel-title">New Report</h2>
+                    </header>
+
+                    <div class="panel-body">
+                        <center><h3>Build Report: Step 6 of 6 - Save Report</h3></center>
+                        <form id="newReportForm" action="{% url 'saveFinalNewReport' %}" method="post" class="form-horizontal">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                    <a id="btn-cancel" class="btn btn-primary">Cancel </a>
+                                    <a id="btn-back" class="btn btn-primary">< Back</a>
+                                    <a id="btn-finish" class="btn btn-primary">Finish</a>
+                                    <a id="btn-save-run" class="btn btn-primary">Save & Run</a>
+                                </div>
+                            </div>
+                            <br>
+                            <center><p class="font-italic">How do you want to save the report?</p></center>
+                            <br>
+                            <div class="form-group">
+                                <label class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label"><span class="required">*</span> Report Name:</label>
+                                <div class="col-sm-5">
+                                    <input type="text" class="form-control" id="report_name" name="report_name" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label"> Report Title:</label>
+                                <div class="col-sm-5">
+                                    <input type="text" class="form-control" id="report_title" name="report_title">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-lg-2 col-md-2 col-sm-3 col-xs-3 share-tootltip control-label">
+                                	<div class="display-inline task-complete">
+                                		<span>Share</span>:
+	                                	<div class="custom-tooltip">
+	                                    	<div class="tooltip-header">
+	                                    		Share Checkbox
+	                                    	</div>
+	                                    	<div class="tooltip-body">
+	                                    		<p>By default queries are only available to the users who create them and System Administrators.  Selecting this 'Share' option will make the query available to everyone who can manage reports and view  Issues for your organization.</p>
+	                                    	</div>
+	                                    </div>
+	                                </div>
+                                </label>
+                                <div class="col-sm-5">
+                                    <input type="checkbox" class="space-top-custom" name="share" id="share" value="1">
+                                </div>
+                            </div>
+                            <div class="form-group full-width-inner" id="share_div" style="display:none">
+                                <label class="col-lg-2 col-md-2 col-sm-3 share-tootltip control-label">
+                               	 	<div class="display-inline task-complete">
+                                		<span>Share With</span>:
+	                                	<div class="custom-tooltip">
+	                                    	<div class="tooltip-header">
+	                                    		Share With Functionality
+	                                    	</div>
+	                                    	<div class="tooltip-body">
+	                                    		<p>Use the magnifying glass icon to select specific users and/or groups to have access to the query.</p>
+	                                    	</div>
+	                                    </div>
+	                                </div>
+                               </label>
+                                <div class="col-sm-5 full-width-inner">
+                                    <select id="share_with" name="share_with" class="form-control" multiple>
+
+                                        {% for user in users %}
+                                            <option value="{{ user.id }}">{{ user.last_name }} {{ user.first_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">Description:</label>
+                                <div class="col-sm-5">
+                                    <textarea rows="4" cols="50" name="description" id="description" class="form-control"></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+{% endblock %}
+
+{% block script %}
+<script>
+
+$(function() {
+
+    $('#share_with').multiselect({
+        includeSelectAllOption: true,
+        maxHeight: 250,
+        selectAllText: 'Everyone'
+    });
+
+    $("#share_with").multiselect('selectAll', false);
+    $("#share_with").multiselect('updateButtonText');
+
+});
+
+    $("#share").change(function() {
+        if(this.checked) {
+            $("#share_div").show();
+        }else{
+            $("#share_div").hide();
+        }
+    });
+
+
+
+    $("#next").click(function(){
+         var actual_column_names = $('#fields .actual_column_name').map(function() { return $(this).val(); }).get().join()
+         var column_names = $('#fields .column_name').map(function() { return $(this).val(); }).get().join()
+         var formats = $('#fields .format').map(function() { return $(this).val(); }).get().join()
+         var subtotals = $('#fields .subtotal').map(function() { return $(this).val(); }).get().join()
+         var justifications = $('#fields .justification').map(function() { return $(this).val(); }).get().join()
+         var column_widths = $('#fields .column_width').map(function() { return $(this).val(); }).get().join()
+
+         console.log(actual_column_names)
+         console.log(column_names)
+         console.log(formats)
+         console.log(subtotals)
+         console.log(justifications)
+         console.log(column_widths)
+
+         $.ajax({
+             type: 'POST',
+             url: "{% url 'setSavedSortExpression' %}",
+             data: {sort_expressions:sort_expressions},
+             success: function (data) {
+                 window.location.href = "{% url 'sixthReport' %}";
+             }
+         });
+    });
+
+
+    $("#btn-cancel").click(function(){
+        window.location.href = "{% url 'reportWriterReports' %}";
+    });
+
+    $("#btn-back").click(function(){
+        window.location.href = "{% url 'fifthReport' %}";
+    });
+
+    $("#btn-finish").click(function(){
+        if($('#report_name').val() == ''){
+            alert('Report Name cannot be Empty!');
+        }
+        else{
+            $('#newReportForm').submit();
+        }
+
+    });
+
+    $("#btn-save-run").click(function(){
+        if($('#report_name').val() == ''){
+            alert('Report Name cannot be Empty!');
+        }
+        else{
+            $('#newReportForm').attr('action',"{% url 'saveFinalNewReport' %}?IsRun=True");
+            $('#newReportForm').submit();
+        }
+
+    });
+
+</script>
+
+{% endblock %}

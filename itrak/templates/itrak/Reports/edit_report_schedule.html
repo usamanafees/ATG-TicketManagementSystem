@@ -1,0 +1,1255 @@
+{% extends 'itrak/base.html' %}
+
+{% block body_block %}
+    {% load static %}
+    {% load tz %}
+    {# it will Load the Django TimeZone Library#}
+    {% load templates_extras %}
+
+    <section role="main" class="content-body">
+        <header class="page-header">
+                       <h2><i class="fa fa-ticket" aria-hidden="true"></i>Report</h2>
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Report</span></li>
+								<li><span>Edit Scheduled Report</span></li>
+							</ol>
+                            
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+		</header>
+        <!-- start: page -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <form id="summary-form" class="ticketForm form-horizontal" action="{% url 'updateSch' %}" method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="sch_rpt_id" value="{{ data.sch_rpt_id }}" id="sch_rep_id"/>
+                                    <section class="panel">
+                                        <header class="panel-heading">
+						                    <h2 class="panel-title">Edit Scheduled Report</h2>
+                                        </header>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary saveButton">Update</button>
+                                                    <a class="btn btn-default resetBtn">Reset</a>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                        <div class="panel-body">
+                                            <div class="validation-message">
+                                                <ul></ul>
+                                            </div>
+                                             <div class="form-group">
+                                                <label class="col-md-3 control-label"><span class="required">*</span>Schedule Name:</label>
+                                                <div class="col-md-5 col-sm-6">
+                                                   <input type="text" name="sch_name" id="sch_name" value="{{data.sch_rpt_name}}" class="form-control" placeholder="eg.: ABC" title="Enter Schedule Name" required/>
+                                                </div>
+                                                <div class="col-sm-6 col-md-offset-3">
+                                                     <div class="checkbox">
+                                                         <label>
+                                                            <input type="checkbox" name="is_active" id="is_active" value="1"{% if data.is_active == 1 %}checked{% endif %} >
+                                                             <strong>Active</strong>
+                                                         </label>
+                                                     </div>
+                                                </div>
+                                            </div>
+                                              <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span> Report Type: </label>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <select name="rp_type" id="rp_type" required="required" title="Select Report"  class="form-control" value="{{data.rep_type}}" >
+
+                                                        <option value="0" readonly="readonly"{% if 0 == data.rep_type %} selected {% endif %}>Saved Search</option>
+
+
+                                                        <option value="1" {% if 1 == data.rep_type %} selected {% endif %}>Report Writer Report</option>
+
+                                                    </select>
+                                                </div>
+                                            </div>
+                                             <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span> Report Name: </label>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <select name="rep_name" id="rep_name"  class="form-control ">
+                                                        <option value="" readonly="readonly" selected ></option>
+                                                          
+                                                    </select>
+                                                </div>
+                                            </div>
+                                              <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span> Output Type: </label>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <select name="out_type" id="out_type" required="required" title="Select Report"  class="form-control ">
+                                                        <option value="0" readonly="readonly" {% if 0 == data.out_type %}selected{% endif %}>Excel</option>
+                                                        <option value="1" {% if 1 == data.out_type %}selected{% endif %}>HTML</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span>Schedule:</label>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <select name="schedule" value="{{data.schedule}}" id="schedule" required="required" title="Select Report"  class="form-control " >
+                                                        <option value="1" readonly="readonly" {% if 1 == data.schedule %}selected{% endif %}>Daily</option>
+                                                                <option value="2" {% if 2 == data.schedule %}selected{% endif %}>Weekly</option>
+                                                                <option value="3" {% if 3 == data.schedule %}selected{% endif %}>Monthly</option>
+                                                                <option value="4" {% if 4 == data.schedule %}selected{% endif %}>Quarterly</option>
+                                                                <option value="5" {% if 5 == data.schedule %}selected{% endif %}>Biannually</option>
+                                                                <option value="6" {% if 6 == data.schedule %}selected{% endif %}>Annually</option>
+                                                                <option value="7" {% if 7 == data.schedule %}selected{% endif %}>One Time Only</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group" id="field_value_div" style="display:None">
+                                               <label class="col-md-3 col-sm-3 control-label">On:</label>
+                                               <div class="col-md-4 col-sm-6">
+                                                  <select id="week_days" name="week_days" class="form-control" multiple>
+                                                    <option value="1"{% if '1' in week_days %}selected{% endif %}>Monday</option>
+                                                    <option value="2"{% if '2' in week_days %}selected{% endif %}>Tuesday</option>
+                                                    <option value="3"{% if '3' in week_days %}selected{% endif %}>Wednesday</option>
+                                                    <option value="4"{% if '4' in week_days %}selected{% endif %}>Thursday</option>
+                                                    <option value="5"{% if '5' in week_days %}selected{% endif %}>Friday</option>
+                                                    <option value="6"{% if '6' in week_days %}selected{% endif %}>Saturday</option>
+                                                    <option value="7"{% if '7' in week_days %}selected{% endif %}>Sunday</option>     
+                                                    </select>
+                                               </div>
+                                            </div>
+                                            <div id="field_value_div1" style="display:None">
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label" for=""></label>
+                                                        <div class="col-sm-1">
+                                                            <label>
+                                                                {% if  data1.is_MonthDay_Specific == 0%}
+                                                                <input type="radio" class="radio-button" id="is_MonthDay_Specific" name="is_MonthDay_Specific" value="{{data1.is_MonthDay_Specific}}" {% if data1.is_MonthDay_Specific == 0 %}checked{% endif %} >
+                                                                {% else %}
+                                                                      <input type="radio" class="radio-button" name="is_MonthDay_Specific" value="0">
+                                                                {% endif %}
+                                                                <strong>Day</strong>
+                                                            </label>
+                                                        </div>
+                                                    <div class="col-sm-1 col-xs-4 all-space-auto">
+                                                        <select name="Day_value" id="Day_value" required="" title=""  class="form-control " >
+                                                                <option value="1" readonly="readonly" {% if '1' == data1.days %}selected{% endif %}>1</option>
+                                                                <option value="2" {% if '2' == data1.days %}selected{% endif %}>2</option>
+                                                                <option value="3"{% if '3' == data1.days %}selected{% endif %}>3</option>
+                                                                <option value="4"{% if '4' == data1.days %}selected{% endif %}>4</option>
+                                                                <option value="5"{% if '5' == data1.days %}selected{% endif %}>5</option>
+                                                                <option value="6"{% if '6' == data1.days %}selected{% endif %}>6</option>
+                                                                <option value="7"{% if '7' == data1.days %}selected{% endif %}>7</option>
+                                                                <option value="8"{% if '8' == data1.days %}selected{% endif %}>8</option>
+                                                                <option value="9"{% if '9' == data1.days %}selected{% endif %}>9</option>
+                                                                <option value="10"{% if '10' == data1.days %}selected{% endif %}>10</option>
+                                                                <option value="11"{% if '11' == data1.days %}selected{% endif %}>11</option>
+                                                                <option value="12"{% if '12' == data1.days %}selected{% endif %}>12</option>
+                                                                <option value="13"{% if '13' == data1.days %}selected{% endif %}>13</option>
+                                                                <option value="14"{% if '14' == data1.days %}selected{% endif %}>14</option>
+                                                                <option value="15"{% if '15' == data1.days %}selected{% endif %}>15</option>
+                                                                <option value="16"{% if '16' == data1.days %}selected{% endif %}>16</option>
+                                                                <option value="17"{% if '17' == data1.days %}selected{% endif %}>17</option>
+                                                                <option value="18"{% if '18' == data1.days %}selected{% endif %}>18</option>
+                                                                <option value="19"{% if '19' == data1.days %}selected{% endif %}>19</option>
+                                                                <option value="20"{% if '20' == data1.days %}selected{% endif %}>20</option>
+                                                                <option value="21"{% if '21' == data1.days %}selected{% endif %}>21</option>
+                                                                <option value="22"{% if '22' == data1.days %}selected{% endif %}>22</option>
+                                                                <option value="23"{% if '23' == data1.days %}selected{% endif %}>23</option>
+                                                                <option value="24"{% if '24' == data1.days %}selected{% endif %}>24</option>
+                                                                <option value="25"{% if '25' == data1.days %}selected{% endif %}>25</option>
+                                                                <option value="26"{% if '26' == data1.days %}selected{% endif %}>26</option>
+                                                                <option value="27"{% if '27' == data1.days %}selected{% endif %}>27</option>
+                                                                <option value="28"{% if '28' == data1.days %}selected{% endif %}>28</option>
+                                                                <option value="29"{% if '29' == data1.days %}selected{% endif %}>29</option>
+                                                                <option value="30"{% if '30' == data1.days %}selected{% endif %}>30</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-sm-1 col-xs-1 all-space-auto">
+                                                        of every
+                                                    </div>
+                                                    <div class="col-sm-1 col-xs-1 all-space-auto">
+                                                        <select name="Day_every_month" id="Day_every_month" required="" title=""  class="form-control " >
+                                                            {% if data1.is_MonthDay_Specific == 0 %}
+                                                            <option value="1" readonly="readonly" {% if 1 == data1.everyMonth %}selected{% endif %} >1</option>
+                                                            <option value="2" {% if 2 == data1.everyMonth %}selected{% endif %}>2</option>
+                                                            <option value="3"{% if 3 == data1.everyMonth %}selected{% endif %}>3</option>
+                                                            <option value="4"{% if 4 == data1.everyMonth %}selected{% endif %}>4</option>
+                                                            <option value="5"{% if 5 == data1.everyMonth %}selected{% endif %}>5</option>
+                                                            <option value="6"{% if 6 == data1.everyMonth %}selected{% endif %}>6</option>
+                                                            <option value="7"{% if 7 == data1.everyMonth %}selected{% endif %}>7</option>
+                                                            <option value="8"{% if 8 == data1.everyMonth %}selected{% endif %}>8</option>
+                                                            <option value="9"{% if 9 == data1.everyMonth %}selected{% endif %}>9</option>
+                                                            <option value="10"{% if 10 == data1.everyMonth %}selected{% endif %}>10</option>
+                                                            <option value="11"{% if 11 == data1.everyMonth %}selected{% endif %}>11</option>
+                                                            <option value="12"{% if 12 == data1.everyMonth %}selected{% endif %}>12</option>
+                                                            <option value="13"{% if 13 == data1.everyMonth %}selected{% endif %}>13</option>
+                                                            <option value="14"{% if 14 == data1.everyMonth %}selected{% endif %}>14</option>
+                                                            <option value="15"{% if 15 == data1.everyMonth %}selected{% endif %}>15</option>
+                                                            <option value="16"{% if 16 == data1.everyMonth %}selected{% endif %}>16</option>
+                                                            <option value="17"{% if 17 == data1.everyMonth %}selected{% endif %}>17</option>
+                                                            <option value="18"{% if 18 == data1.everyMonth %}selected{% endif %}>18</option>
+                                                            <option value="19"{% if 19 == data1.everyMonth %}selected{% endif %}>19</option>
+                                                            <option value="20"{% if 20 == data1.everyMonth %}selected{% endif %}>20</option>
+                                                            <option value="21"{% if 21 == data1.everyMonth %}selected{% endif %}>21</option>
+                                                            <option value="22"{% if 22 == data1.everyMonth %}selected{% endif %}>22</option>
+                                                            <option value="23"{% if 23 == data1.everyMonth %}selected{% endif %}>23</option>
+                                                            <option value="24"{% if 24 == data1.everyMonth %}selected{% endif %}>24</option>
+                                                            <option value="25"{% if 25 == data1.everyMonth %}selected{% endif %}>25</option>
+                                                            <option value="26"{% if 26 == data1.everyMonth %}selected{% endif %}>26</option>
+                                                            <option value="27"{% if 27 == data1.everyMonth %}selected{% endif %}>27</option>
+                                                            <option value="28"{% if 28 == data1.everyMonth %}selected{% endif %}>28</option>
+                                                            <option value="29"{% if 29 == data1.everyMonth %}selected{% endif %}>29</option>
+                                                            <option value="30"{% if 30 == data1.everyMonth %}selected{% endif %}>30</option>
+                                                            <option value="31"{% if 31 == data1.everyMonth %}selected{% endif %}>31</option>
+                                                            <option value="32"{% if 32 == data1.everyMonth %}selected{% endif %}>32</option>
+                                                            <option value="33"{% if 33 == data1.everyMonth %}selected{% endif %}>33</option>
+                                                            <option value="34"{% if 34 == data1.everyMonth %}selected{% endif %}>34</option>
+                                                            <option value="35"{% if 35 == data1.everyMonth %}selected{% endif %}>35</option>
+                                                            <option value="36"{% if 36 == data1.everyMonth %}selected{% endif %}>36</option>
+                                                            <option value="37"{% if 37 == data1.everyMonth %}selected{% endif %}>37</option>
+                                                            <option value="38"{% if 38 == data1.everyMonth %}selected{% endif %}>38</option>
+                                                            <option value="39"{% if 39 == data1.everyMonth %}selected{% endif %}>39</option>
+                                                            <option value="40"{% if 40 == data1.everyMonth %}selected{% endif %}>40</option>
+                                                            <option value="41"{% if 41 == data1.everyMonth %}selected{% endif %}>41</option>
+                                                            <option value="42"{% if 42 == data1.everyMonth %}selected{% endif %}>42</option>
+                                                            <option value="43"{% if 43 == data1.everyMonth %}selected{% endif %}>43</option>
+                                                            <option value="44"{% if 44 == data1.everyMonth %}selected{% endif %}>44</option>
+                                                            <option value="45"{% if 45 == data1.everyMonth %}selected{% endif %}>45</option>
+                                                            <option value="46"{% if 46 == data1.everyMonth %}selected{% endif %}>46</option>
+                                                            <option value="47"{% if 47 == data1.everyMonth %}selected{% endif %}>47</option>
+                                                            <option value="48"{% if 48 == data1.everyMonth %}selected{% endif %}>48</option>
+                                                            <option value="49"{% if 49 == data1.everyMonth %}selected{% endif %}>49</option>
+                                                            <option value="50"{% if 50 == data1.everyMonth %}selected{% endif %}>50</option>
+                                                            <option value="51"{% if 51 == data1.everyMonth %}selected{% endif %}>51</option>
+                                                            <option value="52"{% if 52 == data1.everyMonth %}selected{% endif %}>52</option>
+                                                            <option value="53"{% if 53 == data1.everyMonth %}selected{% endif %}>53</option>
+                                                            <option value="54"{% if 54 == data1.everyMonth %}selected{% endif %}>54</option>
+                                                            <option value="55"{% if 55 == data1.everyMonth %}selected{% endif %}>55</option>
+                                                            <option value="56"{% if 56 == data1.everyMonth %}selected{% endif %}>56</option>
+                                                            <option value="57"{% if 57 == data1.everyMonth %}selected{% endif %}>57</option>
+                                                            <option value="58"{% if 58 == data1.everyMonth %}selected{% endif %}>58</option>
+                                                            <option value="59"{% if 59 == data1.everyMonth %}selected{% endif %}>59</option>
+                                                            <option value="60"{% if 60 == data1.everyMonth %}selected{% endif %}>60</option>
+                                                            <option value="61"{% if 61 == data1.everyMonth %}selected{% endif %}>61</option>
+                                                            <option value="62"{% if 62 == data1.everyMonth %}selected{% endif %}>62</option>
+                                                            <option value="63"{% if 63 == data1.everyMonth %}selected{% endif %}>63</option>
+                                                            <option value="64"{% if 64 == data1.everyMonth %}selected{% endif %}>64</option>
+                                                            <option value="65"{% if 65 == data1.everyMonth %}selected{% endif %}>65</option>
+                                                            <option value="66"{% if 66 == data1.everyMonth %}selected{% endif %}>66</option>
+                                                            <option value="67"{% if 67 == data1.everyMonth %}selected{% endif %}>67</option>
+                                                            <option value="68"{% if 68 == data1.everyMonth %}selected{% endif %}>68</option>
+                                                            <option value="69"{% if 69 == data1.everyMonth %}selected{% endif %}>69</option>
+                                                            <option value="70"{% if 70 == data1.everyMonth %}selected{% endif %}>70</option>
+                                                            <option value="71"{% if 71 == data1.everyMonth %}selected{% endif %}>71</option>
+                                                            <option value="72"{% if 72 == data1.everyMonth %}selected{% endif %}>72</option>
+                                                            <option value="73"{% if 73 == data1.everyMonth %}selected{% endif %}>73</option>
+                                                            <option value="74"{% if 74 == data1.everyMonth %}selected{% endif %}>74</option>
+                                                            <option value="75"{% if 75 == data1.everyMonth %}selected{% endif %}>75</option>
+                                                            <option value="76"{% if 76 == data1.everyMonth %}selected{% endif %}>76</option>
+                                                            <option value="77"{% if 77 == data1.everyMonth %}selected{% endif %}>77</option>
+                                                            <option value="78"{% if 78 == data1.everyMonth %}selected{% endif %}>78</option>
+                                                            <option value="79"{% if 79 == data1.everyMonth %}selected{% endif %}>79</option>
+                                                            <option value="80"{% if 80 == data1.everyMonth %}selected{% endif %}>80</option>
+                                                            <option value="81"{% if 81 == data1.everyMonth %}selected{% endif %}>81</option>
+                                                            <option value="82"{% if 82 == data1.everyMonth %}selected{% endif %}>82</option>
+                                                            <option value="83"{% if 83 == data1.everyMonth %}selected{% endif %}>83</option>
+                                                            <option value="84"{% if 84 == data1.everyMonth %}selected{% endif %}>84</option>
+                                                            <option value="85"{% if 85 == data1.everyMonth %}selected{% endif %}>85</option>
+                                                            <option value="86"{% if 86 == data1.everyMonth %}selected{% endif %}>86</option>
+                                                            <option value="87"{% if 87 == data1.everyMonth %}selected{% endif %}>87</option>
+                                                            <option value="88"{% if 88 == data1.everyMonth %}selected{% endif %}>88</option>
+                                                            <option value="89"{% if 89 == data1.everyMonth %}selected{% endif %}>89</option>
+                                                            <option value="90"{% if 90 == data1.everyMonth %}selected{% endif %}>90</option>
+                                                            <option value="91"{% if 91 == data1.everyMonth %}selected{% endif %}>91</option>
+                                                            <option value="92"{% if 92 == data1.everyMonth %}selected{% endif %}>92</option>
+                                                            <option value="93"{% if 93 == data1.everyMonth %}selected{% endif %}>93</option>
+                                                            <option value="94"{% if 94 == data1.everyMonth %}selected{% endif %}>94</option>
+                                                            <option value="95"{% if 95 == data1.everyMonth %}selected{% endif %}>95</option>
+                                                            <option value="96"{% if 96 == data1.everyMonth %}selected{% endif %}>96</option>
+                                                            <option value="97"{% if 97 == data1.everyMonth %}selected{% endif %}>97</option>
+                                                            <option value="98"{% if 98 == data1.everyMonth %}selected{% endif %}>98</option>
+                                                            <option value="99"{% if 99 == data1.everyMonth %}selected{% endif %}>99</option>
+                                                            {%else%}
+                                                            <option value="1" readonly="readonly" selected >1</option>
+                                                            <option value="2">2</option>
+                                                            <option value="3">3</option>
+                                                            <option value="4">4</option>
+                                                            <option value="5">5</option>
+                                                            <option value="6">6</option>
+                                                            <option value="7">7</option>
+                                                            <option value="8">8</option>
+                                                            <option value="9">9</option>
+                                                            <option value="10">10</option>
+                                                            <option value="11">11</option>
+                                                            <option value="12">12</option>
+                                                            <option value="13">13</option>
+                                                            <option value="14">14</option>
+                                                            <option value="15">15</option>
+                                                            <option value="16">16</option>
+                                                            <option value="17">17</option>
+                                                            <option value="18">18</option>
+                                                            <option value="19">19</option>
+                                                            <option value="20">20</option>
+                                                            <option value="21">21</option>
+                                                            <option value="22">22</option>
+                                                            <option value="23">23</option>
+                                                            <option value="24">24</option>
+                                                            <option value="25">25</option>
+                                                            <option value="26">26</option>
+                                                            <option value="27">27</option>
+                                                            <option value="28">28</option>
+                                                            <option value="29">29</option>
+                                                            <option value="30">30</option>
+                                                            <option value="31">31</option>
+                                                            <option value="32">32</option>
+                                                            <option value="33">33</option>
+                                                            <option value="34">34</option>
+                                                            <option value="35">35</option>
+                                                            <option value="36">36</option>
+                                                            <option value="37">37</option>
+                                                            <option value="38">38</option>
+                                                            <option value="39">39</option>
+                                                            <option value="40">40</option>
+                                                            <option value="41">41</option>
+                                                            <option value="42">42</option>
+                                                            <option value="43">43</option>
+                                                            <option value="44">44</option>
+                                                            <option value="45">45</option>
+                                                            <option value="46">46</option>
+                                                            <option value="47">47</option>
+                                                            <option value="48">48</option>
+                                                            <option value="49">49</option>
+                                                            <option value="50">50</option>
+                                                            <option value="51">51</option>
+                                                            <option value="52">52</option>
+                                                            <option value="53">53</option>
+                                                            <option value="54">54</option>
+                                                            <option value="55">55</option>
+                                                            <option value="56">56</option>
+                                                            <option value="57">57</option>
+                                                            <option value="58">58</option>
+                                                            <option value="59">59</option>
+                                                            <option value="60">60</option>
+                                                            <option value="61">61</option>
+                                                            <option value="62">62</option>
+                                                            <option value="63">63</option>
+                                                            <option value="64">64</option>
+                                                            <option value="65">65</option>
+                                                            <option value="66">66</option>
+                                                            <option value="67">67</option>
+                                                            <option value="68">68</option>
+                                                            <option value="69">69</option>
+                                                            <option value="70">70</option>
+                                                            <option value="71">71</option>
+                                                            <option value="72">72</option>
+                                                            <option value="73">73</option>
+                                                            <option value="74">74</option>
+                                                            <option value="75">75</option>
+                                                            <option value="76">76</option>
+                                                            <option value="77">77</option>
+                                                            <option value="78">78</option>
+                                                            <option value="79">79</option>
+                                                            <option value="80">80</option>
+                                                            <option value="81">81</option>
+                                                            <option value="82">82</option>
+                                                            <option value="83">83</option>
+                                                            <option value="84">84</option>
+                                                            <option value="85">85</option>
+                                                            <option value="86">86</option>
+                                                            <option value="87">87</option>
+                                                            <option value="88">88</option>
+                                                            <option value="89">89</option>
+                                                            <option value="90">90</option>
+                                                            <option value="91">91</option>
+                                                            <option value="91">92</option>
+                                                            <option value="91">93</option>
+                                                            <option value="91">94</option>
+                                                            <option value="91">95</option>
+                                                            <option value="91">96</option>
+                                                            <option value="91">97</option>
+                                                            <option value="91">98</option>
+                                                            <option value="91">99</option>
+                                                            {%endif%}
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-sm-1 col-xs-1 all-space-auto">
+                                                        month(s)
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label" for=""></label>
+                                                        <div class="col-sm-1">
+                                                            <label>
+                                                                {% if data1.is_MonthDay_Specific == 1 %}
+                                                                 <input type="radio" class="radio-button" id="is_MonthDay_Specific" name="is_MonthDay_Specific" value="{{data1.is_MonthDay_Specific}}"  {% if data1.is_MonthDay_Specific == 1 %}checked{% endif %}>
+                                                                    {% else %}
+                                                                      <input type="radio" class="radio-button" name="is_MonthDay_Specific" value="1">
+                                                                   {% endif %}
+                                                                    <strong>The</strong>
+                                                            </label>
+                                                        </div>
+                                                        <div class="col-sm-1 col-xs-4 all-space-auto">
+                                                            <select name="the_first" id="the_first" required="" title=""  class="form-control " >
+                                                                <option value="1" readonly="readonly" {% if 1 == data1.the_first %}selected{% endif %} >First</option>
+                                                                <option value="2" {% if 2 == data1.the_first %}selected{% endif %}>Second</option>
+                                                                <option value="3" {% if 3 == data1.the_first %}selected{% endif %}>Third</option>
+                                                                <option value="4" {% if 4 == data1.the_first %}selected{% endif %}>Fourth</option>
+                                                                <option value="5" {% if 5 == data1.the_first %}selected{% endif %}>Last</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-sm-1 col-xs-1 all-space-auto">
+                                                            <select name="the_days" id="the_days" required="" title=""  class="form-control " >
+                                                                <option value="1" readonly="readonly" {% if 1 == data1.single_WeakDay %}selected{% endif %}>Monday</option>
+                                                                <option value="2" {% if 2 == data1.single_WeakDay %}selected{% endif %}>Tuesday</option>
+                                                                <option value="3" {% if 3 == data1.single_WeakDay %}selected{% endif %}>Wednesday</option>
+                                                                <option value="4" {% if 4 == data1.single_WeakDay %}selected{% endif %}>Thursday</option>
+                                                                <option value="5" {% if 5 == data1.single_WeakDay %}selected{% endif %}>Friday</option>
+                                                                <option value="6" {% if 6 == data1.single_WeakDay %}selected{% endif %}>Saturday</option>
+                                                                <option value="7" {% if 7 == data1.single_WeakDay %}selected{% endif %}>Sunday</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-sm-1 col-xs-1 all-space-auto">
+                                                            of every
+                                                        </div>
+                                                        <div class="col-sm-1 col-xs-1 all-space-auto">
+                                                            <select name="the_every_month" id="the_every_month" required="" title=""  class="form-control " >
+                                                             {% if data1.is_MonthDay_Specific == 1 %}
+                                                            <option value="1" readonly="readonly" {% if 1 == data1.everyMonth %}selected{% endif %} >1</option>
+                                                            <option value="2" {% if 2 == data1.everyMonth %}selected{% endif %}>2</option>
+                                                            <option value="3"{% if 3 == data1.everyMonth %}selected{% endif %}>3</option>
+                                                            <option value="4"{% if 4 == data1.everyMonth %}selected{% endif %}>4</option>
+                                                            <option value="5"{% if 5 == data1.everyMonth %}selected{% endif %}>5</option>
+                                                            <option value="6"{% if 6 == data1.everyMonth %}selected{% endif %}>6</option>
+                                                            <option value="7"{% if 7 == data1.everyMonth %}selected{% endif %}>7</option>
+                                                            <option value="8"{% if 8 == data1.everyMonth %}selected{% endif %}>8</option>
+                                                            <option value="9"{% if 9 == data1.everyMonth %}selected{% endif %}>9</option>
+                                                            <option value="10"{% if 10 == data1.everyMonth %}selected{% endif %}>10</option>
+                                                            <option value="11"{% if 11 == data1.everyMonth %}selected{% endif %}>11</option>
+                                                            <option value="12"{% if 12 == data1.everyMonth %}selected{% endif %}>12</option>
+                                                            <option value="13"{% if 13 == data1.everyMonth %}selected{% endif %}>13</option>
+                                                            <option value="14"{% if 14 == data1.everyMonth %}selected{% endif %}>14</option>
+                                                            <option value="15"{% if 15 == data1.everyMonth %}selected{% endif %}>15</option>
+                                                            <option value="16"{% if 16 == data1.everyMonth %}selected{% endif %}>16</option>
+                                                            <option value="17"{% if 17 == data1.everyMonth %}selected{% endif %}>17</option>
+                                                            <option value="18"{% if 18 == data1.everyMonth %}selected{% endif %}>18</option>
+                                                            <option value="19"{% if 19 == data1.everyMonth %}selected{% endif %}>19</option>
+                                                            <option value="20"{% if 20 == data1.everyMonth %}selected{% endif %}>20</option>
+                                                            <option value="21"{% if 21 == data1.everyMonth %}selected{% endif %}>21</option>
+                                                            <option value="22"{% if 22 == data1.everyMonth %}selected{% endif %}>22</option>
+                                                            <option value="23"{% if 23 == data1.everyMonth %}selected{% endif %}>23</option>
+                                                            <option value="24"{% if 24 == data1.everyMonth %}selected{% endif %}>24</option>
+                                                            <option value="25"{% if 25 == data1.everyMonth %}selected{% endif %}>25</option>
+                                                            <option value="26"{% if 26 == data1.everyMonth %}selected{% endif %}>26</option>
+                                                            <option value="27"{% if 27 == data1.everyMonth %}selected{% endif %}>27</option>
+                                                            <option value="28"{% if 28 == data1.everyMonth %}selected{% endif %}>28</option>
+                                                            <option value="29"{% if 29 == data1.everyMonth %}selected{% endif %}>29</option>
+                                                            <option value="30"{% if 30 == data1.everyMonth %}selected{% endif %}>30</option>
+                                                            <option value="31"{% if 31 == data1.everyMonth %}selected{% endif %}>31</option>
+                                                            <option value="32"{% if 32 == data1.everyMonth %}selected{% endif %}>32</option>
+                                                            <option value="33"{% if 33 == data1.everyMonth %}selected{% endif %}>33</option>
+                                                            <option value="34"{% if 34 == data1.everyMonth %}selected{% endif %}>34</option>
+                                                            <option value="35"{% if 35 == data1.everyMonth %}selected{% endif %}>35</option>
+                                                            <option value="36"{% if 36 == data1.everyMonth %}selected{% endif %}>36</option>
+                                                            <option value="37"{% if 37 == data1.everyMonth %}selected{% endif %}>37</option>
+                                                            <option value="38"{% if 38 == data1.everyMonth %}selected{% endif %}>38</option>
+                                                            <option value="39"{% if 39 == data1.everyMonth %}selected{% endif %}>39</option>
+                                                            <option value="40"{% if 40 == data1.everyMonth %}selected{% endif %}>40</option>
+                                                            <option value="41"{% if 41 == data1.everyMonth %}selected{% endif %}>41</option>
+                                                            <option value="42"{% if 42 == data1.everyMonth %}selected{% endif %}>42</option>
+                                                            <option value="43"{% if 43 == data1.everyMonth %}selected{% endif %}>43</option>
+                                                            <option value="44"{% if 44 == data1.everyMonth %}selected{% endif %}>44</option>
+                                                            <option value="45"{% if 45 == data1.everyMonth %}selected{% endif %}>45</option>
+                                                            <option value="46"{% if 46 == data1.everyMonth %}selected{% endif %}>46</option>
+                                                            <option value="47"{% if 47 == data1.everyMonth %}selected{% endif %}>47</option>
+                                                            <option value="48"{% if 48 == data1.everyMonth %}selected{% endif %}>48</option>
+                                                            <option value="49"{% if 49 == data1.everyMonth %}selected{% endif %}>49</option>
+                                                            <option value="50"{% if 50 == data1.everyMonth %}selected{% endif %}>50</option>
+                                                            <option value="51"{% if 51 == data1.everyMonth %}selected{% endif %}>51</option>
+                                                            <option value="52"{% if 52 == data1.everyMonth %}selected{% endif %}>52</option>
+                                                            <option value="53"{% if 53 == data1.everyMonth %}selected{% endif %}>53</option>
+                                                            <option value="54"{% if 54 == data1.everyMonth %}selected{% endif %}>54</option>
+                                                            <option value="55"{% if 55 == data1.everyMonth %}selected{% endif %}>55</option>
+                                                            <option value="56"{% if 56 == data1.everyMonth %}selected{% endif %}>56</option>
+                                                            <option value="57"{% if 57 == data1.everyMonth %}selected{% endif %}>57</option>
+                                                            <option value="58"{% if 58 == data1.everyMonth %}selected{% endif %}>58</option>
+                                                            <option value="59"{% if 59 == data1.everyMonth %}selected{% endif %}>59</option>
+                                                            <option value="60"{% if 60 == data1.everyMonth %}selected{% endif %}>60</option>
+                                                            <option value="61"{% if 61 == data1.everyMonth %}selected{% endif %}>61</option>
+                                                            <option value="62"{% if 62 == data1.everyMonth %}selected{% endif %}>62</option>
+                                                            <option value="63"{% if 63 == data1.everyMonth %}selected{% endif %}>63</option>
+                                                            <option value="64"{% if 64 == data1.everyMonth %}selected{% endif %}>64</option>
+                                                            <option value="65"{% if 65 == data1.everyMonth %}selected{% endif %}>65</option>
+                                                            <option value="66"{% if 66 == data1.everyMonth %}selected{% endif %}>66</option>
+                                                            <option value="67"{% if 67 == data1.everyMonth %}selected{% endif %}>67</option>
+                                                            <option value="68"{% if 68 == data1.everyMonth %}selected{% endif %}>68</option>
+                                                            <option value="69"{% if 69 == data1.everyMonth %}selected{% endif %}>69</option>
+                                                            <option value="70"{% if 70 == data1.everyMonth %}selected{% endif %}>70</option>
+                                                            <option value="71"{% if 71 == data1.everyMonth %}selected{% endif %}>71</option>
+                                                            <option value="72"{% if 72 == data1.everyMonth %}selected{% endif %}>72</option>
+                                                            <option value="73"{% if 73 == data1.everyMonth %}selected{% endif %}>73</option>
+                                                            <option value="74"{% if 74 == data1.everyMonth %}selected{% endif %}>74</option>
+                                                            <option value="75"{% if 75 == data1.everyMonth %}selected{% endif %}>75</option>
+                                                            <option value="76"{% if 76 == data1.everyMonth %}selected{% endif %}>76</option>
+                                                            <option value="77"{% if 77 == data1.everyMonth %}selected{% endif %}>77</option>
+                                                            <option value="78"{% if 78 == data1.everyMonth %}selected{% endif %}>78</option>
+                                                            <option value="79"{% if 79 == data1.everyMonth %}selected{% endif %}>79</option>
+                                                            <option value="80"{% if 80 == data1.everyMonth %}selected{% endif %}>80</option>
+                                                            <option value="81"{% if 81 == data1.everyMonth %}selected{% endif %}>81</option>
+                                                            <option value="82"{% if 82 == data1.everyMonth %}selected{% endif %}>82</option>
+                                                            <option value="83"{% if 83 == data1.everyMonth %}selected{% endif %}>83</option>
+                                                            <option value="84"{% if 84 == data1.everyMonth %}selected{% endif %}>84</option>
+                                                            <option value="85"{% if 85 == data1.everyMonth %}selected{% endif %}>85</option>
+                                                            <option value="86"{% if 86 == data1.everyMonth %}selected{% endif %}>86</option>
+                                                            <option value="87"{% if 87 == data1.everyMonth %}selected{% endif %}>87</option>
+                                                            <option value="88"{% if 88 == data1.everyMonth %}selected{% endif %}>88</option>
+                                                            <option value="89"{% if 89 == data1.everyMonth %}selected{% endif %}>89</option>
+                                                            <option value="90"{% if 90 == data1.everyMonth %}selected{% endif %}>90</option>
+                                                            <option value="91"{% if 91 == data1.everyMonth %}selected{% endif %}>91</option>
+                                                            <option value="92"{% if 92 == data1.everyMonth %}selected{% endif %}>92</option>
+                                                            <option value="93"{% if 93 == data1.everyMonth %}selected{% endif %}>93</option>
+                                                            <option value="94"{% if 94 == data1.everyMonth %}selected{% endif %}>94</option>
+                                                            <option value="95"{% if 95 == data1.everyMonth %}selected{% endif %}>95</option>
+                                                            <option value="96"{% if 96 == data1.everyMonth %}selected{% endif %}>96</option>
+                                                            <option value="97"{% if 97 == data1.everyMonth %}selected{% endif %}>97</option>
+                                                            <option value="98"{% if 98 == data1.everyMonth %}selected{% endif %}>98</option>
+                                                            <option value="99"{% if 99 == data1.everyMonth %}selected{% endif %}>99</option>
+                                                            {%else%}
+                                                            <option value="1" readonly="readonly" selected >1</option>
+                                                            <option value="2">2</option>
+                                                            <option value="3">3</option>
+                                                            <option value="4">4</option>
+                                                            <option value="5">5</option>
+                                                            <option value="6">6</option>
+                                                            <option value="7">7</option>
+                                                            <option value="8">8</option>
+                                                            <option value="9">9</option>
+                                                            <option value="10">10</option>
+                                                            <option value="11">11</option>
+                                                            <option value="12">12</option>
+                                                            <option value="13">13</option>
+                                                            <option value="14">14</option>
+                                                            <option value="15">15</option>
+                                                            <option value="16">16</option>
+                                                            <option value="17">17</option>
+                                                            <option value="18">18</option>
+                                                            <option value="19">19</option>
+                                                            <option value="20">20</option>
+                                                            <option value="21">21</option>
+                                                            <option value="22">22</option>
+                                                            <option value="23">23</option>
+                                                            <option value="24">24</option>
+                                                            <option value="25">25</option>
+                                                            <option value="26">26</option>
+                                                            <option value="27">27</option>
+                                                            <option value="28">28</option>
+                                                            <option value="29">29</option>
+                                                            <option value="30">30</option>
+                                                            <option value="31">31</option>
+                                                            <option value="32">32</option>
+                                                            <option value="33">33</option>
+                                                            <option value="34">34</option>
+                                                            <option value="35">35</option>
+                                                            <option value="36">36</option>
+                                                            <option value="37">37</option>
+                                                            <option value="38">38</option>
+                                                            <option value="39">39</option>
+                                                            <option value="40">40</option>
+                                                            <option value="41">41</option>
+                                                            <option value="42">42</option>
+                                                            <option value="43">43</option>
+                                                            <option value="44">44</option>
+                                                            <option value="45">45</option>
+                                                            <option value="46">46</option>
+                                                            <option value="47">47</option>
+                                                            <option value="48">48</option>
+                                                            <option value="49">49</option>
+                                                            <option value="50">50</option>
+                                                            <option value="51">51</option>
+                                                            <option value="52">52</option>
+                                                            <option value="53">53</option>
+                                                            <option value="54">54</option>
+                                                            <option value="55">55</option>
+                                                            <option value="56">56</option>
+                                                            <option value="57">57</option>
+                                                            <option value="58">58</option>
+                                                            <option value="59">59</option>
+                                                            <option value="60">60</option>
+                                                            <option value="61">61</option>
+                                                            <option value="62">62</option>
+                                                            <option value="63">63</option>
+                                                            <option value="64">64</option>
+                                                            <option value="65">65</option>
+                                                            <option value="66">66</option>
+                                                            <option value="67">67</option>
+                                                            <option value="68">68</option>
+                                                            <option value="69">69</option>
+                                                            <option value="70">70</option>
+                                                            <option value="71">71</option>
+                                                            <option value="72">72</option>
+                                                            <option value="73">73</option>
+                                                            <option value="74">74</option>
+                                                            <option value="75">75</option>
+                                                            <option value="76">76</option>
+                                                            <option value="77">77</option>
+                                                            <option value="78">78</option>
+                                                            <option value="79">79</option>
+                                                            <option value="80">80</option>
+                                                            <option value="81">81</option>
+                                                            <option value="82">82</option>
+                                                            <option value="83">83</option>
+                                                            <option value="84">84</option>
+                                                            <option value="85">85</option>
+                                                            <option value="86">86</option>
+                                                            <option value="87">87</option>
+                                                            <option value="88">88</option>
+                                                            <option value="89">89</option>
+                                                            <option value="90">90</option>
+                                                            <option value="91">91</option>
+                                                            <option value="91">92</option>
+                                                            <option value="91">93</option>
+                                                            <option value="91">94</option>
+                                                            <option value="91">95</option>
+                                                            <option value="91">96</option>
+                                                            <option value="91">97</option>
+                                                            <option value="91">98</option>
+                                                            <option value="91">99</option>
+                                                            {%endif%}
+                                                            </select>
+                                                        </div>
+                                                        <div class="col-sm-1 col-xs-1 all-space-auto">
+                                                         month(s)
+                                                        </div>
+                                                               
+                                                </div>
+                                            
+                                            </div>
+                                            <div id="field_value_div2" style="display:None">
+                                                <label class="col-md-3 col-sm-3 control-label">beginning:</label>
+                                                <div class="col-md-2 col-sm-4">
+                                                    <div class="input-group date" id="datePickerQuartely_Beginning_Date">
+                                                        <input type="text" name="quartely_Beginning_Date" id="quartely_Beginning_Date" data-plugin-datepicker class="form-control data-datepicker" value="{{data1.quartely_Beginning_Date|date:"m-d-Y"}}"/>
+                                                        <span class="input-group-addon">
+                                                            <i class="fa fa-calendar"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 col-sm-3">
+                                                	<small class="text-info align-text">mm-dd-yyyy</small>
+                                                </div>
+                                            </div>
+                                            <div id="field_value_div3" style="display:None">
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label" for="city_state_zip"></label>
+                                                        <div class="col-sm-1">
+                                                            <label>
+                                                                On:
+                                                            </label>
+                                                        </div>
+                                                        <div class="col-sm-2 col-xs-4 all-space-auto">
+                                                            <div class="input-group date" id="datePickerBiannually_start_date">
+                                                                <input type="text" name="biannually_start_date" id="" data-plugin-datepicker class="form-control data-datepicker" value="{{data1.biannually_start_date|date:"m-d-Y"}}" />
+                                                                <span class="input-group-addon">
+                                                                    <i class="fa fa-calendar"></i>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-1">
+                                                            <label>
+                                                                and:
+                                                            </label>
+                                                        </div>
+                                                        <div class="col-sm-2 col-xs-1 all-space-auto">
+                                                            <div class="input-group date" id="datePickerBiannually_end_date">
+                                                                <input type="text" name="biannually_end_date" id="" data-plugin-datepicker class="form-control data-datepicker" value="{{data1.biannually_end_date|date:"m-d-Y"}}" />
+                                                                <span class="input-group-addon">
+                                                                    <i class="fa fa-calendar"></i>
+                                                                </span>
+                                                            </div>
+                                                        </div>                                                              
+                                                </div>
+                                    
+                                            </div>
+                                            <div id="field_value_div4" style="display:None">
+                                                 <label class="col-md-3 col-sm-3 control-label">on:</label>
+                                                <div class="col-md-2 col-sm-4">
+                                                    <div class="input-group date" id="datePickerAnnually_date">
+                                                        <input type="text" name="annually_date" id="" data-plugin-datepicker class="form-control data-datepicker" value="{{data1.annually_date|date:"m-d-Y"}}"/>
+                                                        <span class="input-group-addon">
+                                                            <i class="fa fa-calendar"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 col-sm-3">
+                                                	<small class="text-info align-text">mm-dd-yyyy</small>
+                                                </div>
+                                            </div>
+                                            <div id="field_value_div5" style="display:None">
+                                                 <label class="col-md-3 col-sm-3 control-label">on:</label>
+                                                <div class="col-md-2 col-sm-4">
+                                                    <div class="input-group date" id="datePickerOnetime_date">
+                                                        <input type="text" name="onetime_date" id="" data-plugin-datepicker class="form-control data-datepicker" value="{{data1.onetime_date|date:"m-d-Y"}}" />
+                                                        <span class="input-group-addon">
+                                                            <i class="fa fa-calendar"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 col-sm-3">
+                                                	<small class="text-info align-text">mm-dd-yyyy</small>
+                                                </div>
+                                            </div>
+                                            <br/>
+                                            <br/>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">End Schedule:<span class="text-info align-text">Schedule to end on:</span></label>
+                                                <div class="col-sm-6 col-md-3">
+                                                    <div class="input-group date" id="datePickerEndSchedule">
+                                                        <input type="text" name="end_sch_date" id="end_sch_date" value="{{data.end_sch_rpt_date|date:"m-d-Y"}}" data-plugin-datepicker class="form-control data-datepicker"  />
+                                                        <span class="input-group-addon">
+                                                            <i class="fa fa-calendar"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 col-sm-3">
+                                                	<small class="text-info align-text">mm-dd-yyyy</small>
+                                                </div>
+                                            </div>
+                                              <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Next Run Date:</label>
+                                                <div class="col-sm-6 col-md-3">
+                                                    <div class="input-group date" id="datePicker1">
+                                                        <input type="text" name="" id="" data-plugin-datepicker class="form-control data-datepicker" disabled />
+                                                        <span class="input-group-addon">
+                                                            <i class="fa fa-calendar"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 col-sm-3">
+                                                	<a class="btn btn-primary resetDateNext" href="#">Reset Next Run Date </a>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Report Distribution:</label>
+                                                <div class="col-md-8">
+                                                 <p class="text-info align-text">	The report will be emailed to the following distribution list as scheduled:</p>
+                                                </div>
+                                                <label class="col-md-3 col-sm-3 control-label"><a class="mb-xs mt-xs mr-xs modal-sizes" href="#recipientadd">add recipient:</a></label>
+                                                <div class="col-md-8">
+                                                     <div class="table-responsive">
+                                                        <table class="table table-bordered  table-tasks">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Recipients</th>
+                                                                    <th>Email</th>
+                                                                    <th>Action</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                              
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                          <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Notify on Error:</label>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <select name="notify_error_id" id="notify_error_id" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Caller", "allowClear": true }'>
+                                                        <option  > </option>
+                                                        {% if users %}
+                                                            {% for user in users %}
+                                                                <option value="{{ user.id }}" {% if user.id == data.notify_error_id %}selected{% endif %}>{{ user.display_name }}</option>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Comment: </label>
+                                                <div class="col-md-8">
+                                                    <textarea class="form-control" value="" rows="3" name="comment" id="comment"  data-plugin-maxlength maxlength="7800">{{data.comment}}</textarea>
+                                                </div>
+                                            </div>
+                                         <br/>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-12">
+                                                    <button class="btn btn-primary saveButton">Update</button>
+                                                    <a class="btn btn-default resetBtn">Reset</a>
+                                                    <label class="required-lable"><span class="required">*</span> Required</label>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                    </section>
+                                </form>
+                            </div>
+                        </div>
+		<!-- end: page -->
+    </section>
+ <!-- Modal Form For Recipients add Start-->
+    <div id="recipientadd" class="modal-block modal-block-lg mfp-hide">
+        <section class="panel">
+            <header class="panel-heading">
+                <h2 class="panel-title">Add Recipient</h2>
+            </header>
+            <div class="panel-body">
+                <form id="modalForm" action="" method="post" class="form-horizontal">
+                {% csrf_token %}
+                    <div class="form-group ">
+                        <div class="task-complete">
+                            <center><p>	Please select one of the following options:</p></center>
+                        </div>      
+                    </div>
+                    <div class="form-group ">
+                        <div class="task-complete">
+                        <label class="col-sm-3 control-label"><span class="required">*</span>User ID:</label>
+                            <div class="col-sm-5">
+                                <select name="sr_resp_recipt_user" id="sr_resp_recipt_user" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Caller", "allowClear": true }'>
+                                <option  > </option>
+                                {% if users %}
+                                    {% for user in users %}
+                                        <option value="{{ user.id }}">{{ user.display_name }}</option>
+                                    {% endfor %}
+                                {% endif %}
+                                </select>
+                            </div>
+                        </div>      
+                    </div>
+                    <div class="form-group ">
+                        <div class="task-complete">
+                            <center><h4>-OR-</h4></center>
+                        </div>      
+                    </div>
+                    <div class="form-group ">
+                        <div class="task-complete">
+                        <label class="col-sm-3 control-label"><span class="required">*</span>Email Address:</label>
+                            <div class="col-sm-5">
+                                <select name="sr_resp_recipt_user_email" id="sr_resp_recipt_user_email" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Caller", "allowClear": true }'>
+                                <option  > </option>
+                                {% if users %}
+                                    {% for user in users %}
+                                        <option value="{{ user.id }}">{{ user.email }}</option>
+                                    {% endfor %}
+                                {% endif %}
+                                </select>
+                            </div>
+                        </div>      
+                    </div>    
+                        <div class="form-group ">
+                        <div class="task-complete">
+                            <center><p>NOTE:  Adding an email address to the distribution list will cause the recipient to receive a scheduled report processed without any permission restrictions.
+                            The receipient will receive the same report as an Administrator.</p></center>
+                        </div>      
+                    </div>   
+                    <div class="modal-buton">
+                            <input type="button" class="btn btn-primary clear-btn modal-dismiss" value="Add Recipient" name="btnDone" id="btnDone">
+
+                    </div>
+                </form>
+            </div>
+            <footer class="panel-footer">
+                <div class="row">
+                    <div class="col-md-12 text-right">
+                        <button class="btn btn-primary modal-dismiss">Cancel</button>
+                    </div>
+                </div>
+            </footer>
+
+        </section>
+    </div>
+    <!-- Modal Form For Contract add End-->
+     <!-- Delete Modal Popup on Task Manager Task Delete -->
+     <div class="modal fade" id="confirm-tsk-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                    <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                                </div>
+
+                                <div class="modal-body">
+                                    <p>You are about to delete a record, this procedure is irreversible.</p>
+                                    <strong>Do you want to proceed?</strong>
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                    <a class="btn btn-danger btn-ok">Delete</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        var globalArray = [];
+        var date = new Date();
+        var today = new Date();
+        var optComponent = {
+            format: 'mm-dd-yyyy',
+            container: '#datePicker',
+            orientation: 'auto top',
+            endDate :null,
+            todayHighlight: true,
+            autoclose: true
+        };
+          function clearServiceContractForm(){
+              $('#sr_resp_recipt_user').select2("val", "");
+              $('#sr_resp_recipt_user_email').select2("val", "");
+            }
+
+
+        $(function(){
+             $( '#datePickerEndSchedule' ).datepicker( optComponent );
+            var rp_type = $('#rp_type').val();
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'getReportsByReportType' %}",
+                data: {
+                    rp_type: rp_type
+                },
+                dataType: 'json',
+                beforeSend: function(jqXHR, settings) {
+                    //Do something before send...
+                },
+                success: function(data, textStatus, jqXHR) {
+                    if(data.response) {
+                        result = jQuery.parseJSON(data['response'])
+                        $('#rep_name').html('');
+                        $.each(result, function (index) {
+                            if(rp_type == '1'){
+                                $('#rep_name').append('<option value="' + result[index].fields.rb_report_name + '">' + result[index].fields.rb_report_name + '</option>')
+                            }else{
+                                $('#rep_name').append('<option value="' + result[index].fields.search_title + '">' + result[index].fields.search_title + '</option>')
+                            }
+                        });
+                        $('#rep_name').val("{{ data.rep_name }}")
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert(textStatus + '. ' + errorThrown);
+                }
+            });
+            // COMPONENT
+            $( '#datePicker' ).datepicker( optComponent );
+            //$( '#datePicker' ).datepicker( 'setDate', "{{data.end_sch_rpt_date|date:"m-d-Y"}}" );
+            $( '#datePicker1' ).datepicker( optComponent );
+            $( '#datePicker1' ).datepicker( 'setDate', today );
+            $( '#datePickerBiannually_start_date' ).datepicker( optComponent );
+            $( '#datePickerBiannually_end_date' ).datepicker( optComponent );
+            $( '#datePickerOnetime_date' ).datepicker( optComponent );
+            $( '#datePickerAnnually_date' ).datepicker( optComponent );
+            $( '#datePickerQuartely_Beginning_Date' ).datepicker( optComponent );
+            $( '#datePickerEnd_sch_date' ).datepicker( optComponent );
+            $('#week_days').multiselect({
+                    includeSelectAllOption: true,
+                    maxHeight: 250,
+                    selectAllText: 'Select All',
+                });
+            var sch_rep_id = $('#sch_rep_id').val();
+            initializaServiceContracts(sch_rep_id);
+
+            if ($('#is_MonthDay_Specific').val() === '0') {
+                $the_first.prop('disabled', true);
+                $the_days.prop('disabled', true);
+                $the_every_month.prop('disabled', true);
+                $Day_value.prop('disabled', false)
+                $Day_every_month.prop('disabled', false)
+            } else {
+                $the_first.prop('disabled', false);
+                $the_days.prop('disabled', false);
+                $the_every_month.prop('disabled', false);
+                $Day_value.prop('disabled', true);
+                $Day_every_month.prop('disabled', true);
+            }
+        });
+
+        function initializaServiceContracts(sch_rep_id){
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'getscheduleReportRecpBySchId' %}",
+                    data: {
+                        sch_rep_id: sch_rep_id,
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+                        },
+                    beforeSend: function(jqXHR, settings) {
+                        //Do something before send...
+                    },
+                    success:function(data){  
+                        $('.table-tasks tbody').html(data);                       
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    }
+                });
+            }
+
+        $(document).on('change','#rp_type', function(){
+            var rp_type = $(this).val();
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'getReportsByReportType' %}",
+                data: {
+                    rp_type: rp_type
+                },
+                dataType: 'json',
+                beforeSend: function(jqXHR, settings) {
+                    //Do something before send...
+                },
+                success: function(data, textStatus, jqXHR) {
+                    if(data.response) {
+                        result = jQuery.parseJSON(data['response'])
+                        $('#rep_name').html('');
+                        $.each(result, function (index) {
+                            if(rp_type == '1'){
+                                $('#rep_name').append('<option value="' + result[index].fields.search_title + '"selected>' + result[index].fields.rb_report_name + '</option>')
+                            }else{
+                                $('#rep_name').append('<option value="' + result[index].fields.search_title + '"selected>' + result[index].fields.search_title + '</option>')
+                            }
+                        });
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert(textStatus + '. ' + errorThrown);
+                } 
+            }); 
+        });
+
+        $(document).on('click','#btnDone',function (e) {
+            e.preventDefault();
+                var sch_rep_id = $('#sch_rep_id').val();
+                var sr_resp_recipt_user = $('#sr_resp_recipt_user').val();
+                var sr_resp_recipt_user_email = $('#sr_resp_recipt_user_email').val();
+                if (sr_resp_recipt_user != '' || sr_resp_recipt_user_email != ''){   
+                $.ajax({
+                    url:"{% url 'saveSchRepRes' %}",
+
+                    type:'POST',
+                    dataType: 'text',
+                    data:{
+                        sch_rep_id:sch_rep_id,
+                        sr_resp_recipt_user: sr_resp_recipt_user,
+                        sr_resp_recipt_user_email: sr_resp_recipt_user_email,
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+                    },
+                    success:function(data){
+
+                        if(data == '1'){
+                            alert('Recipient Exists');
+                            clearServiceContractForm();
+                        }
+                        else{
+                            console.log('xyz')
+                             initializaServiceContracts(sch_rep_id);
+                            clearServiceContractForm();
+                        }
+                    },
+                    error:function(){
+                        console.log('error')
+                    },
+                }); 
+            }
+            else{
+                        alert('Enter User ID or Email');
+                    }
+            });
+
+                 //Delete the schedule report recipient Task
+            function deleteTMTask(sr_resp_id) {
+                var sch_rep_id = $('#sch_rep_id').val();
+                     $.ajax({
+                        url:"{% url 'deleterepSch' %}",
+                        type:'POST',
+                        dataType: 'text',
+                        data:{
+                            'sr_resp_id': sr_resp_id,
+                            'sch_rep_id':sch_rep_id,
+                            'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                        },
+                        success:function(data){
+                            initializaServiceContracts(sch_rep_id);
+                            $('#confirm-tsk-delete').modal('toggle') 
+                        },
+                        error:function(){
+                            console.log('error')
+                        },
+                    }); 
+            }
+       
+        $('#confirm-tsk-delete').on('show.bs.modal', function(e) {
+        $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+            });
+
+        $('.resetBtn').on('click', function(e){
+                    $("#sch_name").val('{{data.sch_rpt_name}}');
+                    $("#end_sch_date").val('{{data.end_sch_rpt_date|date:"m-d-Y"}}');
+
+                    $("#rep_name").val('{{ data.rep_name }}');
+                    $("#Day_value").val('{{data1.days }}');
+                    $("#Day_every_month").val('{{everyMonth }}');
+                    $("#biannually_start_date").val('{{data1.biannually_start_date|date:"m-d-Y"}}');
+                    $("#biannually_end_date").val('{{data1.biannually_start_date|date:"m-d-Y"}}');
+                    $("#onetime_date").val('{{data1.onetime_date|date:"m-d-Y"}}');
+                    {% if data.notify_error_id %}
+                    $("#notify_error_id").select2("val", {{ data.notify_error_id }});
+                    {% else %}
+                        $("#notify_error_id").select2("val",'');
+                    {% endif %}
+                    $("#comment").val('{{data.comment}}');
+                });
+        $('.resetDateNext').on('click',function(e){
+           alert('Are you sure you want to reset the Next Run Date AND make this schedule Active?');
+        });
+        $(document).ready(function() {
+                if($("#schedule").val() == '2')
+                {
+                    var $weekly = $('#field_value_div').show();
+                }
+                else{
+                    var $weekly = $('#field_value_div').hide();
+                }
+                if($("#schedule").val() == '3')
+                {
+                    var $monthly = $('#field_value_div1').show();
+                }
+                else{
+                    var $monthly = $('#field_value_div1').hide();
+                }
+                if($("#schedule").val() == '4')
+                {
+                    var $quartelyDiv = $('#field_value_div2').show();
+                }
+                else{
+                    var $quartelyDiv = $('#field_value_div2').hide();
+                }
+                if($("#schedule").val() == '5')
+                {
+                    var $BiannuallyDiv = $('#field_value_div3').show();
+                }
+                else{
+                    var $BiannuallyDiv = $('#field_value_div3').hide();
+                }
+                if($("#schedule").val() == '6')
+                {
+                    var $annuallyDiv = $('#field_value_div4').show();
+                }
+                else{
+                    var $annuallyDiv = $('#field_value_div4').hide();
+                }  
+                if($("#schedule").val() == '7')
+                {
+                    var $onetimeDiv = $('#field_value_div5').show();
+                }
+                else{
+                    var $onetimeDiv = $('#field_value_div5').hide();
+                }            
+
+        
+    
+    
+    
+
+        $('#schedule').change(function() {         
+            var selectedValue = $(this).val();
+            
+            if(selectedValue  === '2') {         //weekly
+                $monthly.hide();
+                $weekly.show();
+                $monthly.hide();
+                $BiannuallyDiv.hide();
+                $quartelyDiv.hide();
+                $annuallyDiv.hide();
+                $onetimeDiv.hide();
+            } else if (selectedValue === '3') {   // monthly
+                $weekly.hide();
+                $quartelyDiv.hide();
+                $BiannuallyDiv.hide();
+                $annuallyDiv.hide();
+                $onetimeDiv.hide();
+                $monthly.show();
+                
+            } else if (selectedValue === '4'){      //quartely
+                $monthly.hide();
+                $BiannuallyDiv.hide();
+                $weekly.hide();
+                $annuallyDiv.hide();
+                $onetimeDiv.hide();
+                $quartelyDiv.show();
+                
+            }
+            else if (selectedValue === '5'){       //Bianually
+                $quartelyDiv.hide();
+                $annuallyDiv.hide();
+                $weekly.hide();
+                $monthly.hide();
+                $onetimeDiv.hide();
+                $BiannuallyDiv.show();
+                
+            }
+            else if (selectedValue === '6'){        //annually
+                $BiannuallyDiv.hide();
+                $onetimeDiv.hide();
+                $weekly.hide();
+                $monthly.hide();
+                $quartelyDiv.hide();
+                $annuallyDiv.show();
+                
+            }
+            else if (selectedValue === '7'){        //onetime
+                $annuallyDiv.hide();
+                $onetimeDiv.show();
+            $weekly.hide();
+            $monthly.hide();
+            $quartelyDiv.hide();
+            $BiannuallyDiv.hide();
+            }
+            else {
+                $monthly.hide();
+                $weekly.hide();
+                $quartelyDiv.hide();
+                $BiannuallyDiv.hide();
+                $annuallyDiv.hide();
+                $onetimeDiv.hide();
+            }
+        });
+        });  
+
+        var $radio = $('input[name="is_MonthDay_Specific"]');
+        var $Day_value = $('#Day_value');
+        var $Day_every_month = $('#Day_every_month');
+        var $the_first = $("#the_first");
+        var $the_days = $("#the_days");
+        var $the_every_month = $("#the_every_month");
+        $the_first.prop('disabled', true);
+        $radio.on('change', function(e) {
+        if ($(this).val() === '0') {
+            $the_first.prop('disabled', true);
+            $the_days.prop('disabled', true);
+            $the_every_month.prop('disabled', true);
+            $Day_value.prop('disabled', false)
+            $Day_every_month.prop('disabled', false)
+        } else {
+            $the_first.prop('disabled', false);
+            $the_days.prop('disabled', false);
+            $the_every_month.prop('disabled', false);
+            $Day_value.prop('disabled', true);
+            $Day_every_month.prop('disabled', true);
+        }
+        });
+
+    $(function() {
+        var filter = $('#week_days').multiselect();
+        filter.on('change', function() {
+            if (this.selectedIndex) return; //not `Select All`
+            filter.find('option:gt(0)').prop('selected', true);
+            filter.find('option').eq(0).prop('selected', false);
+        });
+        });
+                
+    </script>
+  
+{%endblock%}

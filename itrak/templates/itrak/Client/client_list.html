@@ -1,0 +1,199 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-users" aria-hidden="true"></i> Client</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Client</span></li>
+								<li><span>Client List</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+						<section class="panel">
+							<header class="panel-heading">
+                                <h2 class="panel-title">Client List</h2>
+                                <div class="pull-right list-btn">
+                                    <a href="{% url 'clientUsers' %}" class="btn btn-primary users-btn" style="margin-top: -30px;">Show Users</a>
+                                </div>
+							</header>
+							<div class="panel-body">
+                                 {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+{#                                data-url="{% static 'ajax/ajax-datatables-sample.json' %} "#}
+								<table class="table table-bordered table-striped datatable cus_client_list_table">
+									<thead>
+										<tr>
+											<th width="10%">Action</th>
+											<th width="5%">ID</th>
+											<th width="15%">Client</th>
+											<th width="10%">Org</th>
+											<th width="10%">Phone Number</th>
+											<th width="10%">Fax</th>
+											<th width="15%">Email</th>
+											<th width="10%">Contact Person</th>
+											<th width="15%">Address</th>
+											<th width="15%">Display</th>
+										</tr>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					<!-- end: page -->
+				</section>
+            </div>
+            <div id="popup-modal-content"></div>
+
+           <!-- Modal Warning -->
+        {# Delete Modal Popup on Delete#}
+        <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <p>You are about to delete a record, this procedure is irreversible.</p>
+                        <strong>Do you want to proceed?</strong>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <a class="btn btn-danger btn-ok">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <form id="standard_form" name="standard_form" method="post" action="{% url 'export_users_by_client_xls' %}"></form>
+    {% endblock %}
+
+    {% block script %}
+        <script>
+            $(document).ready(function() {
+                var oTable = $('.datatable').dataTable({
+                    // ...
+                    columnDefs: [
+                        {
+                            name: 'action',
+                            orderable: false,
+                            searchable: false,
+                            targets: [0]
+                        },
+                        {
+                            name: 'client_cus_id',
+                            orderable: true,
+                            searchable: true,
+                            targets: [1]
+                        },
+                        {
+                            name: 'client_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [2]
+                        },
+                        {
+                            name: 'client_org.org_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [3]
+                        },
+                        {
+                            name: 'client_phone',
+                            orderable: true,
+                            searchable: true,
+                            targets: [4]
+                        },
+                        {
+                            name: 'client_fax',
+                            orderable: true,
+                            searchable: true,
+                            targets: [5]
+                        },
+                        {
+                            name: 'client_email',
+                            orderable: true,
+                            searchable: true,
+                            targets: [6]
+                        },
+                        {
+                            name: 'client_contact_person',
+                            orderable: true,
+                            searchable: true,
+                            targets: [7]
+                        },
+                        {
+                            name: 'client_address1',
+                            orderable: true,
+                            searchable: true,
+                            targets: [8]
+                        },
+                        {
+                            name: 'display',
+                            orderable: false,
+                            searchable: false,
+                            targets: [9]
+                        }
+                    ],
+                    "order": [[ 1, 'asc' ]],
+                    "processing": true,
+                    "serverSide": true,
+                    "lengthMenu": [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "All"] ],
+                    "stateSave": true,
+                    "ajax": "{% url 'client_list_json' %}"
+                });
+                // ...
+            });
+        </script>
+        <script>
+        $('#confirm-delete').on('show.bs.modal', function(e) {
+            $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+        });
+        function GetUsersListByClient(event, client_id){
+            event.preventDefault()
+            if(client_id == ''){
+                alert('Something went wrong. Please try again.');
+            }else{
+                $.ajax({
+                    url:"{% url 'getModalUsersByClientId' %}",
+                    type:'POST',
+                    data:{
+                        'client_id':client_id,
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    },
+                    success:function(data){
+                        $('#popup-modal-content').html(data);
+                        $('#modalClientUsers').modal("show");
+                    },
+                    error:function(){
+                        console.log('error')
+                    },
+                });
+            }
+        }
+        function getXlsDownload(id){
+            $('#standard_form').trigger('submit');
+        }
+        </script>
+    {% endblock %}

@@ -1,0 +1,178 @@
+<div class="row">
+	<div class="col-lg-2 col-md-2 empty"></div>
+	<div class="col-lg-7 col-md-8 col-sm-12" id="list1">
+        <div class="row style-select">
+            <div class="col-md-7 col-sm-7">
+                <select class="form-control" id="FieldList">
+                    <option value=""> </option>
+                    {% for field in unselectedFields %}
+                        <option value="{{ forloop.counter }}" class="item">{{ field }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-5 col-sm-5 text-right">
+            	<input type="button" id="btnSort" value="Save Sort Expression" class="btn btn-default" />
+            </div>
+            <br>
+            <div class="col-md-12 text-left">
+          		<div class="align-lable">
+                    <label class="label-control"><strong>Order:</strong> &nbsp; &nbsp; </label>
+                    <div class="display-inline border_none">
+                        <input type="radio" name="sort_order" class="sort_order" id="sort_order1" value="0" checked="">
+                        <label for="Ascending">Ascending</label>&nbsp;
+                    </div>
+                    <div class="display-inline border_none">
+                        <input type="radio" name="sort_order" class="sort_order" id="sort_order2" value="1">
+                        <label for="Descending">Descending</label>
+                    </div>
+                </div>      
+            </div>
+            <br>
+            <br>
+            <div class="col-md-12">
+                <label class="control-label">Sort:</label>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="selected-left column-adjust">
+                            <select multiple class="form-control" id="PresenterList">
+                                {% if selectedSortExpressions %}
+                                    {% for field in selectedSortExpressions %}
+                                        <option value="{{ forloop.counter }}" class="item">{{ field }}</option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                        <div class="selected-right">
+                            <button type="button" class="btn btn-default btn-sm" id="btnSortUp">
+                                <span class="glyphicon glyphicon-chevron-up"></span>
+                            </button>
+                            <button type="button" class="btn btn-default btn-sm" id="btnSortDown">
+                                <span class="glyphicon glyphicon-chevron-down"></span>
+                            </button>
+                            <button type="button" class="btn btn-default btn-sm" id="btnRemoveSort">
+                                <span class="glyphicon glyphicon-remove"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+	</div>
+</div>
+
+
+<script>
+    $('#btnSort').click(function(e) {
+        if($('#FieldList').val() == ''){
+            alert('A Field selection is required!');
+        }else{
+            $('select').moveToList('#FieldList', '#PresenterList');
+        }
+        e.preventDefault();
+    });
+
+    $('#btnRemoveSort').click(function(e) {
+        $('select').removeSelected('#PresenterList');
+        e.preventDefault();
+    });
+
+    $('#btnSortUp').click(function(e) {
+        $('select').moveUpDown('#PresenterList', true, false);
+        e.preventDefault();
+    });
+
+    $('#btnSortDown').click(function(e) {
+        $('select').moveUpDown('#PresenterList', false, true);
+        e.preventDefault();
+    });
+
+</script>
+
+
+<script>
+/**
+ *  jQuery.SelectListActions
+ *  https://github.com/esausilva/jquery.selectlistactions.js
+ *
+ *  (c) http://esausilva.com
+ */
+
+(function($) {
+  //Moves selected item(s) from sourceList to destinationList
+    $.fn.moveToList = function(sourceList, destinationList) {
+        var opts = $(sourceList + ' option:selected').clone();
+        if (opts.length == 0) {
+            alert("Nothing to move");
+        }
+        else{
+            sort_order_val = $('input[name=sort_order]:checked').val();
+            if(sort_order_val == 0){
+                $(opts).text($(opts).text()+' (Asc)')
+                $(destinationList).append($(opts));
+            }else{
+                $(opts).text($(opts).text()+' (Desc)')
+                $(destinationList).append($(opts));
+            }
+        }
+    };
+
+  //Moves all items from sourceList to destinationList
+  $.fn.moveAllToList = function(sourceList, destinationList) {
+    var opts = $(sourceList + ' option');
+    if (opts.length == 0) {
+      alert("Nothing to move");
+    }
+
+    $(destinationList).append($(opts).clone());
+  };
+
+  //Moves selected item(s) from sourceList to destinationList and deleting the
+  // selected item(s) from the source list
+  $.fn.moveToListAndDelete = function(sourceList, destinationList) {
+    var opts = $(sourceList + ' option:selected');
+    if (opts.length == 0) {
+      alert("Nothing to move");
+    }
+
+    $(opts).remove();
+    $(destinationList).append($(opts).clone());
+  };
+
+  //Moves all items from sourceList to destinationList and deleting
+  // all items from the source list
+  $.fn.moveAllToListAndDelete = function(sourceList, destinationList) {
+    var opts = $(sourceList + ' option');
+    if (opts.length == 0) {
+      alert("Nothing to move");
+    }
+
+    $(opts).remove();
+    $(destinationList).append($(opts).clone());
+  };
+
+  //Removes selected item(s) from list
+  $.fn.removeSelected = function(list) {
+    var opts = $(list + ' option:selected');
+    if (opts.length == 0) {
+      alert("Nothing to remove");
+    }
+
+    $(opts).remove();
+  };
+
+  //Moves selected item(s) up or down in a list
+  $.fn.moveUpDown = function(list, btnUp, btnDown) {
+    var opts = $(list + ' option:selected');
+    if (opts.length == 0) {
+      alert("Nothing to move");
+    }
+
+    if (btnUp) {
+      opts.first().prev().before(opts);
+    } else if (btnDown) {
+      opts.last().next().after(opts);
+    }
+  };
+})(jQuery);
+
+</script>

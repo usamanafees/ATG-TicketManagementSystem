@@ -1,0 +1,166 @@
+{% extends 'itrak/base.html' %}
+{% block body_block %}
+    {% load static %}
+    {% load tz %} {# it will Load the Django TimeZone Library#}
+    {% load templates_extras %}
+
+    <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-file" aria-hidden="true"></i> New Report</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+                    <li><span>Reports</span></li>
+                    <li><span>New Report</span></li>
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+
+        <div class="row">
+            <div class="col-md-12">
+                {% for message in messages %}
+                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+
+                <section class="panel">
+                    <header class="panel-heading">
+                        <h2 class="panel-title">New Report</h2>
+                    </header>
+
+                    <div class="panel-body">
+                        <center><h3>Build Report: Step 1 of 6 - Select Fields</h3></center>
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                <a id="btn-cancel" class="btn btn-primary">Cancel </a>
+                                <a id="next" class="btn btn-primary">Next ></a>
+                            </div>
+                        </div>
+                        <br>
+                        <center><p class="font-italic"> Select the Query from the dropdown list. All of the query fields will be automatically in the "Selected" column. To remove fields, drag and drop the field from the "Selected" to "Available" column.</p></center>
+                        <br>
+                        <div class="form-group">
+                            <div class="row">
+                                <label class="col-lg-2 col-md-3 col-sm-5 control-label"><span class="required">* </span> Query:</label>
+                                <div class="col-lg-5 col-md-5 col-sm-6">
+                                    <select id="queries" class="form-control">
+                                        <option value=""> </option>
+                                        {% for qb_query in qb_queries %}
+                                            <option value={{ qb_query.qb_query_id }} {% if query_set and qb_query.qb_query_id == query_set %}selected{% endif %}>{{ qb_query.qb_query_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <a id="btn-createQuery" class="btn btn-primary">Create Query</a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div id="fields">
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="panel-footer">
+                        <div class="row">
+                            <div class="col-sm-12 text-center">
+                               <a href="javascript:void(0)" class="btn btn-primary" id="btn-addAll">Add All</a>
+                               <a href="javascript:void(0)" class="btn btn-primary" id="btn-removeAll">Remove All</a>
+                            	<label class="required-lable"><span class="required">*</span> Required</label>
+                            </div>
+                        </div>
+                    </footer>
+                </section>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+{% endblock %}
+
+{% block script %}
+<script>
+
+    $(function () {
+        query = $('#queries').val()
+        if(query != 'None'){
+            $("#queries option[value='None']").remove();
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'getQuerySelectedFields' %}",
+                data: {query:query,step:1},
+                success: function (data) {
+                    $('#fields').html('');
+                    $('#fields').html(data);
+                }
+            });
+        }
+    })
+
+    $('#queries').on('change', function() {
+        $("#queries option[value='']").remove();
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'getQueryFields' %}",
+            data: {query:this.value},
+            success: function (data) {
+                $('#fields').html('');
+                $('#fields').html(data);
+            }
+        });
+    });
+
+    $("#next").click(function(){
+        if ($("#list2 .item").length < 1){
+            alert("No Fields selected!");
+        }else{
+            var unselected_fields = $('#list1 .item').map(function() { return $(this).text(); }).get().join()
+            var selected_fields = $('#list2 .item').map(function() { return $(this).text(); }).get().join()
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'setReportQuerySelectedFields' %}",
+                data: {selected_fields:selected_fields,unselected_fields:unselected_fields},
+                success: function (data) {
+                    window.location.href = "{% url 'secondReport' %}";
+                }
+            });
+        }
+    });
+
+
+    $("#btn-cancel").click(function(){
+        window.location.href = "{% url 'reportWriterReports' %}";
+    });
+
+    $("#btn-createQuery").click(function(){
+        window.location.href = "{% url 'newQuery' %}";
+    });
+
+
+    $("#btn-addAll").click(function(){
+        $('#list1 .item').each(function(i, obj) {
+            $(this).fadeOut(function(){
+                $(this).appendTo('#list2').fadeIn();
+            });
+        });
+    });
+
+
+    $("#btn-removeAll").click(function(){
+        $('#list2 .item').each(function(i, obj) {
+            $(this).fadeOut(function(){
+                $(this).appendTo('#list1').fadeIn();
+            });
+        });
+    });
+</script>
+{% endblock %}

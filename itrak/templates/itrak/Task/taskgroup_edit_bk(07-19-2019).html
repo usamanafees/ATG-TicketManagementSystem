@@ -1,0 +1,533 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+        {% load tz %} {# it will Load the Django TimeZone Library#}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-tasks" aria-hidden="true"></i> Tasks</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Tasks</span></li>
+								<li><span>Edit Task Group</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+                         <div class="row">
+                            <div class="col-md-12">
+                                {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                                <form id="summary-form" action="{% url 'updateTaskGroup' %}" method="post" class="form-horizontal">
+                                    {% csrf_token %}
+                                    <section class="panel">
+                                        <header class="panel-heading">
+{#                                            <div class="panel-actions">#}
+{#                                                <a href="#" class="fa fa-caret-down"></a>#}
+{#                                                <a href="#" class="fa fa-times"></a>#}
+{#                                            </div>#}
+
+                                            <h2 class="panel-title">Edit Task Group </h2>
+                                        </header>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary">Update</button>
+                                                    <button type="reset" class="btn btn-default">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                        <div class="panel-body">
+                                            <div class="validation-message">
+                                                <ul></ul>
+                                            </div>
+                                            <input type="hidden" name="taskgroup_id" value="{{ data.taskgroup_id }}"/>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label"><span class="required">*</span>Task Group: </label>
+                                                <div class="col-sm-4">
+                                                    <input type="text" name="taskgroup_description" id="taskgroup_description" value="{{ data.taskgroup_description}}" class="form-control" title="Plase enter Task." placeholder="eg.: ABC" required/>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <span id="statusValid"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Display Order: </label>
+                                                <div class="col-sm-2">
+                                                    <input type="text" name="display_order" class="form-control" value="{{ data.taskgroup_display_order }}" title="Plase enter Display Order." placeholder="eg.: 1" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                 <label class="col-sm-3 control-label" for="inputSuccess"></label>
+                                                 <div class="col-sm-6">
+                                                     <div class="checkbox">
+                                                         <label>
+                                                            <input type="checkbox" name="is_active" {% if data.taskgroup_is_active == True %}checked{% endif %} />
+                                                               <i>Active</i>
+                                                         </label>
+                                                     </div>
+                                                </div>
+                                              </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                <a class="mb-xs mt-xs mr-xs modal-sizes btn btn-primary" href="#modalLG">Task Manager</a>
+                                                <!-- <a class="mb-xs mt-xs mr-xs modal-sizes btn btn-primary" href="#modalLGGroup">Task Manager Group</a> -->
+                                                </label>
+
+                                                <!-- Modal Form For Task Manager Start-->
+                                                <div id="modalLG" class="modal-block modal-block-lg mfp-hide">
+                                                    <section class="panel">
+                                                        <header class="panel-heading">
+                                                            <h2 class="panel-title">Task Manager</h2>
+                                                        </header>
+                                                        <div class="panel-body">
+                                                        	  <form id="modalForm" action="{% url 'updateTaskGroup' %}" method="post" class="form-horizontal">
+                                                                <input type="hidden" name="changeTM" id="changeTM" value="0" />
+                                                                <div class="table-responsive">
+                                                                  <table class="table table-bordered table-task-modal">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th></th>
+                                                                            <th>Task</th>
+                                                                            <th>Assigned To</th>
+                                                                            <th>Due Date</th>
+                                                                            <th>Depend Order</th>
+                                                                            <th>Type</th>
+                                                                            <th>Completed Date</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {% if task_manager %}
+                                                                            {% for tsk in task_manager %}
+                                                                                <tr>
+                                                                                    <td><a href="javascript:void(0);" class="edit_record" data-id="{{ forloop.counter0 }}" >edit</a> | <a href="" class="delete_record" data-id="{{ forloop.counter0 }}" >del</a></td>
+                                                                                    <input type="hidden" id="task-order{{ forloop.counter0 }}" name="tmanager_task_order[]" value="{{ tsk.tmgrgp_display_order }}">
+                                                                                    <input type="hidden" id="task-id{{ forloop.counter0 }}" name="tmanager_task_id[]" value="{{ tsk.tmgrgp_task_id }}">
+                                                                                    <td><input type="text" id="table-modal-task-id{{ forloop.counter0 }}" name="table-modal-task-id[]" value="{{ tsk.tmgrgp_task.task_description }}" readonly class="form-control"></td>
+                                                                                    <input type="hidden" id="task-assign{{ forloop.counter0 }}" name="tmanager_assign_to[]" value="{{ tsk.tg_task_assigned_to_id }}">
+                                                                                    <td><input type="text" id="table-modal-task-assign-to{{ forloop.counter0 }}" name="table-modal-task-assign-to[]" value="{{ tsk.tg_task_assigned_to.first_name }}{{ tsk.tg_task_assigned_to.last_name }}" readonly class="form-control"></td>
+                                                                                    <td><input type="text" id="task-due-date{{ forloop.counter0 }}" name="tmanager_due_date[]" value="{{ tsk.tg_task_due_date|date:"d/m/Y"}}" readonly class="form-control"></td>
+                                                                                    <td><input type="text" id="table-modal-task-dependency{{ forloop.counter0 }}" name="table-modal-task-dependency[]" value="{% if tsk.tg_task_dependency == 0 %}None{% else %}Order{% endif %}" readonly class="form-control"></td>
+                                                                                    <input type="hidden" id="task-dependency{{ forloop.counter0 }}" name="tmanager_task_dependency[]" value="{{ tsk.tg_task_dependency }}">
+                                                                                    <td><input type="text" id="table-modal-task-type{{ forloop.counter0 }}" name="table-modal-task-type[]" value="{% if tsk.tg_task_type == 0 %}Complete{% else %}Yes/No/NA{% endif %}" readonly class="form-control"></td>
+                                                                                    <input type="hidden" id="task-type{{ forloop.counter0 }}" name="tmanager_task_type[]" value="{{ tsk.tg_task_type }}">
+                                                                                    <td><input type="text" value="" readonly class="form-control"></td>
+                                                                                    <input type="hidden" id="task-note{{ forloop.counter0 }}" name="tmanager_note[]" value="{{ tsk.tg_task_note }}">
+                                                                                    <input type="hidden" id="task-dependency-order{{ forloop.counter0 }}" name="tmanager_dependency_order[]" value="{{ tsk.tg_task_depend_order }}">
+                                                                                </tr>
+                                                                            {% endfor %}
+                                                                        {% endif %}
+                                                                    </tbody>
+
+                                                                </table>
+                                                                </div>
+                                                                <div class="modal-buton">
+                                                                    <input type="button" class="btn btn-primary clear-btn" onclick="form_submit(event)" value="Save" name="btnDone" id="btnDone">
+                                                                    <input type="button" class="btn btn-primary clear-btn" value="Reset" name="btnReset" id="btnReset">
+                                                                    <input type="button" class="btn btn-primary clear-btn" value="New Task" name="btnAdd" id="BtnNewTask">
+                                                                    <input type="button" class="btn btn-primary clear-btn" value="Add Task Group" id="btnAddTaskGroup">
+                                                                    <input type="button" class="btn btn-primary show-btn" value="Cancel" id="cancelbtn">
+                                                                    <input type="button" class="btn btn-primary show-btn" value="Accept" id="accept-btn">
+{#                                                                    <input type="button" class="btn btn-primary show-btn task-group" value="Add Task Group" id="accept-btn">#}
+                                                                </div>
+                                                                <div class="addNewTask space-top-custom">
+                                                			   		<div class="form-group">
+                                                			   			<label class="col-sm-3 control-label">Task Order:</label>
+                                                			   			<div class="col-sm-2">
+                                                			   				<input type="text" class="form-control input-sm"  name="modal_task_order" id="modal_task_order">
+                                                			   			</div>
+                                                			   		</div>
+                                                			   		<div class="form-group">
+                                                                        <label class="col-sm-3 control-label"><span class="required">*</span> Task:</label>
+                                                			   			<div class="col-md-4 col-sm-4">
+	                                                			   			<select class="form-control" name="modal_task_id" id="modal_task_id">
+	                                        			   			            <option selected=""></option>
+                                                                                {% for task in tasks %}
+                                                                                  <option value="{{ task.task_id }}">{{ task.task_description }}</option>
+	                                        			   						  {% endfor %}
+	                                                			   			</select>
+	                                                			   		</div>
+                                                			   		</div>
+                                                			   		<div class="form-group">
+                                                                        <label class="col-sm-3 control-label"><span class="required">*</span> Task Type:</label>
+                                                			   			<div class="col-md-4 col-sm-4">
+	                                                			   			<input type="radio" name="modal_task_type" id="modal_task_type1" value="0" checked>
+	                                                			   			<label for="complete">Complete</label>&nbsp;
+	                                                			   			<input type="radio" name="modal_task_type" id="modal_task_type2" value="1">
+                                                                          <label for="Ye/NO">Yes/No/NA</label>
+	                                                			   		</div>
+                                                			   		</div>
+                                                			   		<div class="form-group">
+                                                			   			<label class="col-sm-3 control-label">Note:</label>
+                                                			   			<div class="col-sm-9">
+                                                			   				<textarea class="form-control" name="modal_task_note" id="modal_task_note" rows="9" cols="68"></textarea>
+                                                			   			</div>
+                                                			   		</div>
+                                                			   		<div class="form-group">
+                                                			   			<label class="col-sm-3 control-label">Due Date:</label>
+                                                			   			<div class="col-md-4 col-sm-4">
+	                                                			   			<div class="input-group">
+	                                                                            <span class="input-group-addon">
+	                                                                                <i class="fa fa-calendar"></i>
+	                                                                            </span>
+	                                                                            <input type="text" id="modal_due_date" name="modal_due_date" data-plugin-datepicker class="form-control datepicker" />
+	                                                                        </div>
+	                                                                    </div>
+                                                			   		</div>
+                                                			   		<div class="form-group">
+                                                			   		    <label class="col-sm-3 control-label">Dependency: </label>
+                                                			   		    <div class="col-md-4 col-sm-4">
+                                                			   		        <div class="radio-primary form-check">
+                                                			   		            <label for="task_type" class="form-check-label">
+                                                			   		                <input class="form-check-input radio-inline" type="radio" id="modal_dependency1" name="modal_dependency" value="0" checked>
+                                                			   		                None</label>
+                                                			   		            <label for="task_type" class="form-check-label">
+                                                			   		                <input class="form-check-input radio-inline" type="radio" id="modal_dependency2" name="modal_dependency" value="1">
+                                                			   		                Order</label>
+                                                			   		        </div>
+                                                			   		        <div class="col-sm-6">
+                                                			   		            <input type="text" name="modal_dependency_order" id="modal_dependency_order" class="form-control input-inline" title="Please Enter Dependency Order." placeholder="eg.: 1" />
+                                                			   		        </div>
+                                                			   		    </div>
+                                                			   		</div>
+                                                			   		<div class="form-group">
+                                                			   		    <label class="col-md-3 col-sm-3 control-label">Assigned To </label>
+                                                			   		    <div class="col-md-4 col-sm-4">
+                                                			   		        <select name="modal_task_assign_to" id="modal_task_assign_to" data-plugin-selectTwo required class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Task", "allowClear": true }'>
+                                                			   		            <option value="">-Unassigned-</option>
+                                                			   		            {% if users %}
+                                                			   		                {% for user in users %}
+                                                			   		                    <option value="{{ user.id }}" >{{ user.first_name }}{{ user.last_name }}</option>
+                                                			   		                {% endfor %}
+                                                			   		            {% endif %}
+                                                			   		        </select>
+                                                			   		    </div>
+                                                			   		</div>
+                                                                </div>
+                                                                <div class="addTaskGrpup space-top-custom">
+	                                                                <div class="form-group">
+	                                                                    <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span>Task Group</label>
+	                                                                    <div class="col-md-4 col-sm-4">
+	                                                                        <select name="modal_taskgroup_id" id="modal_taskgroup_id" data-plugin-selectTwo required class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Task", "allowClear": true }'>
+	                                                                            <option selected=""> </option>
+	                                                                            {% if taskGroups %}
+	                                                                                {% for taskGroup in taskGroups %}
+	                                                                                    <option value="{{ taskGroup.taskgroup_id }}" >{{ taskGroup.taskgroup_description }}</option>
+	                                                                                {% endfor %}
+	                                                                            {% endif %}
+	                                                                        </select>
+	                                                                    </div>
+	                                                                </div>
+	                                                            </div>
+                                                            </form>
+                                                        </div>
+                                                        <footer class="panel-footer">
+                                                            <div class="row">
+                                                                <div class="col-md-12 text-right">
+                                                                    <button class="btn btn-primary modal-confirm" onclick="form_submit(event)" >Save</button>
+                                                                    <button class="btn btn-default modal-dismiss">Cancel</button>
+                                                                </div>
+                                                            </div>
+                                                        </footer>
+                                                    </section>
+                                                </div>
+{#                                                <!-- Modal Form For Task Manager End-->#}
+
+
+                                               <div class="col-md-8">
+                                                    <section class="panel">
+                                                        <div class="panel-body">
+{#                                                            <span class="required">Note: Task's Updation will be visible on Group Update.</span>#}
+                                                            <div class="table-responsive">
+                                                                <table class="table table-condensed mb-none table-tasks">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>#</th>
+                                                                            <th>Task</th>
+                                                                            <th>Assgined To</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {% if task_manager %}
+                                                                            {% for tsk in task_manager %}
+                                                                                <tr id="tbl_row{{ forloop.counter0 }}" >
+                                                                                    <td>{{ forloop.counter }}</td>
+                                                                                    <td><input type="text" id="table-task-id{{ forloop.counter0 }}" value="{{ tsk.tmgrgp_task.task_description }}" readonly class="form-control"></td>
+                                                                                    <td><input type="text" id="table-task-assign-to{{ forloop.counter0 }}" value="{{ tsk.tg_task_assigned_to.first_name }}{{ tsk.tg_task_assigned_to.last_name }}" readonly class="form-control"></td>
+                                                                                </tr>
+                                                                            {% endfor %}
+                                                                        {% endif %}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </section>
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary">Update</button>
+                                                    <button type="reset" class="btn btn-default">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                    </section>
+                                </form>
+                            </div>
+                        </div>
+					<!-- end: page -->
+				</section>
+			</div>
+
+    {% endblock %}
+
+    {% block script %}
+        <script>
+
+            function form_submit(event) {
+                event.preventDefault();
+                $('#changeTM').val(1);
+            }
+
+            $('#modal_due_date').datepicker({
+                format: 'dd/mm/yyyy'
+             });
+            var row_counter={{ task_manager.count }};
+            var row_edit=0;
+            $(document).on('click','#accept-btn', function(e) {
+                $(this).parent('.table-bordered').addClass('append-data');
+                $(this).parent('.modal-buton').removeClass('custom-model-btn');
+                if($(this).val() == 'Add Task Group'){
+                    taskgroup_id_val = $('#modal_taskgroup_id').val();
+                    if(taskgroup_id_val == ''){
+                        alert('Task Group Name cannot be Empty!');
+                    }else {
+                        $.ajax({
+                            type: 'POST',
+                            url: '/getModalGroupTasksById/',
+                            data: {group_id: taskgroup_id_val, 'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()},
+                            dataType: 'json',
+                            beforeSend: function (jqXHR, settings) {
+                                //Do something before send...
+                            },
+                            success: function (data, textStatus, jqXHR) {
+                                if (data.response) {
+                                    result = jQuery.parseJSON(data['response'])
+                                    $.each(result, function (index) {
+                                        task_order_val = result[index].fields.tmgrgp_display_order
+                                        task_id_val = result[index].fields.tmgrgp_task;
+                                        task_id_text_val = $("#modal_task_id option[value='"+result[index].fields.tmgrgp_task+"']").text();
+                                        task_type_val = result[index].fields.tg_task_type;
+                                        if(task_type_val == 0){
+                                            task_type_text_val = 'Complete'
+                                        }else{
+                                            task_type_text_val = 'Yes/No/NA'
+                                        }
+                                        task_note_val = result[index].fields.tg_task_note;
+                                        task_due_date_val = result[index].fields.tg_task_due_date;
+                                        var dateAr = task_due_date_val.split('-');
+                                        task_due_date_val = dateAr[2] + '/' + dateAr[1] + '/' + dateAr[0];
+                                        task_dependency_val = result[index].fields.tg_task_dependency;
+                                        if(task_dependency_val == false){
+                                            task_dependency_text_val = 'None'
+                                            task_dependency_val = 0
+                                        }else{
+                                            task_dependency_text_val = 'Order'
+                                            task_dependency_val = 1
+                                        }
+                                        task_dependency_order_val = result[index].fields.tg_task_depend_order;
+                                        task_assign_to_val = result[index].fields.tg_task_assigned_to;
+                                        task_assign_to_text_val = $("#modal_task_assign_to option[value='"+result[index].fields.tg_task_assigned_to+"']").text()
+
+
+                                        //Appened Row on the Panel as well on the Table
+                                        row = '<tr>\n'
+                                        row += '<td><a href="javascript:void(0);" class="edit_record" data-id="'+row_counter+'" >edit</a> | <a href="" class="delete_record" data-id="'+row_counter+'" >del</a></td>\n'
+                                        row += '<input type="hidden" id="task-order'+row_counter+'" name="tmanager_task_order[]" value="'+task_order_val+'">'
+                                        row += '<input type="hidden" id="task-id'+row_counter+'" name="tmanager_task_id[]" value="'+task_id_val+'">'
+                                        row += '<td><input type="text" id="table-modal-task-id'+row_counter+'" name="table-modal-task-id[]" value="'+task_id_text_val+'" readonly class="form-control"></td>\n'
+                                        row += '<input type="hidden" id="task-assign'+row_counter+'" name="tmanager_assign_to[]" value="'+task_assign_to_val+'">'
+                                        row += '<td><input type="text" id="table-modal-task-assign-to'+row_counter+'" name="table-modal-task-assign-to[]" value="'+task_assign_to_text_val+'" readonly class="form-control"></td>\n'
+                                        row += '<td><input type="text" id="task-due-date'+row_counter+'" name="tmanager_due_date[]" value="'+task_due_date_val+'" readonly class="form-control"></td>\n'
+                                        row += '<td><input type="text" id="table-modal-task-dependency'+row_counter+'" name="table-modal-task-dependency[]" value="'+task_dependency_text_val+'" readonly class="form-control"></td>\n'
+                                        row += '<input type="hidden" id="task-dependency'+row_counter+'" name="tmanager_task_dependency[]" value="'+task_dependency_val+'">'
+                                        row += '<td><input type="text" id="table-modal-task-type'+row_counter+'" name="table-modal-task-type[]" value="'+task_type_text_val+'" readonly class="form-control"></td>\n'
+                                        row += '<input type="hidden" id="task-type'+row_counter+'" name="tmanager_task_type[]" value="'+task_type_val+'">'
+                                        row += '<td><input type="text" value="" readonly class="form-control"></td>\n'
+                                        row += '<input type="hidden" id="task-note'+row_counter+'" name="tmanager_note[]" value="'+task_note_val+'">'
+                                        row += '<input type="hidden" id="task-dependency-order'+row_counter+'" name="tmanager_dependency_order[]" value="'+task_dependency_order_val+'">'
+                                        row += '</tr>'
+                                        $('.table-task-modal tbody').append(row)
+
+
+                                        //Appened Entry on the Submit Ticket Table along with the Task Manger Button
+
+                                        row = '<tr id="tbl_row'+row_counter+'">\n'
+                                        row += '<td>'+(row_counter+1)+'</td>\n'
+                                        row += '<td><input type="text" id="table-task-id'+row_counter+'" value="'+task_id_text_val+'" readonly class="form-control"></td>\n'
+                                        row += '<td><input type="text" id="table-task-assign-to'+row_counter+'" value="'+task_assign_to_text_val+'" readonly class="form-control"></td>\n'
+                                        row += '</tr>'
+
+                                        row_counter++;
+                                        $('.table-tasks tbody').append(row)
+
+                                    });
+                                    $(this).parent('.modal-buton').removeClass('custom-model-btn');
+                                    $(".addNewTask").hide('slow');
+                                    $(".addTaskGrpup").hide('slow');
+                                } else {
+                                    {#$('#TaskValid').html('');#}
+                                }
+                            },
+                            error: function (jqXHR, textStatus, errorThrown) {
+                                alert(textStatus + '. ' + errorThrown);
+                            }
+                        });
+                    }
+                }
+                else{
+                    task_order_val = $('#modal_task_order').val();
+                    task_id_val = $('#modal_task_id').val();
+                    task_id_text_val = $('#modal_task_id option:selected').text();
+                    task_type_val = $('input[name=modal_task_type]:checked').val();
+                    if(task_type_val == 0){
+                        task_type_text_val = 'Complete'
+                    }else{
+                        task_type_text_val = 'Yes/No/NA'
+                    }
+                    task_note_val = $('#modal_task_note').val();
+                    dateObject = $('#modal_due_date').val();
+                    task_due_date_val = dateObject;
+
+                    task_dependency_val = $('input[name=modal_dependency]:checked').val();
+                    if(task_dependency_val == false){
+                        task_dependency_text_val = 'None'
+                        task_dependency_val = 0
+                    }else{
+                        task_dependency_text_val = 'Order'
+                        task_dependency_val = 1
+                    }
+                    task_dependency_order_val = $('#modal_dependency_order').val();
+                    task_assign_to_val = $('#modal_task_assign_to').val();
+                    task_assign_to_text_val = $('#modal_task_assign_to option:selected').text();
+
+                    if(task_id_val == ''){
+                        alert('Task Name cannot be Empty!');
+                    }else {
+                        if($(this).val() == 'Accept'){
+                            row = '<tr>\n'
+                            row += '<td><a href="javascript:void(0);" class="edit_record" data-id="'+row_counter+'" >edit</a> | <a href="" class="delete_record" data-id="'+row_counter+'" >del</a></td>\n'
+                            row += '<input type="hidden" id="task-order'+row_counter+'" name="tmanager_task_order[]" value="'+task_order_val+'">'
+                            row += '<input type="hidden" id="task-id'+row_counter+'" name="tmanager_task_id[]" value="'+task_id_val+'">'
+                            row += '<td><input type="text" id="table-modal-task-id'+row_counter+'" name="table-modal-task-id[]" value="'+task_id_text_val+'" readonly class="form-control"></td>\n'
+                            row += '<input type="hidden" id="task-assign'+row_counter+'" name="tmanager_assign_to[]" value="'+task_assign_to_val+'">'
+                            row += '<td><input type="text" id="table-modal-task-assign-to'+row_counter+'" name="table-modal-task-assign-to[]" value="'+task_assign_to_text_val+'" readonly class="form-control"></td>\n'
+                            row += '<td><input type="text" id="task-due-date'+row_counter+'" name="tmanager_due_date[]" value="'+task_due_date_val+'" readonly class="form-control"></td>\n'
+                            row += '<td><input type="text" id="table-modal-task-dependency'+row_counter+'" name="table-modal-task-dependency[]" value="'+task_dependency_text_val+'" readonly class="form-control"></td>\n'
+                            row += '<input type="hidden" id="task-dependency'+row_counter+'" name="tmanager_task_dependency[]" value="'+task_dependency_val+'">'
+                            row += '<td><input type="text" id="table-modal-task-type'+row_counter+'" name="table-modal-task-type[]" value="'+task_type_text_val+'" readonly class="form-control"></td>\n'
+                            row += '<input type="hidden" id="task-type'+row_counter+'" name="tmanager_task_type[]" value="'+task_type_val+'">'
+                            row += '<td><input type="text" value="" readonly class="form-control"></td>\n'
+                            row += '<input type="hidden" id="task-note'+row_counter+'" name="tmanager_note[]" value="'+task_note_val+'">'
+                            row += '<input type="hidden" id="task-dependency-order'+row_counter+'" name="tmanager_dependency_order[]" value="'+task_dependency_order_val+'">'
+                            row += '</tr>'
+                            $('.table-task-modal tbody').append(row)
+                            $(this).parent('.modal-buton').removeClass('custom-model-btn');
+                            $(".addNewTask").hide('slow');
+                            $(".addTaskGrpup").hide('slow');
+
+
+                            //Appened Entry on the Submit Ticket Table along with the Task Manger Button
+
+                            row = '<tr id="tbl_row'+row_counter+'">\n'
+                            row += '<td>'+(row_counter+1)+'</td>\n'
+                            row += '<td><input type="text" id="table-task-id'+row_counter+'" value="'+task_id_text_val+'" readonly class="form-control"></td>\n'
+                            row += '<td><input type="text" id="table-task-assign-to'+row_counter+'" value="'+task_assign_to_text_val+'" readonly class="form-control"></td>\n'
+                            row += '</tr>'
+
+                            row_counter++;
+                            $('.table-tasks tbody').append(row)
+
+                        }
+                        else if($(this).val() == 'Update'){
+                            $("#task-order"+ row_edit + "").val(task_order_val);
+                            $("#task-id"+ row_edit + "").val(task_id_val);
+                            $("#task-type"+ row_edit + "").val(task_type_val);
+                            $("#task-note"+ row_edit + "").val(task_note_val);
+                            $("#task-due-date"+ row_edit + "").val(task_due_date_val);
+                            $("#task-dependency"+ row_edit + "").val(task_dependency_val);
+                            $("#task-dependency-order"+ row_edit + "").val(task_dependency_order_val);
+                            $("#task-assign"+ row_edit + "").val(task_assign_to_val);
+                            $("#table-modal-task-id"+ row_edit + "").val(task_id_text_val);
+                            $("#table-modal-task-assign-to"+ row_edit + "").val(task_assign_to_text_val);
+                            $("#table-modal-task-dependency"+ row_edit + "").val(task_dependency_text_val);
+                            $("#table-modal-task-type"+ row_edit + "").val(task_type_text_val);
+                            $(this).parent('.modal-buton').removeClass('custom-model-btn');
+                            $(".addNewTask").hide('slow');
+                            $(".addTaskGrpup").hide('slow');
+
+                            //Update Table Entry on the Submit Ticket Table along with the Task Manger Button
+                            $("#table-task-id"+ row_edit + "").val(task_id_text_val);
+                            $("#table-task-assign-to"+ row_edit + "").val(task_assign_to_text_val);
+                            $("#table-task-type"+ row_edit + "").val(task_type_val);
+                        }
+                    }
+                }
+
+            });
+
+            $(document).on('click', '.delete_record', function(e) {
+                // cancel submit
+                e.preventDefault();
+                $(this).closest('tr').remove();
+                r_id = ($(this).attr('data-id'));
+                $("#tbl_row"+ r_id + "").remove();
+            })
+
+            $(document).on('click','.edit_record',function () {
+                $('#BtnNewTask').parent('.modal-buton').addClass('custom-model-btn');
+                $('#accept-btn').val('Update')
+                $(".addNewTask").toggle('slow');
+                row_edit = r_id = $(this).attr('data-id');
+                t_order = $("#task-order"+ r_id + "").val();
+                t_id = $("#task-id"+ r_id + "").val();
+                t_type = $("#task-type"+ r_id + "").val();
+                t_note = $("#task-note"+ r_id + "").val();
+                t_due_date = $("#task-due-date"+ r_id + "").val();
+                t_dependency = $("#task-dependency"+ r_id + "").val();
+                t_dependency_order = $("#task-dependency-order"+ r_id + "").val();
+                t_assign_to = $("#task-assign"+ r_id + "").val();
+                $('#modal_task_order').val(t_order)
+                $('#modal_task_id').val(t_id)
+                if(t_type == '0'){$('#modal_task_type1').prop('checked',true)}else{$('#modal_task_type2').prop('checked',true)}
+                $('#modal_task_note').val(t_note)
+                $('#modal_due_date').val(t_due_date)
+                if(t_dependency == '0'){$('#modal_dependency1').prop('checked',true)}else{$('#modal_dependency2').prop('checked',true)}
+                $('#modal_dependency_order').val(t_dependency_order)
+                $("#modal_task_assign_to").select2("destroy").select2()
+                $('#modal_task_assign_to').val(t_assign_to)
+            });
+        </script>
+    {% endblock %}
+
+

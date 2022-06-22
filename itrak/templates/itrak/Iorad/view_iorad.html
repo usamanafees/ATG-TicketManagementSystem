@@ -1,0 +1,43 @@
+
+<!-- Modal Form For Iorad -->
+{% load templates_extras %}
+<style>
+    .popup-modal-content .modal-dialog{
+        top:0% !important;
+    }
+    .modal-block{
+        max-width: 100% !important;
+        max-height: 100% !important;
+
+    }
+    @media screen and (min-width: 768px){
+        .modal-dialog {
+            width: 100% !important; 
+            height: 100% !important; 
+        }
+    }
+</style>
+<div class="popup-modal-content">
+    <div id="modalIoradAdd" class="modal modal-block modal-block-primary modal-dialog">
+        <section class="panel">
+            <form  method="post" action="{% url 'updateIorad' %}">
+                {% csrf_token %}
+                <header class="panel-heading custom-style">
+                    <h2 class="panel-title">{{data.iorad_title}}</h2>
+                </header>
+                <div class="panel-body">
+                    <iframe src="{{data.iorad_link}}" width="100%" height="700px" title="{{data.iorad_title}}"></iframe>
+                </div>
+                <footer class="panel-footer">
+                    <div class="row">
+                        <div class="col-md-12 text-right">
+                            <input type="hidden" name="iorad_id" value="{{data.iorad_id}}"> 
+                            <button class="btn btn-default modal-dismiss" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </footer>
+            </form>
+        </section>
+    </div>
+</div>
+<!-- Modal Form For Iorad End-->

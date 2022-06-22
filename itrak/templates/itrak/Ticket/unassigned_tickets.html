@@ -1,0 +1,226 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+    {% load static %}
+    {% load check_permissions %}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-ticket" aria-hidden="true"></i> Ticket</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Ticket</span></li>
+								<li><span>My Tickets</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+						<section class="panel">
+							<header class="panel-heading">
+
+								<h2 class="panel-title">My Tickets</h2>
+							</header>
+							<div class="panel-body">
+                                 {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+{#                                data-url="{% static 'ajax/ajax-datatables-sample.json' %} "#}
+                                <!-- states -->
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="tabs tabs-primary">
+                                            <ul class="nav nav-tabs">
+                                                <li class="active">
+                                                    <a href="#unassign" data-toggle="tab">Unassigned ({{ unassign.count }})</a>
+                                                </li>
+                                            </ul>
+                                            <div class="tab-content">
+                                                <div id="unassign" class="tab-pane active">
+                                                   <h3>Ticket Unassign</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% if unassign.count > 0 %}
+                                    <form action="{% url 'save_UnassignedTickets' %}" method="post">
+                                        {% csrf_token %}
+                                        <table class="table table-bordered table-striped datatable">
+                                            <thead>
+                                                <tr>
+                                                    <th width="5%"><input type="checkbox" id="select_chk"></th>
+                                                    <th width="5%">Ticket#</th>
+                                                    <th width="20%">Subject</th>
+                                                    <th width="5%">Priority</th>
+                                                    <th width="10%">Opened</th>
+                                                    <th width="15%">Submitted By</th>
+                                                    <th width="15%">Substatus</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                        <!-- Action Permission check -->
+                                        {% if "Activate_link_allowing_self_assignment_of_next_available_Ticket_in_unassigned_queue"|check_sub_action_permission:user.id %}
+                                        <input type="submit" class="btn btn-primary" value="Assign to me">
+                                        {% endif %}
+                                    </form>
+                                {% else %}
+                                    <h4>No Unassigned Tickets</h4>
+                                {% endif %}
+                                <input type="hidden" value="" id="current_tab" name="current_tab" value="unassign"/>
+							</div>
+						</section>
+					<!-- end: page -->
+				</section>
+			</div>
+
+           <!-- Modal Warning -->
+        {# Delete Modal Popup on Delete#}
+        <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <p>You are about to delete a record, this procedure is irreversible.</p>
+                        <strong>Do you want to proceed?</strong>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <a class="btn btn-danger btn-ok">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% endblock %}
+
+    {% block script %}
+        <script>
+
+            $(document).ready(function () {
+                $('#current_tab').val('unassign');
+                $(".datatable").dataTable().destroy();
+                intialize();
+                $(document).on('change','.ticket_id_chk', function(){
+                    if(this.checked) {
+                        //alert($('.ticket_id_chk').val());
+                    }
+                });
+                $(document).on('click','.id_link', function(e){
+                    e.preventDefault();
+                });
+            });
+            $("#select_chk").change(function() {
+                if(this.checked) {
+                    $('.ticket_id_chk').prop('checked', true);
+                } else{
+                    $('.ticket_id_chk').prop('checked', false);
+                }
+            });
+            function intialize(){
+                var oTable = $('.datatable').dataTable({
+                    "destroy": true,
+                    // ...
+                    columnDefs: [
+                        {
+                            name: 'ticket_id_chk',
+                            orderable: false,
+                            searchable: false,
+                            targets: [0]
+                        },
+                        {
+                            name: 'ticket_id',
+                            orderable: true,
+                            searchable: true,
+                            targets: [1]
+                        },
+                        {
+                            name: 'subject',
+                            orderable: true,
+                            searchable: true,
+                            targets: [2]
+                        },
+                        {
+                            name: 'priority.priority_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [3]
+                        },
+                        {
+                            name: 'submitted_at',
+                            orderable: true,
+                            searchable: true,
+                            
+                            targets: [4]
+                        },
+                        {
+                            name: 'ticket_created_by.display_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [5]
+                        },
+                        {
+                            name: 'ticket_sub_status.sub_status_text',
+                            orderable: true,
+                            searchable: true,
+                            targets: [6]
+                        }
+                    ],
+                    "order": [[ 1, 'desc' ]],
+                    "processing": true,
+                    "serverSide": true,
+                    "lengthMenu": [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "All"] ],
+                    "stateSave": true,
+                    "ajax": {
+                        "url": "{% url 'myticket_list_json' %}",
+                        "type": "GET",
+                        "data": function ( d ) {
+                             d.tab_name = $('#current_tab').val();
+                             d.csrfmiddlewaretoken = getCookie('csrftoken');
+                        }
+                    },
+                });
+                // ...
+            }
+
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie != '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = jQuery.trim(cookies[i]);
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        </script>
+        <script>
+        $('#confirm-delete').on('show.bs.modal', function(e) {
+            $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+        });
+        </script>
+    {% endblock %}

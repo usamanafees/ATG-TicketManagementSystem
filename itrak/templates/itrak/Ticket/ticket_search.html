@@ -1,0 +1,1138 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+        {% load check_permissions %}
+        {% load tz %} {# it will Load the Django TimeZone Library#}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-ticket" aria-hidden="true"></i> Ticket </h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Ticket</span></li>
+								<li><span>Search Tickets</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+                         <div class="row">
+                            <div class="col-md-12">
+                                {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                                <form id="summary-form" action="{% url 'ticketSearchResults' %}" method="post" class="form-horizontal">
+                                    {% csrf_token %}
+                                    <section class="panel">
+                                        <header class="panel-heading">
+{#                                            <div class="panel-actions">#}
+{#                                                <a href="#" class="fa fa-caret-down"></a>#}
+{#                                                <a href="#" class="fa fa-times"></a>#}
+{#                                            </div>#}
+
+                                            <h2 class="panel-title">Search Tickets</h2>
+                                        </header>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary saveButton">Search</button>
+                                                    <button type="reset" class="btn btn-default resetBtn">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                        <div class="panel-body search-ticket">
+                                            <div class="validation-message">
+                                                <ul></ul>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label" for=""></label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-12 col-sm-12">
+                                                    	<h4 class="text-primary text-bold"> Search Criteria</h4>
+                                                	</div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Ticket Status</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-3 col-sm-3">
+                                                        <select name="ticket_status" id="ticket_status" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Status", "allowClear": true }'>
+                                                            <option value="" > </option>
+                                                            <option value="0" >Opened</option>
+                                                            <option value="1" >Closed</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-3 col-sm-4">
+                                                        <select name="ticket_sub_status" id="ticket_sub_status" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Sub Status", "allowClear": true }'>
+                                                            <option value="" > </option>
+                                                            {% if substatus %}
+                                                                {% for sstatus in substatus %}
+                                                                    <option value="{{ sstatus.sub_status_id }}">{{ sstatus.sub_status_text }}</option>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Priority: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="priority" id="priority" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Priority", "allowClear": true }'>
+                                                            <option value="" > </option>
+                                                            {% if priorities %}
+                                                                {% for priority in priorities %}
+                                                                    <option value="{{ priority.priority_id }}">{{ priority.priority_name }}</option>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Ticket Type: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="ticket_type" id="ticket_type_parent" data-plugin-selectTwo class="form-control populate ticket_type placeholder" data-plugin-options='{ "placeholder": "Select Ticket Type", "allowClear": true }'>
+                                                            <option value="" > </option>
+                                                            {% if ticketTypes %}
+                                                                {% for ttype in ticketTypes %}
+                                                                    <option value="{{ ttype.ttype_id }}">{{ ttype.ttype_name }}</option>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Subtype 1:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="subtype1" id="subtype1" data-plugin-selectTwo class="form-control populate ticket_type ticket_type_parent placeholder" data-plugin-options='{ "placeholder": "Select SubType1", "allowClear": true }'>
+                                                            <option value="" > </option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Subtype 2:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="subtype2" id="subtype2" data-plugin-selectTwo class="form-control populate ticket_type subtype1 placeholder" data-plugin-options='{ "placeholder": "Select Subtype2", "allowClear": true }'>
+                                                            <option value="" > </option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Subtype 3:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="subtype3" id="subtype3" data-plugin-selectTwo class="form-control populate ticket_type subtype2 placeholder" data-plugin-options='{ "placeholder": "Select Subtype3", "allowClear": true }'>
+                                                            <option value="" > </option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Subtype 4:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="subtype4" id="subtype4" data-plugin-selectTwo class="form-control populate ticket_type subtype3 placeholder" data-plugin-options='{ "placeholder": "Select Subtype4", "allowClear": true }'>
+                                                            <option value="" > </option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Subject: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                       <input type="text" name="subject" id="subject" class="form-control" placeholder="" />
+                                                    </div>
+                                                    <div class="col-md-4 col-sm-5 align-text">
+                                                       <i class="text-primary">keyword search</i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Notes: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                       <input type="text" name="ticket_note" id="ticket_note" class="form-control" placeholder="" />
+                                                    </div>
+                                                    <div class="col-md-4 col-sm-5 align-text">
+                                                       <i class="text-primary">keyword search</i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Solution: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                       <input type="text" name="ticket_solution" id="ticket_solution" class="form-control" placeholder="" />
+                                                    </div>
+                                                    <div class="col-md-4 col-sm-5 align-text">
+                                                       <i class="text-primary">keyword search</i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label text-bold">or</label>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Search All Three: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                       <input type="text" name="all_three" id="all_three" class="form-control" placeholder="" />
+                                                    </div>
+                                                    <div class="col-md-4 col-sm-5 align-text">
+                                                       <i class="text-primary">keyword search</i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Record Locator: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                       <input type="text" name="record_locator" id="record_locator" class="form-control" placeholder="" />
+                                                    </div>
+                                                    <div class="col-md-6 col-sm-5 align-text">
+                                                       <span class="text-primary">*</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Caller Name: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                       <input type="text" name="caller_name" id="caller_name" class="form-control" placeholder="" />
+                                                    </div>
+                                                    <div class="col-md-6 col-sm-5 align-text">
+                                                       <span class="text-primary">*</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Caller Phone: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                       <input type="text" name="caller_phone" id="caller_phone" class="form-control" placeholder="" />
+                                                    </div>
+                                                    <div class="col-md-6 col-sm-5 align-text">
+                                                       <span class="text-primary">*</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Caller Email: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                       <input type="text" name="caller_email" id="caller_email" class="form-control" placeholder="" />
+                                                    </div>
+                                                    <div class="col-md-6 col-sm-5 align-text">
+                                                       <span class="text-primary">*</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Passenger Name: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                       <input type="text" name="passenger_name" id="passenger_name" class="form-control" placeholder="" />
+                                                    </div>
+                                                    <div class="col-md-6 col-sm-5 align-text">
+                                                       <span class="text-primary">*</span>
+                                                    </div>
+                                                    <div class="col-md-8 col-sm-12">
+                                                        <span class="text-info">	* wildcard searches allowed (ex: "ab*")</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Note Entered By:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="note_entered_by" id="note_entered_by" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Client", "allowClear": true }'>
+                                                            <option value=""> </option>
+                                                            {% if users %}
+                                                                {% for user in users %}
+                                                                    <option value="{{ user.id }}">{{ user.display_name }}</option>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Submitted By:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="submitted_by" id="submitted_by" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Client", "allowClear": true }'>
+                                                            <option value=""> </option>
+                                                            {% if users %}
+                                                                {% for user in users %}
+                                                                    <option value="{{ user.id }}">{{ user.display_name }}</option>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Entered By:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="entered_by" id="entered_by" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Client", "allowClear": true }'>
+                                                            <option value=""> </option>
+                                                            {% if users %}
+                                                                {% for user in users %}
+                                                                    <option value="{{ user.id }}">{{ user.display_name }}</option>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Assigned To:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-6">
+                                                        <select name="assigned_to" id="assigned_to" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Client", "allowClear": true }'>
+                                                            <option value=""> </option>
+                                                            {% if agents %}
+                                                                {% for agent in agents %}
+                                                                    <option value="{{ agent.id }}">{{ agent.display_name }}</option>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-6 col-sm-6">
+                                                         <div class="checkbox">
+                                                             <label class="text-primary text-normal">
+                                                                <input type="checkbox" name="ever_assign" value="1">
+                                                                 <strong>Ever Assigned to </strong>
+                                                             </label>
+                                                         </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Assigned By:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="assigned_by" id="assigned_by" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Client", "allowClear": true }'>
+                                                            <option value=""> </option>
+                                                            {% if users %}
+                                                                {% for user in users %}
+                                                                    <option value="{{ user.id }}">{{ user.display_name }}</option>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Next Action:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="next_action" id="next_action" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Client", "allowClear": true }'>
+                                                            <option value=""> </option>
+                                                            {% if users %}
+                                                                {% for user in users %}
+                                                                    <option value="{{ user.id }}">{{ user.display_name }}</option>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-6 col-sm-5 space_left_right_0">
+                                                         <div class="checkbox">
+                                                             <label class="text-primary text-normal">
+                                                                <input type="checkbox" name="ever_next_action" value="1">
+                                                                 <strong>Ever Next Actioned</strong>
+                                                             </label>
+                                                         </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Closed By:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="closed_by" id="closed_by" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Client", "allowClear": true }'>
+                                                            <option value=""> </option>
+                                                            {% if users %}
+                                                                {% for user in users %}
+                                                                    <option value="{{ user.id }}">{{ user.display_name }}</option>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% if user.user_type == '0' or user.user_type == '1' %}
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Organization: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                    <select name="org_id" id="org_id" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Organization", "allowClear": true }'>
+                                                        <!-- <option value="" > </option> -->
+                                                        {% if organizations %}
+                                                            {% for org in organizations %}
+                                                                <option value="{{ org.org_id }}">{{ org.org_name }}</option>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% else %}
+                                                <input type="hidden" id="org_id" name="org_id" value="{{ user.user_org_id }}">
+                                            {% endif %}
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Account: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                    <select name="account_id" id="account_id" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Account", "allowClear": true }'>
+                                                        <option value="" > </option>
+                                                        {% if accounts %}
+                                                            {% for account in accounts %}
+                                                                <option value="{{ account.account_id }}">{{ account.account_name }}</option>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Date Opened: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <input type="text" id="date_opened" name="date_opened" placeholder="Select Date Open"  class="form-control" />
+                                                    </div>
+                                                    <div class="col-md-4 col-sm-4 align-text">
+                                                        <span class="text-primary">mm/dd/yyyy</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Date Closed: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <input type="text" id="date_closed" name="date_closed" placeholder="Select Date Close" class="form-control" />
+                                                    </div>
+                                                    <div class="col-md-4 col-sm-4 align-text">
+                                                        <span class="text-primary">mm/dd/yyyy</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Total Time Open: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-3 col-sm-4">
+                                                        <input type="text" id="total_time_open_val" name="total_time_open_val" placeholder="" class="form-control"  oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');"/>
+                                                    </div>
+                                                    <div class="col-md-6 col-sm-8 space_left_right_0 align-text">
+                                                        <div class="radio-primary form-check">
+                                                            <i class="text-primary">days  </i>
+                                                            <label for="task_type" class="form-check-label">
+                                                                <input class="form-check-input radio-inline" type="radio" id="total_time_open" name="total_time_open" value="0">
+                                                                less than</label>
+                                                            <label for="task_type" class="form-check-label">
+                                                                <input class="form-check-input radio-inline" type="radio" id="total_time_open" name="total_time_open" value="1" checked>
+                                                                more than</label>
+                                                            <label for="task_type" class="form-check-label">
+                                                                <input class="form-check-input radio-inline" type="radio" id="total_time_open" name="total_time_open" value="2">
+                                                                equal</label>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Adj Time Open: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-3 col-sm-4">
+                                                        <input type="text" id="adj_time_open_val" name="adj_time_open_val" placeholder="" class="form-control"  oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');" />
+                                                    </div>
+                                                    <div class="col-md-6 col-sm-8 space_left_right_0 align-text">
+                                                        <div class="radio-primary form-check">
+                                                            <i class="text-primary">days  </i>
+                                                            <label for="task_type" class="form-check-label">
+                                                                <input class="form-check-input radio-inline" type="radio" id="adj_time_open" name="adj_time_open" value="0">
+                                                                less than</label>
+                                                            <label for="task_type" class="form-check-label">
+                                                                <input class="form-check-input radio-inline" type="radio" id="adj_time_open" name="adj_time_open" value="1" checked>
+                                                                more than</label>
+                                                            <label for="task_type" class="form-check-label">
+                                                                <input class="form-check-input radio-inline" type="radio" id="adj_time_open" name="adj_time_open" value="2">
+                                                                equal</label>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Labor Hours: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-3 col-sm-4">
+                                                        <input type="text" name="labour_hours_val" class="form-control" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');">
+                                                    </div>
+                                                    <div class="col-md-6 col-sm-8 space_left_right_0 align-text">
+                                                        <div class="radio-primary form-check">
+                                                            <i class="text-primary">hours  </i>
+                                                            <label for="task_type" class="form-check-label">
+                                                                <input class="form-check-input radio-inline" type="radio" id="labour_hours" name="labour_hours" value="0">
+                                                                less than</label>
+                                                            <label for="task_type" class="form-check-label">
+                                                                <input class="form-check-input radio-inline" type="radio" id="labour_hours" name="labour_hours" value="1" checked>
+                                                                more than</label>
+                                                            <label for="labour_hours" class="form-check-label">
+                                                                <input class="form-check-input radio-inline" type="radio" id="labour_hours" name="labour_hours" value="2">
+                                                                equal</label>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label"></label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-8 col-sm-12">
+                                                        <span class="text-primary">	**Searching on tasks requires a Search Output of 'Task List'</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Task Description: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                       <input type="text" name="task_description" id="task_description" class="form-control" placeholder="" />
+                                                    </div>
+                                                    <div class="col-md-6 col-sm-5 align-text">
+                                                       <i class="text-primary">keyword search</i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Task Assigned To:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="task_assigned_to" id="task_assigned_to" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Client", "allowClear": true }'>
+                                                            <option value=""> </option>
+                                                            {% if agents %}
+                                                                {% for agent in agents %}
+                                                                    <option value="{{ agent.id }}">{{ agent.display_name }}</option>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Task Date Completed:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <input type="text" id="task_completion_date" name="task_completion_date" placeholder="Select Date Completed" class="form-control" />
+                                                    </div>
+                                                    <div class="col-md-4 col-sm-5">
+                                                        <span class="text-primary text-bold">mm/dd/yyyy</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label"></label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <span class="text-primary text-bold">Search Output Options</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Search Title: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                       <input type="text" name="search_title" id="search_title" class="form-control" placeholder="" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Output: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="output_view" id="output_view" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Sort Order", "allowClear": true }'>
+                                                            <option selected="" value="BriefList">Brief List</option>
+                                                            <option value="BriefListwHours">Brief List w/Hours</option>
+                                                            <option value="BriefListwLocations">Brief List w/Account</option>
+                                                            <option value="BriefListwOrganizations">Brief List w/Organizations</option>
+                                                            <option value="BriefListwRespTime">Brief List w/First Note Time</option>
+                                                            <option value="BriefListwTasks">Brief List w/Tasks</option>
+                                                            <option value="BriefList2">Brief List Format 2</option>
+                                                            <option value="CountOnly">Count Only</option>
+                                                            <option value="DetailListWoNotes">Detail List w/o Notes</option>
+                                                            <option value="DetailListWithNotes">Detail List with Notes</option>
+                                                            <option value="OutputToExcel">Brief Output to Excel</option>
+                                                            <option value="DetailOutputToExcel">Detail Output to Excel</option>
+                                                            <option value="RepAssignedReport">Rep Assigned Report</option>
+                                                            <option value="Statistics">Statistics</option>
+                                                            <option value="TaskList">Task List</option>
+                                                            <option value="TotalTimeTech">Total Time by Assign, Org</option>
+                                                            <option value="TotalTimeOrg">Total Time by Org, Assign</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-5 col-sm-5 space_left_right_0">
+                                                        <div class="checkbox">
+                                                             <label class="text-primary text-normal">
+                                                                <input type="checkbox" name="show_criteria" value="1" checked>
+                                                                 <strong>Include Criteria in Results</strong>
+                                                             </label>
+                                                         </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Sort Order 1: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="sort_column1" id="sort_column1" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Sort Order", "allowClear": true }'>
+                                                            <option value="" > </option>
+                                                            <option value="ticket_assign_to__display_name" >Assigned To</option>
+                                                            <option value="ticket_closed_at" >Date Closed</option>
+                                                            <option value="ticket_created_at" >Date Opened</option>
+                                                            <option value="ticket_created_by__display_name" >Entered By</option>
+                                                            <option value="ticket_id" >Ticket Nbr</option>
+                                                            <option value="ticket_subtype1__ttype_name" >Ticket Subtype</option>
+                                                            <option value="ticket_type__ttype_name" >Ticket Type</option>
+                                                            <option value="ticket_modified_at" >Last Activity</option>
+                                                            <option value="ticket_next_action__display_name" >Next Action By</option>
+                                                            <option value="ticket_org__org_name" >Organization</option>
+                                                            <option value="priority__p_display_order" >Priority</option>
+                                                            <option value="ticket_status" >Status</option>
+                                                            <option value="ticket_caller__display_name" >Submitted By</option>
+                                                            <option value="ticket_created_at" >Time Open</option>
+                                                            <option value="ticket_client__client_name" >Client</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-3 col-sm-5">
+                                                        <select name="sort_order1" id="sort_order1" class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Sort Order", "allowClear": true }'>
+                                                            <option value="0" >Asc</option>
+                                                            <option value="1" >Desc</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Sort Order 2: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="sort_column2" id="sort_column2" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Sort Order", "allowClear": true }'>
+                                                            <option value="" > </option>
+                                                            <option value="ticket_assign_to__display_name" >Assigned To</option>
+                                                            <option value="ticket_closed_at" >Date Closed</option>
+                                                            <option value="ticket_created_at" >Date Opened</option>
+                                                            <option value="ticket_created_by__display_name" >Entered By</option>
+                                                            <option value="ticket_id" >Ticket Nbr</option>
+                                                            <option value="ticket_subtype1__ttype_name" >Ticket Subtype</option>
+                                                            <option value="ticket_type__ttype_name" >Ticket Type</option>
+                                                            <option value="ticket_modified_at" >Last Activity</option>
+                                                            <option value="ticket_next_action__display_name" >Next Action By</option>
+                                                            <option value="ticket_org__org_name" >Organization</option>
+                                                            <option value="priority__p_display_order" >Priority</option>
+                                                            <option value="ticket_status" >Status</option>
+                                                            <option value="ticket_caller__display_name" >Submitted By</option>
+                                                            <option value="ticket_created_at" >Time Open</option>
+                                                            <option value="ticket_client__client_name" >Client</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-3 col-sm-5">
+                                                        <select name="sort_order2" id="sort_order2" class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Sort Order", "allowClear": true }'>
+                                                            <option value="0" >Asc</option>
+                                                            <option value="1" >Desc</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Sort Order 3: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="sort_column3" id="sort_column3" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Sort Order", "allowClear": true }'>
+                                                            <option value="" > </option>
+                                                            <option value="ticket_assign_to__display_name" >Assigned To</option>
+                                                            <option value="ticket_closed_at" >Date Closed</option>
+                                                            <option value="ticket_created_at" >Date Opened</option>
+                                                            <option value="ticket_created_by__display_name" >Entered By</option>
+                                                            <option value="ticket_id" >Ticket Nbr</option>
+                                                            <option value="ticket_subtype1__ttype_name" >Ticket Subtype</option>
+                                                            <option value="ticket_type__ttype_name" >Ticket Type</option>
+                                                            <option value="ticket_modified_at" >Last Activity</option>
+                                                            <option value="ticket_next_action__display_name" >Next Action By</option>
+                                                            <option value="ticket_org__org_name" >Organization</option>
+                                                            <option value="priority__p_display_order" >Priority</option>
+                                                            <option value="ticket_status" >Status</option>
+                                                            <option value="ticket_caller__display_name" >Submitted By</option>
+                                                            <option value="ticket_created_at" >Time Open</option>
+                                                            <option value="ticket_client__client_name" >Client</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-3 col-sm-5">
+                                                        <select name="sort_order3" id="sort_order3" class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Sort Order", "allowClear": true }'>
+                                                            <option value="0" >Asc</option>
+                                                            <option value="1" >Desc</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label"></label>
+                                                <div class="col-md-9 col-sm-9">
+	                                                <div class="col-md-6 col-sm-12">
+	                                                	<div class="bg-info" style="padding: 15px 15px">
+		                                                    <div class="form-group">
+		                                                        <label class="col-sm-8">
+	                                                                <a href="" name="saveSearchTicket" id="saveSearchTicket" onclick="saveSearchTicket(event)"> Save New Search</a>
+                                                                </label>
+                                                                <!-- Action Permission check -->
+                                                                {% if "Rep_perm_Can_add_edit_and_run_shared_saved_searches"|check_action_permission:user.id %}
+                                                                <label class="col-sm-4 text-right">
+                                                                    Share   <input type="checkbox" name="share_checkbox">
+                                                                </label>
+                                                                {%endif%}
+		                                                    </div>
+		                                                    <div class="form-group">
+		                                                        <label class="col-sm-8">
+	                                                                <a class="mb-xs mt-xs mr-xs modal-sizes" href="#modalRetreiveSavedSearches">Retrieve Saved Searches </a>
+	                                                            </label>
+	                                                            <!-- Modal Form For Task Manager Start-->
+	                                                                <div id="modalRetreiveSavedSearches" class="modal-block modal-block-lg mfp-hide">
+	                                                                <section class="panel">
+	                                                                    <header class="panel-heading">
+	                                                                        <h2 class="panel-title">Select Search</h2>
+	                                                                    </header>
+	                                                                    <div class="panel-body">
+	                                                                          <form id="modalForm" action="{% url 'updateTaskGroup' %}" method="post" class="form-horizontal">
+	                                                                            <input type="hidden" name="changeTM" id="changeTM" value="0" />
+	                                                                              <div class="table-responsive">
+	                                                                              <table class="table table-bordered table-task-modal">
+	                                                                                <thead>
+	                                                                                    <tr>
+	                                                                                        <th></th>
+	                                                                                        <th>Saved Search</th>
+	                                                                                        <th>Search ID</th>
+	                                                                                        <th>Created By</th>
+	                                                                                        <th>Last Modified</th>
+	                                                                                    </tr>
+	                                                                                </thead>
+	                                                                                <tbody>
+	                                                                                    {% if savedSearches %}
+	                                                                                        {% for search in savedSearches %}
+	                                                                                            <tr>
+                                                                                                    <!-- <td><a href="" class="delete_record" data-id="{{ search.saved_search_id }}">delete</a></td> -->
+                                                                                                    <td><a href="#" data-href="{% url 'deleteSavedSearch' %}?save_id={{search.saved_search_id }}" class=""data-hover="Delete Ticket"  data-toggle="modal" data-target="#confirm-delete">delete</a>
+                                                                                                     {% comment %} <a href="#"  class=""data-hover="Copy Ticket"  data-toggle="modal" data-target="#confirm-Copy">copy</a></td> {% endcomment %}
+	                                                                                                 <a href="#"  onclick="getCopyModal(event, {{search.saved_search_id}})">copy</a></td>
+	                                                                                                <td><a href="{% url 'searchTicket' %}?reportNbr={{ search.saved_search_id }}" >{{ search.search_title }}{% if search.is_share == 1 %}*{% endif %}</a></td>
+	                                                                                                <td><label href="" >{{ search.saved_search_id }}</label></td>
+	                                                                                                <td><label href="" >{{ search.save_created_by.last_name }},{{ search.save_created_by.first_name }}</label></td>
+	                                                                                                <td><label href="" >{{ search.save_modified_at|date:"m/d/Y"}} </label></td>
+	                                                                                            </tr>
+                                                                                                
+                                                                                                     <!-- clone Modal Popup on Task Manager Task Delete -->
+                                                                                                    <div class="modal fade" id="confirm-Copy" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                                                                                                        <div class="modal-dialog">
+                                                                                                            <div class="modal-content">
+                                                                                                                    
+                                                                                                                <div class="modal-header">
+                                                                                                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                                                                                    <h4 class="modal-title" id="myModalLabel">Copy Report Definition</h4>
+                                                                                                                </div>
+
+                                                                                                                <div class="modal-body">
+                                                                                                                    <p>Report will be copied and saved with a new report name.</p>
+                                                                                                                    <strong>Enter a name for the new report:</strong>
+                                                                                                                    <input type="text" name="copytitle" id="copytitle" class="form-control" placeholder="" />
+                                                                                                                    <input type="hidden" name="save_search_id" id="save_search_id" />
+                                                                                            
+                                                                                                                </div>
+
+                                                                                                                <div class="modal-footer">
+                                                                                                                    <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                                                                                                                    <a class="btn btn-primary"  onclick="copyrecord()">Ok</a>
+                                                                                                                </div>
+                                                                                                                
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                            {% endfor %}
+	                                                                                    {% endif %}
+	                                                                                </tbody>
+
+	                                                                            </table>
+                                                                                <p>* Shared Search</p>
+	                                                                            </div>
+	                                                                        </form>
+	                                                                    </div>
+	                                                                    <footer class="panel-footer">
+	                                                                        <div class="row">
+	                                                                            <div class="col-md-12 text-right">
+	                                                                                <button class="btn btn-primary modal-dismiss">Cancel</button>
+	                                                                            </div>
+	                                                                        </div>
+                                                                        </footer>
+                                                                               <!-- Delete Modal Popup on Task Manager Task Delete -->
+                                                                                    <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                                                                                        <div class="modal-dialog">
+                                                                                            <div class="modal-content">
+
+                                                                                                <div class="modal-header">
+                                                                                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                                                                    <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                                                                                                </div>
+
+                                                                                                <div class="modal-body">
+                                                                                                    <p>You are about to delete a record, this procedure is irreversible.</p>
+                                                                                                    <strong>Do you want to proceed?</strong>
+                                                                                                </div>
+
+                                                                                                <div class="modal-footer">
+                                                                                                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                                                                                    <a class="btn btn-danger btn-ok">Delete</a>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                          
+	                                                                </section>
+	                                                            </div>
+	                                                            <!-- Modal Form For Task Manager End-->
+		                                                        <label class="col-sm-3"></label>
+
+		                                                    </div>
+		                                                </div>
+	                                                </div>
+	                                            </div>
+                                            </div>
+                                        </div>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary saveButton">Search</button>
+                                                    <button type="reset" class="btn btn-default resetBtn">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                    </section>
+                                </form>
+                            </div>
+                        </div>
+					<!-- end: page -->
+				</section>
+			</div>
+
+    {% endblock %}
+
+    {% block script %}
+    <script>
+        $('#confirm-delete').on('show.bs.modal', function(e) {
+            $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+        });
+
+        </script>
+     
+        <script>
+            $(document).on('change','.ticket_type', function(){
+              var tid = $(this).val();
+              var ttype = $(this).attr('id');
+              if (tid != ''){
+                  $.ajax({
+                    type: 'POST',
+                    url: "{% url 'getTicketTypeChildById' %}",
+                    data: {ttype_id: tid},
+                    dataType: 'json',
+                    beforeSend: function(jqXHR, settings) {
+                        //Do something before send...
+                    },
+                    success: function(data, textStatus, jqXHR) {
+                        if(data.response) {
+                            result = jQuery.parseJSON(data['response'])
+                            if(ttype == 'ticket_type_parent') {
+                                $('#subtype1').html('<option value="" > </option>')
+                                $('#subtype2').html('<option value="" > </option>')
+                                $('#subtype3').html('<option value="" > </option>')
+                                $('#subtype4').html('<option value="" > </option>')
+                                $.each(result, function (index) {
+                                    $('#subtype1').append('<option value="' + result[index].pk + '">' + result[index].fields.ttype_name + '</option>')
+                                });
+                            }else if(ttype == 'subtype1'){
+                                $('#subtype2').html('<option value="" > </option>')
+                                $('#subtype3').html('<option value="" > </option>')
+                                $('#subtype4').html('<option value="" > </option>')
+                                $.each(result, function (index) {
+                                    $('#subtype2').append('<option value="' + result[index].pk + '">' + result[index].fields.ttype_name + '</option>')
+                                });
+                            }else if(ttype == 'subtype2'){
+                                $('#subtype3').html('<option value="" > </option>')
+                                $('#subtype4').html('<option value="" > </option>')
+                                $.each(result, function (index) {
+                                    $('#subtype3').append('<option value="' + result[index].pk + '">' + result[index].fields.ttype_name + '</option>')
+                                });
+                            }else if(ttype == 'subtype3'){
+                                $('#subtype4').html('<option value="" > </option>')
+                                $.each(result, function (index) {
+                                    $('#subtype4').append('<option value="'+result[index].pk+'">'+result[index].fields.ttype_name+'</option>')
+                                });
+                            }
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    }
+                  });
+              }
+
+            });
+
+            function saveSearchTicket(event) {
+                event.preventDefault();
+                if($('#search_title').val() == ''){
+                    alert('No value entered for Search Title!');
+                }else{
+                    $('#summary-form').attr('action', "{% url 'ticketSaveSearch' %}");
+                    $('#summary-form').submit();
+                }
+            }
+
+            function getCopyModal(e, id){
+                $('#save_search_id').val(id);
+                $('#confirm-Copy').modal('show');
+            }
+
+            function copyrecord(savesearchid,name){
+                var name =$('#copytitle').val();
+                if(name == ''){
+                    alert('No value entered for Search Title!');
+                }
+                else{
+                var savesearchid =$('#save_search_id').val();
+                var name =$('#copytitle').val();
+                console.log(savesearchid)
+                console.log(name)
+                $.ajax({
+                    url: "{% url 'copySavedSearch' %}",
+                    method: "POST",
+                    data: {save_search_id: savesearchid, copytitle: name},
+                    success: function (data) {
+                        console.log(data)
+                    }
+                });
+                window.location.reload(true);
+            } }
+        </script>
+        <script type="text/javascript">
+            $(function() {
+
+                var start = moment().subtract(365, 'days');
+                var end = moment();
+
+                function cb_open(start, end) {
+                    $('#date_opened').val(start.format('MM/DD/YYYY') + ' - ' + end.format('MM/DD/YYYY'));
+                }
+
+                $('#date_opened').daterangepicker({
+                    startDate: start,
+                    endDate: end,
+                    autoUpdateInput: false,
+                    locale: {
+                      cancelLabel: 'Clear'
+                    },
+                    ranges: {
+                       'Today': [moment(), moment()],
+                       'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                       'This Week': [moment().startOf('week'), moment().endOf('week')],
+                       'Last Week': [moment().subtract(1, 'week').startOf('week'), moment().subtract(1, 'week').endOf('week')],
+                       'This Month': [moment().startOf('month'), moment().endOf('month')],
+                       'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                       'This Year': [moment().startOf('year'), moment().endOf('year')],
+                       'Last Year': [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')]
+                    }
+                }, cb_open);
+                cb_open(start, end);
+                $('#date_opened').val('');
+
+                $('#date_opened').on('cancel.daterangepicker', function(ev, picker) {
+                  $(this).val('');
+                });
+
+                function cb_close(start, end) {
+                    $('#date_closed').val(start.format('MM/DD/YYYY') + ' - ' + end.format('MM/DD/YYYY'));
+                }
+
+                $('#date_closed').daterangepicker({
+                    startDate: start,
+                    endDate: end,
+                    autoUpdateInput: false,
+                    locale: {
+                      cancelLabel: 'Clear'
+                    },
+                    ranges: {
+                       'Today': [moment(), moment()],
+                       'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                       'This Week': [moment().startOf('week'), moment().endOf('week')],
+                       'Last Week': [moment().subtract(1, 'week').startOf('week'), moment().subtract(1, 'week').endOf('week')],
+                       'This Month': [moment().startOf('month'), moment().endOf('month')],
+                       'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                       'This Year': [moment().startOf('year'), moment().endOf('year')],
+                       'Last Year': [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')]
+                    }
+                }, cb_close);
+                cb_close(start, end);
+                $('#date_closed').val('');
+
+                $('#date_closed').on('cancel.daterangepicker', function(ev, picker) {
+                  $(this).val('');
+                });
+
+                function cb_task(start, end) {
+                    $('#task_completion_date').val(start.format('MM/DD/YYYY') + ' - ' + end.format('MM/DD/YYYY'));
+                }
+
+                $('#task_completion_date').daterangepicker({
+                    startDate: start,
+                    endDate: end,
+                    autoUpdateInput: false,
+                    locale: {
+                      cancelLabel: 'Clear'
+                    },
+                    ranges: {
+                       'Today': [moment(), moment()],
+                       'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                       'This Week': [moment().startOf('week'), moment().endOf('week')],
+                       'Last Week': [moment().subtract(1, 'week').startOf('week'), moment().subtract(1, 'week').endOf('week')],
+                       'This Month': [moment().startOf('month'), moment().endOf('month')],
+                       'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                       'This Year': [moment().startOf('year'), moment().endOf('year')],
+                       'Last Year': [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')]
+                    }
+                }, cb_task);
+                cb_task(start, end);
+                $('#task_completion_date').val('');
+
+                $('#task_completion_date').on('cancel.daterangepicker', function(ev, picker) {
+                  $(this).val('');
+                });
+
+                var output_view = $("#output_view").val();
+                if(output_view == 'CountOnly' || output_view == 'Statistics' || output_view == 'TotalTimeTech' || output_view == 'TotalTimeOrg')
+                {
+                    $('#sort_column1').attr('disabled', true);
+                    $('#sort_order1').attr('disabled', true);
+                    $('#sort_column2').attr('disabled', true);
+                    $('#sort_order2').attr('disabled', true);
+                    $('#sort_column3').attr('disabled', true);
+                    $('#sort_order3').attr('disabled', true);
+                }
+                else
+                {
+                    $('#sort_column1').attr('disabled', false);
+                    $('#sort_order1').attr('disabled', false);
+                    $('#sort_column2').attr('disabled', false);
+                    $('#sort_order2').attr('disabled', false);
+                    $('#sort_column3').attr('disabled', false);
+                    $('#sort_order3').attr('disabled', false);
+                }
+
+            });
+
+            $(document).on('click', '.copy_record', function(e) {
+                // cancel submit
+                e.preventDefault();
+                r_id = ($(this).attr('data-id'));
+                $(this).closest('tr').remove();
+                if (r_id != '') {
+                    $.ajax({
+                        type: 'POST',
+                        url: "{% url 'deleteSavedSearch' %}",
+                        data: {save_id: r_id},
+                        dataType: 'json',
+                        beforeSend: function (jqXHR, settings) {
+                            //Do something before send...
+                        },
+                        success: function (data, textStatus, jqXHR) {
+
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            alert(textStatus + '. ' + errorThrown);
+                        }
+                    });
+                }
+            });
+
+            $(document).on('change', '#output_view', function () {
+                var output_view = $(this).val();
+                if(output_view == 'CountOnly' || output_view == 'Statistics' || output_view == 'TotalTimeTech' || output_view == 'TotalTimeOrg')
+                {
+                    $('#sort_column1').attr('disabled', true);
+                    $('#sort_order1').attr('disabled', true);
+                    $('#sort_column2').attr('disabled', true);
+                    $('#sort_order2').attr('disabled', true);
+                    $('#sort_column3').attr('disabled', true);
+                    $('#sort_order3').attr('disabled', true);
+                }
+                else
+                {
+                    $('#sort_column1').attr('disabled', false);
+                    $('#sort_order1').attr('disabled', false);
+                    $('#sort_column2').attr('disabled', false);
+                    $('#sort_order2').attr('disabled', false);
+                    $('#sort_column3').attr('disabled', false);
+                    $('#sort_order3').attr('disabled', false);
+                }
+            });
+
+            $('.resetBtn').on('click', function(e){
+                    $("#ticket_status").select2("val", "");
+                    $("#ticket_sub_status").select2("val", "");
+                    $("#priority").select2("val", "");
+                    $("#ticket_type_parent").select2("val", "");
+                    $("#subtype1").select2("val", "");
+                    $("#subtype2").select2("val", "");
+                    $("#subtype3").select2("val", "");
+                    $("#subtype4").select2("val", "");
+                    $("#subject").val("");
+                    $("#ticket_solution").val("");
+                    $("#all_three").val("");
+                    $("#record_locator").val("");
+                    $("#caller_name").val("");
+                    $("#caller_phone").val("");
+                    $("#caller_email").val("");
+                    $("#passenger_name").val("");
+                    $("#note_entered_by").select2("val", "");
+                    $("#submitted_by").select2("val", "");
+                    $("#entered_by").select2("val", "");
+                    $("#assigned_to").select2("val", "");
+                    $("#assigned_by").select2("val", "");
+                    $("#next_action").select2("val", "");
+                    $("#closed_by").select2("val", "");
+                    $("#org_id").select2("val", "");
+                    $("#client_id").select2("val", "");
+                    $("#task_assigned_to").select2("val", "");
+                });
+
+        </script>
+    {% endblock %}
+
+

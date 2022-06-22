@@ -1,0 +1,217 @@
+{% extends 'itrak/base.html' %}
+
+{% block body_block %}
+    {% load static %}
+    <style>
+#more {
+  cursor:pointer;
+}
+    </style>
+
+            <section role="main" class="content-body">
+                <header class="page-header">
+                   <h2><i class="fa fa-users" aria-hidden="true"></i> IORAD</h2>
+
+                    <div class="right-wrapper pull-right">
+                        <ol class="breadcrumbs">
+                            <li>
+                                <a href="{% url 'home' %}">
+                                    <i class="fa fa-home"></i>
+                                </a>
+                            </li>
+                            <li><span>IORAD</span></li>
+                            <li><span>IORAD List</span></li>
+                        </ol>
+
+                        <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+                    </div>
+                </header>
+
+                <!-- start: page -->
+                    <section class="panel">
+                        <header class="panel-heading">
+                            <h2 class="panel-title">IORAD List</h2>
+                        </header>
+                        <div class="panel-body">
+                             {% for message in messages %}
+                                <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                            <div id="Grid"></div>
+                        </div>
+                    </section>
+                <!-- end: page -->
+            </section>
+        </div>
+        <div id="popup-modal-content"></div>
+{% endblock %}
+
+{% block script %}
+    <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js" type="text/javascript"></script>
+    <link href="https://cdn.syncfusion.com/ej2/material.css" rel="stylesheet">
+    <style>
+        table {
+            padding: 0px !important;
+        }
+    </style>
+    <script>
+        var user_type = '{{user_type}}';
+        var dataSource = [];
+        if(user_type === 'superadmin'){
+            var grid = new ej.grids.Grid({
+                dataSource: dataSource,
+                allowPaging: true,
+                columns: [
+                    { field: 'action', headerText: 'Action', disableHtmlEncode: false, width: 50},
+                    { field: 'iorad_title', headerText: 'Title', width: 100 },
+                    { field: 'iorad_link', headerText: 'Link', width: 200 }
+                ],
+                toolbar: [
+                    'Search',
+                    {
+                        text: 'Add ', 
+                        tooltipText: 'Click here to Add', 
+                        id: 'mark_addIorad', 
+                        prefixIcon: 'e-add'
+                    }
+                ],
+                pageSettings: { pageCount: 4,pageSize: 10, pageSizes: ['All', 10, 100, 500, 1000] },
+            });
+        }else{
+            var grid = new ej.grids.Grid({
+                dataSource: dataSource,
+                allowPaging: true,
+                columns: [
+                    { field: 'action', headerText: 'Action', disableHtmlEncode: false, width: 50},
+                    { field: 'iorad_title', headerText: 'Title', width: 100 },
+                    { field: 'iorad_link', headerText: 'Link', width: 200 }
+                ],
+                toolbar: [  
+                    'Search'
+                ],
+                pageSettings: { pageCount: 4,pageSize: 10, pageSizes: ['All', 10, 100, 500, 1000] },
+            });
+        }
+        
+        grid.appendTo('#Grid');
+        grid.toolbarClick = function(args){
+            if (args.item.id === 'mark_addIorad') {
+                openAddIoradModal();
+            }
+        }
+        // GET DATA
+        getIoradTutorials();
+        function getIoradTutorials(){
+            $('#preloader').show();
+            $.ajax({
+                type:'POST',
+                url:"{% url 'getIoradTutorials' %}",
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                dataType:'json',
+                success: function (data){
+                    grid.dataSource = data;
+                    $('#preloader').hide();
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert(textStatus + '. ' + errorThrown);
+                }
+            });	
+        }
+
+        function openAddIoradModal(){
+            $.ajax({
+                url:"{% url 'openAddIoradModal' %}",
+                type:'POST',
+                data:{
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                },
+                success:function(data){
+                    debugger;
+                    $('#popup-modal-content').html(data);
+                    $('#modalIoradAdd').modal("show");
+                },
+                error:function(){
+                    console.log('error');
+                },
+            });
+        }
+
+        function editIorad(iorad_id){
+            $.ajax({
+                url:"{% url 'openEditIoradModal' %}",
+                type:'POST',
+                data:{
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    'iorad_id': iorad_id
+                },
+                success:function(data){
+                    $('#popup-modal-content').html(data);
+                    $('#modalIoradAdd').modal("show");
+                },
+                error:function(){
+                    console.log('error');
+                },
+            });
+        }
+
+        function deleteIorad(iorad_id){
+            $.ajax({
+                url:"{% url 'openDelIoradModal' %}",
+                type:'POST',
+                data:{
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    'iorad_id': iorad_id
+                },
+                success:function(data){
+                    $('#popup-modal-content').html(data);
+                    $('#modalIoradAdd').modal("show");
+                },
+                error:function(){
+                    console.log('error');
+                },
+            });
+        }
+
+        function viewIorad(iorad_id){
+            $.ajax({
+                url:"{% url 'viewIorad' %}",
+                type:'POST',
+                data:{
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    'iorad_id': iorad_id
+                },
+                success:function(data){
+                    $('#popup-modal-content').html(data);
+                    $('#modalIoradAdd').modal("show");
+                },
+                error:function(){
+                    console.log('error');
+                },
+            });
+        }
+    </script>
+    <script>
+    $('#confirm-delete').on('show.bs.modal', function(e) {
+        $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+    });
+    function validateIoradForm(){
+        var iorad_title = document.forms["saveioradForm"]["iorad_title"];
+        var iorad_link = document.forms["saveioradForm"]["iorad_link"];
+        if (iorad_title.value == "") {
+            document.getElementById('validation').innerHTML = '<div class="alert alert-danger" role="alert">IORAD Titlle is Required</div>';
+            iorad_title.focus();
+            return false;
+        }
+        if (iorad_link.value == "") {
+            document.getElementById("validation").innerHTML = '<div class="alert alert-danger" role="alert">IORAD Link is Required</div>';
+            iorad_link.focus();
+            return false;
+        }
+        return true;
+    }
+    </script>
+{% endblock %}

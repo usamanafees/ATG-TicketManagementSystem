@@ -1,0 +1,42 @@
+<!-- Modal Form For Iorad -->
+{% load templates_extras %}
+<div class="popup-modal-content">
+    <div id="modalIoradAdd" class="modal modal-block modal-block-primary modal-dialog">
+        <section class="panel">
+            <form name="saveioradForm" onsubmit="return validateIoradForm()" method="post" action="{% url 'saveIorad' %}">
+                {% csrf_token %}
+                <header class="panel-heading custom-style">
+                    <h2 class="panel-title">Add Iorad Tutorial</h2>
+                </header>
+                <div class="panel-body">
+                    <div id="validation">
+                        
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label for="iorad_title"><span class="required">*</span>IORAD Title:</label>
+                                <input type="text" name="iorad_title" class="form-control" id="iorad_title"   />
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label for="iorad_link"><span class="required">*</span>IORAD Link:</label>
+                                <input type="text" name="iorad_link" class="form-control" id="iorad_link"   />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <footer class="panel-footer">
+                    <div class="row">
+                        <div class="col-md-12 text-right">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                            <button class="btn btn-default modal-dismiss" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </footer>
+            </form>
+        </section>
+    </div>
+</div>
+<!-- Modal Form For Iorad End-->

@@ -1,0 +1,134 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+        {% load tz %} {# it will Load the Django TimeZone Library#}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-free-code-camp" aria-hidden="true"></i> Solutions</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Solutions</span></li>
+								<li><span>Add Solution</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+                         <div class="row">
+                            <div class="col-md-12">
+                                {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                                <form id="summary-form" action="{% url 'saveSolution' %}" method="post" class="form-horizontal">
+                                    {% csrf_token %}
+                                    <section class="panel">
+                                        <header class="panel-heading">
+{#                                            <div class="panel-actions">#}
+{#                                                <a href="#" class="fa fa-caret-down"></a>#}
+{#                                                <a href="#" class="fa fa-times"></a>#}
+{#                                            </div>#}
+
+                                            <h2 class="panel-title">Add Solution</h2>
+                                        </header>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary saveButton">Save</button>
+                                                    <button type="reset" class="btn btn-default">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                        <div class="panel-body">
+                                            <div class="validation-message">
+                                                <ul></ul>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-4 control-label"><span class="required">*</span>Solution ID: </label>
+                                                <div class="col-md-5 col-sm-6">
+                                                    <input type="text" name="solution_cus_id" id="solution_cus_id" class="form-control" title="Please enter Solution ID." placeholder="eg.: ABC" required/>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <span id="solutionValid"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-4 control-label" for="textareaDefault">Solution Text</label>
+                                                <div class="col-md-5 col-sm-6">
+                                                    <textarea class="form-control" rows="3" name="solution_text" id="solution_text" data-plugin-maxlength maxlength="256"></textarea>
+                                                    <p>
+                                                        <code>max-length</code> set to 256 characters.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-4 control-label">Display Order: </label>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <input type="text" name="display_order" class="form-control" title="Please enter Display Order." placeholder="eg.: 1" />
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-12">
+                                                    <button class="btn btn-primary saveButton">Save</button>
+                                                    <button type="reset" class="btn btn-default">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                    </section>
+                                </form>
+                            </div>
+                        </div>
+					<!-- end: page -->
+				</section>
+			</div>
+
+    {% endblock %}
+
+    {% block script %}
+        <script>
+            $(document).on('keyup','#solution_cus_id', function(){
+              var solution_cus_id = $(this).val();
+              if (solution_cus_id != ''){
+                  $.ajax({
+                    type: 'POST',
+                    url: "{% url 'validateSolUnique' %}",
+                    data: {solution_cus_id: solution_cus_id},
+                    dataType: 'json',
+                    beforeSend: function(jqXHR, settings) {
+                        //Do something before send...
+                    },
+                    success: function(data, textStatus, jqXHR) {
+                        if(data.response){
+                            $('#solutionValid').html('<strong class="text-danger">Solution ID already exist. Try another one!</strong>');
+                            $('.saveButton').prop('disabled', true);
+                        }else{
+                            $('#solutionValid').html('');
+                            $('.saveButton').prop('disabled', false);
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    }
+                  });
+              }
+            });
+
+        </script>
+    {% endblock %}
+

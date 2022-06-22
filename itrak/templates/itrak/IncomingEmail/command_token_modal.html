@@ -1,0 +1,25 @@
+<section class="panel">
+    <form action="{% url 'updateCommandToken' %}" method="post">
+        <header class="panel-heading">
+            <h2 class="panel-title">Edit Token<span class="btn btn-danger modal-dismiss" style="float:right;">X</span></h2>
+        </header>
+        <div class="panel-body">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="col-md-2 control-label"><span class="required">*</span>Token Identifier: </label>
+                <div class="col-sm-5">
+                    <input class="form-control input-large" type="text" name="ct_token_identifier" id="ct_token_identifier" value="{{commandToken.ct_token_identifier}}" size="50" maxlength="50" required="">
+                </div>
+            </div>
+        </div>
+        <footer class="panel-footer">
+            <div class="row">
+                <div class="col-md-12 text-right">
+                    <input type="hidden" name="ct_id" value="{{commandToken.ct_id}}">
+                    <input type="submit" value="Update" class="btn btn-primary">
+                    <input type="button" value="Reset" onclick="modal_command_token_reset({{commandToken.ct_id}})" class="btn btn-primary">
+                </div>
+            </div>
+        </footer>
+    </form>
+</section>

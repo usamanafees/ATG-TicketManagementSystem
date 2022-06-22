@@ -1,0 +1,222 @@
+{% extends 'itrak/base.html' %}
+
+{% block body_block %}
+    {% load static %}
+
+        <section role="main" class="content-body">
+                <header class="page-header">
+                   <h2><i class="fa fa-tasks" aria-hidden="true"></i> Business Rules</h2>
+
+                    <div class="right-wrapper pull-right">
+                        <ol class="breadcrumbs">
+                            <li>
+                                <a href="{% url 'home' %}">
+                                    <i class="fa fa-home"></i>
+                                </a>
+                            </li>
+                            <li><span>Business Rules</span></li>
+                            <li><span>Substatus Rules</span></li>
+                        </ol>
+
+                        <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+                    </div>
+                </header>
+
+                <!-- start: page -->
+                <div class="row">
+                    <div class="col-md-12">
+                        {% for message in messages %}
+                            <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            {{ message }}
+                            </div>
+                        {% endfor %}
+
+                        {% if temp %}
+                        <form id="summary-form" action="{% url 'updateSubstatusBusinessRules' %}" method="post" class="form-horizontal">
+                        {% else %}
+                        <form id="summary-form" action="{% url 'saveSubstatusBusinessRules' %}" method="post" class="form-horizontal">
+                        {% endif %}
+
+                            {% csrf_token %}
+                            <input  type="hidden" name="sbr_id" value="{{temp}}" id="sbr_id"/>
+                            <section class="panel">
+                                    <header class="panel-heading">
+                                        <h2 class="panel-title">Substatus Rules</h2></br>
+                                        <h4>Define Substatus Rules</h4>
+                                        <p> Automatically set Substatus values as <span class="a_underline" data-toggle="tooltip" data-placement="bottom" data-html="true" title="Adding an Ticket Event to the Substatus Rules table will automatically change the Ticket substatus to the Substatus specified when the Ticket Event occurs.<br><br>For instance, adding a Substatus Rule for the Ticket Event 'Close Ticket' with the Substatus 'Resolved' will automatically change the Ticket substatus to 'Resolved' when the Ticket is closed.">Ticket Events</span> occur. Select the Ticket Event and a corresponding Substatus value.</p>
+                                    </header>
+
+                                <div class="panel-body">
+                                    <div class="validation-message">
+                                        <ul></ul>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span>Ticket Event: </label>
+                                        <div class="col-md-9 col-sm-9">
+                                            <div class="col-md-6 col-sm-7">
+                                                <select name="sbr_ticketevent" id="sbr_ticketevent" title="Select Ticket Event"   data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Organization", "allowClear": true }'>
+                                                    <!-- <option value="" readonly="readonly">Add Note </option> -->
+                                                    {% if ticketevents %}
+                                                        {% for ticketevent in ticketevents %}
+                                                            <option value="{{ ticketevent.te_id }}"{% if ticketevent.te_name == tick_events %} selected {% endif %}>{{ ticketevent.te_name }}</option>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                            <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span>When Substatus Equals: </label>
+                                            <div class="col-md-9 col-sm-9">
+                                                <div class="col-md-6 col-sm-7">
+                                                    <select name="sbr_when_substatus_equal" id="sbr_when_substatus_equal"  title="Select Substatus Equals" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Department", "allowClear": true }'>
+                                                    <option value="" readonly="readonly">-Any Value- </option>
+                                                    {% if substatus %}
+                                                        {% for substat in substatus %}
+                                                            <option value="{{ substat.sub_status_id }}"{% if substat.sub_status_text == when_substatus_equal_name %} selected {% endif %}>{{ substat.sub_status_text }}</option>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span>Set Substatus To: </label>
+                                            <div class="col-md-9 col-sm-9">
+                                                <div class="col-md-6 col-sm-7">
+                                                    <select name="sbr_when_substatus_to" id="sbr_when_substatus_to"  title="Select Set Substatus To" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Client", "allowClear": true }'>
+                                                    <option value="" readonly="readonly">-Blank- </option>
+                                                    {% if substatus %}
+                                                        {% for substat in substatus %}
+                                                            <option value="{{ substat.sub_status_id }}"{% if substat.sub_status_text == when_substatus_to_name %} selected {% endif %}>{{ substat.sub_status_text }}</option>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-3 col-sm-3 control-label"> <span class="required" >*</span><span class="a_underline" data-toggle="tooltip" data-placement="top" data-html="true" title="Since more than one Substatus Rule may apply to the Ticket event, sometimes the order the Substatus Rules are processed in can be important.  One Substatus Rule may override another.<br><br>Setting the Substatus Rule's <i>Process Order</i> allows you to control the order in which the Substatus Rules are processed.  If multiple Substatus Rules apply to the Ticket event, the Rule with the highest Process Order will be used ('1' being the highest).<br><br><b>NOTE:</b> If a Substatus is changed manually, no Substatus Rules are processed.">Process Order:</span> </label>
+                                            <div class="col-md-9 col-sm-9">
+                                                <div class="col-md-6 col-sm-7">
+                                                    {% if process_order %}
+                                                    <input name="sbr_process_order" id="sbr_process_order" required="required" title="Enter Process Order" class="form-control input-tiny" value="{{process_order}}" >
+                                                    {% else %}
+                                                    <input name="sbr_process_order" id="sbr_process_order" required="required" title="Enter Process Order" class="form-control input-tiny" value="1" >
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-sm-9">
+                                                <button class="btn btn-primary saveButton">Save</button>
+                                            </div>
+                                        </div></br>
+
+                                        <h4>Saved Substatus Rules</h4>  
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Action</th>
+                                                        <th>Process Order</th>
+                                                        <th>Ticket Event</th>
+                                                        <th>When Substatus Equals</th>
+                                                        <th>Set Substatus To</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for substatusBusinessRule in substatusBusinessRules %}
+                                                        <tr>
+                                                            <td><a href="{% url 'editSubstatusBusinessRules' %}?sbr_id={{ substatusBusinessRule.sbr_id }}"  data-id="{{ substatusBusinessRule.sbr_id }}">Edit</a>|<a href="{% url 'deleteSubstatusBusinessRules' %}?sbr_id={{ substatusBusinessRule.sbr_id }}"  data-id="{{ substatusBusinessRule.sbr_id }}">Del</a></td>
+                                                            <td>{{ substatusBusinessRule.sbr_process_order}}</td>
+                                                            <td>{{ substatusBusinessRule.sbr_ticketevent_name}}</td>
+                                                            <td>{{ substatusBusinessRule.sbr_when_substatus_equal_name}}</td>
+                                                            <td>{{ substatusBusinessRule.sbr_when_substatus_to_name}}</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                </div>
+                            </section>
+                        </form>
+                    </div>
+                </div>
+                <!-- end: page -->
+
+                <!-- start: page -->
+                <div class="row">
+                            <form id="summaryy-form" action="{% url 'savePauseClockBusinessRules' %}" method="post" class="form-horizontal">
+                                {% csrf_token %}
+                            <section class="panel">
+                                    <header class="panel-heading">
+                                        <h4>Define Pause Clock Rules</h4>
+                                        <p> Automatically <span class="a_underline" data-toggle="tooltip" data-placement="top" data-html="true" title="Adding a Substatus to the Pause System Clock table will 'pause the clock' when the substatus is in effect.  For example, when the substatus of 'Pending' is set to pause the system clock, a message 'System Clock Paused' will be displayed in the upper right hand corner of the Ticket as long as that substatus is in effect.<br><br>The 'Total Time Open' field will calculate the entire time the Ticket is open and the 'Adjusted Time Open' field will calculate the total time the Ticket is open minus any time the system clock was paused.  Time open values and reporting metrics will be calculated based on the 'Adjusted Time Open' rather than the 'Total Time Open'.">pause the System Clock (SLA/Escalation/Time Open)</span> as Substatus values are set. Select the Substatus below.</p>
+                                    </header>
+
+                                <div class="panel-body">
+                                    <div class="validation-message">
+                                        <ul></ul>
+                                    </div>
+                                    <div class="form-group">
+                                            <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span>Substatus Equals: </label>
+                                            <div class="col-md-9 col-sm-9">
+                                                <div class="col-md-6 col-sm-7">
+                                                    <select name="pcbr_substatus_equal" id="pcbr_substatus_equal" title="Select Pause Clock Substatus Equals" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Department", "allowClear": true }'>
+                                                    <!-- <option value="" readonly="readonly">-Any Value- </option> -->
+                                                    {% if substatus %}
+                                                        {% for substat in substatus %}
+                                                            <option value="{{ substat.sub_status_id }}"{% if substat.sub_status_text == when_substatus_to_name %} selected {% endif %}>{{ substat.sub_status_text }}</option>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                    </div>
+
+                                        <div class="row">
+                                            <div class="col-sm-9">
+                                                <button class="btn btn-primary saveButton">Save</button>
+                                            </div>
+                                        </div></br>
+
+                                        <h4>Saved Pause Clock Rules</h4>  
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Action</th>
+                                                        <th>Pause Clock when Substatus Equals</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for pauseclockBusinessRule in pauseclockBusinessRules %}
+                                                        <tr>
+                                                            <td><a href="{% url 'deletePauseClockBusinessRules' %}?pcbr_id={{ pauseclockBusinessRule.pcbr_id }}"  data-id="{{ substatusBusinessRule.sbr_id }}">Del</a></td>
+                                                            <td>{{ pauseclockBusinessRule.pcbr_substatus_equal_name}}</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                </div>
+                            </section>
+                        </form>
+                    </div>
+                </div>
+                <!-- end: page -->
+        </section>
+
+{% endblock %}
+{% block script %}
+        <!-- <script>
+           function editSubstatusBusinessRules(id)
+           {
+            console.log(id);
+            // location.reload()
+            location.href="Admin_SubstatusBusinessRulesEdit/"+id
+           }
+        </script> -->
+{% endblock %}

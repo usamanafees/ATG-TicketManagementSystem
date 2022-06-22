@@ -1,0 +1,45 @@
+    {% include "itrak/includes/header.html" %}
+
+    {% if request.user.username %}       
+        {% include "itrak/includes/top_bar.html" %}
+        {% include "itrak/includes/sidebar.html" %}
+    {% endif %}
+	<body>
+        {% block body_block %}
+        {% endblock %}
+    {% if request.user.username %}
+        {% include "itrak/includes/right-sidebar.html" %}
+    {% endif %}
+    {% include "itrak/includes/footer.html" %}
+    <script>
+   
+   //For Deleting local storage value
+    $(document).ready(function () {
+        var pageURL = $(location).attr("href");
+        var splited_url = pageURL.split('/');
+        if (splited_url[3]=='Admin_SearchUser' || splited_url[3]=='Home_UsersSearchList' )
+            {
+                // alert('OK');
+            }
+        else
+            {
+                localStorage.clear();
+            }
+        
+    });
+        $(function () {
+            {#Sentry.init({#}
+            {#    dsn: 'https://7a8248a325214a91a1868ef3f91352bf@sentry.io/1769162',#}
+            {#    beforeSend(event, hint) {#}
+            {#        // Check if it is an exception, and if so, show the report dialog#}
+            {#        if (event.exception) {#}
+            {#            Sentry.showReportDialog({ eventId: event.event_id });#}
+            {#        }#}
+            {#        return event;#}
+            {#    }#}
+            {#});#}
+            {#myUndefinedFunction();#}
+        })
+    </script>
+    {% block script %}
+    {% endblock %}

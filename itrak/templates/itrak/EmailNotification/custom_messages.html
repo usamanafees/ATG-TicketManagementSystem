@@ -1,0 +1,518 @@
+{% extends 'itrak/base.html' %}
+{% load templates_extras %}
+
+{% block body_block %}
+    {% load static %}
+
+    <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-envelope" aria-hidden="true"></i> Email Notification</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+                    <li><span>Email Notification</span></li>
+                    <li><span>Custom Messages</span></li>
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+        {% for message in messages %}
+            <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                {{ message }}
+            </div>
+        {% endfor %}        
+        <!-- start: page -->
+            <form id="summary-form" action="{% url 'saveCustomMessages' %}" method="post" enctype="multipart/form-data" class="form-horizontal">
+                {% csrf_token %}
+            <section class="panel">
+                <header class="panel-heading">
+                    <h2 class="panel-title">Email Custom Messages</h2>                               
+                </header>
+                <div class="panel-body">
+                    <div class="validation-message">
+                        <ul></ul>
+                    </div>
+                    <header class="panel-heading">
+                        <h4><strong>Define Custom Email Message</strong></h4>
+                        <p>The subject line and message for system emails can be modified here. For each event, text and system field tokens can be combined to create customized subject lines and email messages.</p>
+                    </header>
+                    </br>
+                    <div class="row">
+                        {% comment %} <div class="col-md-10"> {% endcomment %}
+                            <div class="form-group" id="parent_event">
+                                <label for="" class="col-sm-3 control-label">Event:</label>
+                                <div class="col-sm-3">
+                                    <select name="custom_event" id="custom_event"   data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Organization", "allowClear": true }'>
+                                        <option value="" readonly="readonly"> </option>
+                                        {% if events %}
+                                            {% for event in events %}
+                                                <option value="{{ event.cme_id }}">{{ event.cme_name }}</option>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group" id="tokens">
+                               <label class="col-sm-3 control-label" ><span class="a_underline" data-toggle="tooltip" data-placement="top" data-html="true" title="Insert &lt;@Tokens&gt; in the Subject and Message to customize the email.  &lt;@Tokens&gt; will be replaced with their
+                                actual information at the time each email is generated.  To insert &lt;@Tokens&gt;, click in the Subject or Message
+                                text box to place the cursor where you want to insert at, then select an &lt;@Token&gt; from 
+                                the Tokens dropdown list and click the [Insert ...] button.">Tokens:</span> </label>
+                                <div class="col-sm-3 space_left_0">
+                                    <select name="Token" id="Token" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Organization", "allowClear": true }'>
+                                        <option value="" readonly="readonly"> </option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-4 col-xs-6 all-space-auto">
+                                    <input type="button"  class="btn btn-primary" name="Token" id="Token" value="Insert in Subject">
+                                </div>
+                            </div>
+                            <!-- for subject_tokens -->
+                            <div class="form-group" id="subject_tokens" style="display: none;">
+                                <label class="col-md-3 control-label" ><span class="a_underline" data-toggle="tooltip" data-placement="top" data-html="true" title="Insert &lt;@Tokens&gt; in the Subject and Message to customize the email.  &lt;@Tokens&gt; will be replaced with their
+                                    actual information at the time each email is generated.  To insert &lt;@Tokens&gt;, click in the Subject or Message
+                                    text box to place the cursor where you want to insert at, then select an &lt;@Token&gt; from 
+                                    the Tokens dropdown list and click the [Insert ...] button.">Tokens:</span> </label>
+                                <div class="col-sm-3 space_left_0">
+                                    <select name="select_subject_tokens" id="select_subject_tokens" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Organization", "allowClear": true }'>
+                                        <!-- <option value="" readonly="readonly"> </option> -->
+                                        {% if subject_tokens %}
+                                         {% for cmt_id, cmt_name, cmt_slug in subject_tokens %}
+                                                <!-- <option value="{{ cmt_slug }}">{{ cmt_name }}</option> -->
+                                                <option value="{{ cmt_slug }}"{% if cmt_slug == 'IssueLabel' %}selected{% endif %}>{{ cmt_name }}</option>
+                                                {% endfor %}
+                                        {% endif %}
+                                    </select>
+                                </div>
+                                <div class="col-sm-2 col-xs-6 all-space-auto">
+                                    <input type="button"  class="btn btn-primary" name="btnSubjectToken" id="btnSubjectToken" value="Insert in Subject">
+                                </div>
+                            </div>
+                            <div class="form-group" id="subject_tokens_clone" style="display: none;">
+                                <label class="col-md-3 control-label" ><span class="a_underline" data-toggle="tooltip" data-placement="top" data-html="true" title="Insert &lt;@Tokens&gt; in the Subject and Message to customize the email.  &lt;@Tokens&gt; will be replaced with their
+                                    actual information at the time each email is generated.  To insert &lt;@Tokens&gt;, click in the Subject or Message
+                                    text box to place the cursor where you want to insert at, then select an &lt;@Token&gt; from 
+                                    the Tokens dropdown list and click the [Insert ...] button.">Tokens:</span> </label>
+                                <div class="col-sm-3 space_left_0">
+                                    <select name="_subject_tokens" id="_subject_tokens" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Organization", "allowClear": true }'>
+                                        <option value="" readonly="readonly"> </option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-2 col-xs-6 all-space-auto">
+                                    <input type="button"  class="btn btn-primary" name="btnSubjectToken" id="btnSubjectToken" value="Insert in Subject">
+                                </div>
+                            </div>
+                            <!-- end -->
+                            <!-- for message tokens -->
+                            <div class="form-group" id="message_tokens" style="display: none;">
+                                <label class="col-md-3 control-label" ><span class="a_underline" data-toggle="tooltip" data-placement="top" data-html="true" title="Insert &lt;@Tokens&gt; in the Subject and Message to customize the email.  &lt;@Tokens&gt; will be replaced with their
+                                    actual information at the time each email is generated.  To insert &lt;@Tokens&gt;, click in the Subject or Message
+                                    text box to place the cursor where you want to insert at, then select an &lt;@Token&gt; from 
+                                    the Tokens dropdown list and click the [Insert ...] button.">Tokens:</span> </label>
+                                <div class="col-sm-3 space_left_0">
+                                    <select name="select_message_tokens" id="select_message_tokens" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Organization", "allowClear": true }'>
+                                        <option value="" readonly="readonly"> </option>
+                                        {% if message_tokens %}
+                                            {% for cmt_id, cmt_name, cmt_slug in message_tokens %}
+                                                <!-- <option value="{{ cmt_slug }}">{{ cmt_name }}</option> -->
+                                                <option value="{{ cmt_slug }}"{% if cmt_slug == 'IssueLabel' %}selected{% endif %}>{{ cmt_name }}</option>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </select>
+                                </div>
+                                <div class="col-sm-2 col-xs-6 all-space-auto">
+                                    <input type="button"  class="btn btn-primary" name="btnMessageToken" id="btnMessageToken" value="Insert in Message">
+                                </div>
+                            </div>
+                            <div class="form-group" id="message_tokens_clone" style="display: none;">
+                                <label class="col-md-3 control-label" ><span class="a_underline" data-toggle="tooltip" data-placement="top" data-html="true" title="Insert &lt;@Tokens&gt; in the Subject and Message to customize the email.  &lt;@Tokens&gt; will be replaced with their
+                                    actual information at the time each email is generated.  To insert &lt;@Tokens&gt;, click in the Subject or Message
+                                    text box to place the cursor where you want to insert at, then select an &lt;@Token&gt; from 
+                                    the Tokens dropdown list and click the [Insert ...] button.">Tokens:</span> </label>
+                                <div class="col-sm-3 space_left_0">
+                                    <select name="_message_tokens" id="_message_tokens" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Organization", "allowClear": true }'>
+                                        <option value="" readonly="readonly"> </option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-2 col-xs-6 all-space-auto">
+                                    <input type="button"  class="btn btn-primary" name="btnMessageToken" id="btnMessageToken" value="Insert in Message">
+                                </div>
+                            </div>
+                            <!-- end -->
+                            <div class="form-group" id="parent_subject_textarea">
+                                <label for="" class="col-sm-3 control-label">Subject:</label>
+                                <div class="col-sm-8">
+                                        <textarea class="form-control" name="subject_textarea" id="subject_textarea" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div class="form-group" id="parent_message_textarea">
+                                <label for="" class="col-sm-3 control-label">Message:</label>
+                                <div class="col-sm-8">
+                                        <textarea class="form-control" name="message_textarea" id="message_textarea" rows="8"></textarea>
+                                </div>
+                            </div>
+                        </br>
+                    </div>
+                </div>
+                
+                <div class="modal fade" id="modalLG" role="dialog">
+                    <div class="modal-dialog">    
+                      <!-- Modal content-->
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <button type="button" class="close" data-dismiss="modal">&times;</button>
+                          <h4 class="modal-title">Preview</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class=" form-group">
+                                <div class="col-sm-3">
+                                    <label for="">Event:</label>
+                                    <textarea class="form-control" name="modal_event" id="modal_event" rows="2" style="width:530px;" ></textarea>
+                                </div>
+                                    
+                            </div></br>
+                            <div class="form-group">
+                                <div class="col-sm-3">
+                                    <label for="">Subject:</label>
+                                    <textarea class="form-control" name="modal_subject" id="modal_subject" rows="2" style="width:530px;" ></textarea>
+                                </div>    
+                            </div></br>
+                            <div class="form-group">
+                                <div class="col-sm-3">
+                                    <label for="">Message:</label>
+                                    <textarea class="form-control" name="modal_message" id="modal_message" rows="8" style="width:530px;" ></textarea>
+                                </div>    
+                            </div></br>
+
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
+                      </div>
+                      
+                    </div>
+                  </div>
+                  <footer class="panel-footer">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <a href="" data-toggle="modal" data-target="#modalLG" class="btn btn-primary" id="preview_btn">Preview</a>
+                            <input type="submit" class="btn btn-primary saveButton" value="Update">
+                            <input type="button" class="btn btn-default clearbtn" value="Clear">
+                            <input type="button" class="btn btn-default resetbtn" value="Reset">
+                        </div>
+                    </div>
+                </footer>
+            </section>
+
+         
+            </form>
+            
+            
+        <!-- end: page -->
+    </section>
+{% endblock %}
+
+{% block script %}
+        <script>
+             $(document).on('click keyup','#subject_textarea',function (e) {
+                // storeCaret(this);
+                var event = $('#custom_event').val();
+                if(event != '')
+                    {
+                    $("#subject_tokens_clone").hide();    
+                    $("#message_tokens_clone").hide();    
+                    $("#tokens").hide();
+                    $("#message_tokens").hide();
+                    $("#subject_tokens").show();
+                    }   
+                else
+                {        
+                $("#tokens").hide();    
+                $("#message_tokens_clone").hide();    
+                $("#subject_tokens_clone").show();
+                }
+            });
+
+             $(document).on('click keyup','#message_textarea',function (e) {
+                var event = $('#custom_event').val();
+                // storeCaret(this);
+                if(event != '')
+                    {
+                    $("#subject_tokens_clone").hide();    
+                    $("#message_tokens_clone").hide();
+                    $("#tokens").hide();
+                    $("#subject_tokens").hide();
+                    $("#message_tokens").show();
+                    }
+                else
+                {         
+                $("#tokens").hide();      
+                $("#subject_tokens_clone").hide();    
+                $("#message_tokens_clone").show();
+                }
+             });
+
+             $(document).on('click','#btnSubjectToken',function (e) {
+                var event = $('#custom_event').val();
+                if(event != '')
+                {
+                    var slug = $('#select_subject_tokens').val();
+                    // $('#subject_textarea').append(slug);
+                    $("#subject_textarea").insertAtCaret("<@"+slug+">");
+                    //console.log(slug);  
+                }
+                
+             });
+             $(document).on('click','#btnMessageToken',function (e) {
+                var event = $('#custom_event').val();
+                if(event != '')
+                {
+                    var slug = $('#select_message_tokens').val();
+                    // $('#message_textarea').append(slug);
+                    $("#message_textarea").insertAtCaret("<@"+slug+">");
+                    //console.log(slug);
+                }
+             });
+             //onchange event 
+             $(document).on('change','#custom_event',function (e) {
+
+                $("#subject_tokens_clone").hide();    
+                $("#message_tokens_clone").hide();
+                $("#tokens").hide();
+                $("#subject_tokens").show();
+                $("#message_tokens").hide();
+                
+                var event_id = $('#custom_event').val();
+                $.ajax({
+                url:"{% url 'showCustomMessages' %}",
+                type:'POST',
+                dataType: 'json',
+                data:{
+                    'event_id':event_id,
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                },
+                success:function(data){
+                    var subject = data.subject_slug
+                    var message = data.message_slug
+
+                        $('#message_textarea').val(message);
+                        $('#subject_textarea').val(subject);
+                },
+                error:function(){
+                    console.log('error')
+                },
+                complete:function(){
+                    
+                  
+                }
+            });
+            });
+            //for reset button functionality
+            $(document).on('click','.resetbtn',function (e) {
+
+                $("#subject_tokens_clone").hide();    
+                $("#message_tokens_clone").hide();
+                $("#tokens").show();
+                $("#message_tokens").hide();
+                
+                var event_id = $('#custom_event').val();
+                
+                if(event_id != '')
+                {
+                $("#tokens").hide();
+                $("#subject_tokens").show();
+                $.ajax({
+                url:"{% url 'showCustomMessages' %}",
+                type:'POST',
+                dataType: 'json',
+                data:{
+                    'event_id':event_id,
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                },
+                success:function(data){
+                    var subject = data.subject_slug
+                    var message = data.message_slug
+
+                        $('#message_textarea').val(message);
+                        $('#subject_textarea').val(subject);
+                },
+                error:function(){
+                    console.log('error')
+                },
+                complete:function(){
+                    
+                    // window.onbeforeunload = confirmBeforeClose();
+                    // window.location.reload();
+                }
+            });
+            }
+            });
+
+            jQuery.fn.extend({
+                insertAtCaret: function(myValue){
+                return this.each(function(i) {
+                if (document.selection) {
+                //For browsers like Internet Explorer
+                this.focus();
+                sel = document.selection.createRange();
+                sel.text = myValue;
+                this.focus();
+                }
+                else if (this.selectionStart || this.selectionStart == '0') {
+                //For browsers like Firefox and Webkit based
+                var startPos = this.selectionStart;
+                var endPos = this.selectionEnd;
+                var scrollTop = this.scrollTop;
+                this.value = this.value.substring(0, startPos)+myValue+this.value.substring(endPos,this.value.length);
+                this.focus();
+                this.selectionStart = startPos + myValue.length;
+                this.selectionEnd = startPos + myValue.length;
+                this.scrollTop = scrollTop;
+                } else {
+                this.value += myValue;
+                this.focus();
+                }
+                })
+                }
+            });
+            //for preview button functionality
+            $(document).on('click','#preview_btn',function (e) {
+
+                var event = $( "#custom_event option:selected" ).text();
+                var Subject = $('#subject_textarea').val();
+                var Message = $('#message_textarea').val();
+               
+                var CustomerID = "Issuetrak";
+                var IssueNbr = "123";
+                var IssueSubj = "Printer not working";
+                var Organization = "Issuetrak Org";
+                var IssueLabel = "Ticket";
+                var IssueLabelPlural = "Tickets";
+                var SpecFunc1 = "Record Locator: 123456-A";
+                var SpecFunc2 = "Caller Name: 123456-B";
+                var SpecFunc3 = "Caller Phone: 123456-C";
+                var SpecFunc4 = "Caller Email: 123456-D";
+                var SpecFunc5 = "Passenger Name: 123456-E";
+                var TaskDesc = "Has Ink Cartridge Been Replaced?";
+                var TaskDueDate = "01/01/2000";
+                var TaskAssignee = "Doe, Jane";
+                var TaskCompleter = "Doe, John";
+                var TaskResponse = "Yes";
+                var IssueLink = "Open in Issuetrak\n";
+                var IssueDetails =  "Ticket #: 123\n" + 
+                "Subject: " + IssueSubj + "\n" +
+                "Status: Open\n" +
+                "...";
+                var TaskList = "[List of Tasks]\n";
+                var Solution = "Solution:\nThis was resolved by ...\n";
+                var Attachments = "Attachments:\n[List of Attachments]\n";
+                var IssueDesc = "Ticket  Description:\nDescription of the Ticket\n";
+                var AllNotes = "Notes:\n[List of all notes]\n";
+                var AllNotesExceptNewest = "Notes (Excluding Newest):\n[List of all notes except newest]\n";
+                var NewestNote = "Newest Note:\n[Newest note on Ticket]\n";
+               
+                //for subject textarea
+                Subject = Subject.replace(/\<@CustomerID\>/g, CustomerID);
+                Subject = Subject.replace(/\<@IssueNbr\>/g, IssueNbr);
+                Subject = Subject.replace(/\<@IssueSubj\>/g, IssueSubj);
+                Subject = Subject.replace(/\<@Organization\>/g, Organization);
+                Subject = Subject.replace(/\<@IssueLabel\>/g, IssueLabel);
+                Subject = Subject.replace(/\<@IssueLabelPlural\>/g, IssueLabelPlural);
+                Subject = Subject.replace(/\<@SpecFunc1\>/g, SpecFunc1);
+                Subject = Subject.replace(/\<@SpecFunc2\>/g, SpecFunc2);
+                Subject = Subject.replace(/\<@SpecFunc3\>/g, SpecFunc3);
+                Subject = Subject.replace(/\<@SpecFunc4\>/g, SpecFunc4);
+                Subject = Subject.replace(/\<@SpecFunc5\>/g, SpecFunc5);
+                Subject = Subject.replace(/\<@TaskDesc\>/g, TaskDesc);
+                Subject = Subject.replace(/\<@TaskDueDate\>/g, TaskDueDate);
+                Subject = Subject.replace(/\<@TaskAssignee\>/g, TaskAssignee);
+                Subject = Subject.replace(/\<@TaskCompleter\>/g, TaskCompleter);
+                Subject = Subject.replace(/\<@TaskResponse\>/g, TaskResponse);
+                Subject = Subject.replace(/\<@CalEventNbr\>/g, "");
+                Subject = Subject.replace(/\<@CalEventDesc\>/g, "");
+                Subject = Subject.replace(/\<@CalEventDate\>/g, "");
+                Subject = Subject.replace(/\<@CalEventTime\>/g, "");    
+
+                //for message textarea
+                Message = Message.replace(/\<@CustomerID\>/g, CustomerID);
+                Message = Message.replace(/\<@IssueNbr\>/g, IssueNbr);
+                Message = Message.replace(/\<@IssueSubj\>/g, IssueSubj);
+                Message = Message.replace(/\<@IssueDesc\>/g, IssueDesc);
+                Message = Message.replace(/\<@Organization\>/g, Organization);
+                Message = Message.replace(/\<@SpecFunc1\>/g, SpecFunc1);
+                Message = Message.replace(/\<@SpecFunc2\>/g, SpecFunc2);
+                Message = Message.replace(/\<@SpecFunc3\>/g, SpecFunc3);
+                Message = Message.replace(/\<@SpecFunc4\>/g, SpecFunc4);
+                Message = Message.replace(/\<@SpecFunc5\>/g, SpecFunc5);
+                Message = Message.replace(/\<@TaskDesc\>/g, TaskDesc);
+                Message = Message.replace(/\<@TaskDueDate\>/g, TaskDueDate);
+                Message = Message.replace(/\<@TaskAssignee\>/g, TaskAssignee);
+                Message = Message.replace(/\<@TaskCompleter\>/g, TaskCompleter);
+                Message = Message.replace(/\<@TaskResponse\>/g, TaskResponse);
+                Message = Message.replace(/\<@CalEventNbr\>/g, "");
+                Message = Message.replace(/\<@CalEventDesc\>/g, "");
+                Message = Message.replace(/\<@CalEventDate\>/g, "");
+                Message = Message.replace(/\<@CalEventTime\>/g, "");
+                Message = Message.replace(/\<@IssueLink\>/g, IssueLink);
+                Message = Message.replace(/\<@IssueDetails\>/g, IssueDetails);
+                Message = Message.replace(/\<@TaskList\>/g, TaskList);
+                Message = Message.replace(/\<@Solution\>/g, Solution);
+                Message = Message.replace(/\<@Attachments\>/g, Attachments);
+                Message = Message.replace(/\<@IssueLabel\>/g, IssueLabel);
+                Message = Message.replace(/\<@IssueLabelPlural\>/g, IssueLabelPlural);
+                Message = Message.replace(/\<@IssueDesc\>/g, IssueDesc);
+                Message = Message.replace(/\<@AllNotes\>/g, AllNotes);
+                Message = Message.replace(/\<@AllNotesExceptNewest\>/g, AllNotesExceptNewest);
+                Message = Message.replace(/\<@NewestNote\>/g, NewestNote);
+
+                $('#modal_message').val(Message);
+                $('#modal_subject').val(Subject);
+                $('#modal_event').val(event);
+            
+             });
+
+            $(document).on('click','.clearbtn',function (e) {   
+                 $('#subject_textarea').val('');   
+                 $('#message_textarea').val('');        
+             });
+
+            // function storeCaret (myField)
+            // //    This function gets the cursor position
+            // {
+            //     if (myField.createTextRange) 
+            //     myField.caretPos = document.selection.createRange().duplicate();
+            // }
+
+            // $(document).on('click','.saveButton',function (e) {
+
+            // var event_id = $('#custom_event').val();
+            // $.ajax({
+            //     url:"{% url 'showCustomMessages' %}",
+            //     type:'POST',
+            //     dataType: 'json',
+            //     data:{
+            //     'event_id':event_id,
+            //     'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+            // },
+            // success:function(data){
+
+            // }, 
+            // error:function(){
+            // console.log('error')
+            // },
+            // complete:function(){
+
+            // // window.onbeforeunload = confirmBeforeClose();
+            // // window.location.reload();
+            // }
+            // });
+            // });
+
+        </script>
+{% endblock %}

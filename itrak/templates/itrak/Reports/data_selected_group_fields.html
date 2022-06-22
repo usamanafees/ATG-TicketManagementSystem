@@ -1,0 +1,49 @@
+<div class="row">
+	<div class="col-lg-2 col-md-2 empty"></div>
+	<div class="col-lg-8 col-md-8 col-sm-12" id="list1">
+		<table border="0" cellpadding="0" cellspacing="0" class="table custom-field-table">
+            <thead>
+                <tr>
+                    <th>Field Name</th>
+                    <th>Sort Order</th>
+                    <th>Show Header?</th>
+                    <th>Show Footer?</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if selectedSortingFields %}
+                    {% for field in selectedSortingFields %}
+                    <tr>
+                        <td><input type="text" class="form-control" value="{{ field.field_name }}" disabled></td>
+                        <td>
+                            <select class="order" name="order" class="form-control">
+                                <option value="0" {% if field.sort_order == '0' %}selected{% endif %}>Asc</option>
+                                <option value="1" {% if field.sort_order == '1' %}selected{% endif %}>Desc</option>
+                            </select>
+                        </td>
+                        <td align="center"><input type="checkbox" name="show_header" class="show_header" value="{{ forloop.counter }}" {% if field.header != 0 %}checked{% endif %}></td>
+                        <td align="center"><input type="checkbox" name="show_footer" class="show_footer" value="{{ forloop.counter }}" {% if field.footer != 0 %}checked{% endif %}></td>
+                    </tr>
+                {% endfor %}
+                {% else %}
+                    {% for field in selectedFields %}
+                    <tr>
+                        <td><input type="text" class="form-control" value="{{ field }}" disabled></td>
+                        <td>
+                            <select class="order" name="order" class="form-control">
+                                <option value="0">Asc</option>
+                                <option value="1">Desc</option>
+                            </select>
+                        </td>
+                        <td align="center"><input type="checkbox" name="show_header" class="show_header" value="{{ forloop.counter }}" checked></td>
+                        <td align="center"><input type="checkbox" name="show_footer" class="show_footer" value="{{ forloop.counter }}" checked></td>
+                    </tr>
+                {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+	</div>
+	<div class="col-lg-2 col-md-2 empty"></div>
+</div>
+<script>
+</script>

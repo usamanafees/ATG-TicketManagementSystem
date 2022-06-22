@@ -1,0 +1,264 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+        {% load tz %} {# it will Load the Django TimeZone Library#}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-tasks" aria-hidden="true"></i> Tasks</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Tasks</span></li>
+								<li><span>Edit Tasks</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+                         <div class="row">
+                            <div class="col-md-12">
+                                {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                                <form id="summary-form" action="{% url 'updateTask' %}" method="post" class="form-horizontal">
+                                    {% csrf_token %}
+                                    <section class="panel">
+                                        <header class="panel-heading">
+{#                                            <div class="panel-actions">#}
+{#                                                <a href="#" class="fa fa-caret-down"></a>#}
+{#                                                <a href="#" class="fa fa-times"></a>#}
+{#                                            </div>#}
+
+                                            <h2 class="panel-title">Edit Tasks </h2>
+                                        </header>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary">Update</button>
+                                                    <button type="reset" class="btn btn-default">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                        <div class="panel-body">
+                                            <div class="validation-message">
+                                                <ul></ul>
+                                            </div>
+                                            <input type="hidden" name="task_id" value="{{ data.task_id }}"/>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label"><span class="required">*</span>Task Type: </label>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <div class="radio-primary form-check">
+                                                        <label for="task_type" class="form-check-label">
+                                                            <input class="form-check-input radio-inline" type="radio" id="task_type" name="task_type" value="0" {% if data.task_type == 0 %}checked{% endif %}>
+                                                            Complete  &nbsp; &nbsp; </label>
+                                                        <label for="task_type" class="form-check-label">
+                                                            <input class="form-check-input radio-inline" type="radio" id="task_type1" name="task_type" value="1" {% if data.task_type == 1 %}checked{% endif %}>
+                                                            Yes/No/NA</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label"><span class="required">*</span>Task: </label>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <input type="text" name="task_description" id="task_description" value="{{ data.task_description}}" class="form-control" title="Please enter Task." placeholder="eg.: ABC" required/>
+                                                </div>
+                                                <div class="col-sm-3">
+                                                    <span id="statusValid"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Display Order: </label>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <input type="text" name="display_order" class="form-control" value="{{ data.task_display_order }}" title="Please enter Display Order." placeholder="eg.: 1" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+												 <label class="col-sm-3 control-label" for="inputSuccess"></label>
+												 <div class="col-sm-6">
+													 <div class="checkbox">
+														 <label>
+															<input type="checkbox" name="is_active" {% if data.task_is_active == True %}checked{% endif %} />
+															   <i>Active</i>
+													 	 </label>
+													 </div>
+                                                </div>
+                                              </div>
+                                              
+                                             <!-- Restrict To -->
+                                             <div class="form-group">
+                                               <label class="col-sm-3 control-label">Restrict To: </label>
+                                               <div class="col-md-4 col-sm-6">
+                                                   <a class="mb-xs mt-xs mr-xs modal-sizes"  href="#modalLG1" data-id="">ADD</a>
+                                               </div>
+                                           </div>
+                                            <!-- Modal For Restrict To Start-->
+                                            <div id="modalLG1" class="modal-block modal-block-lg mfp-hide">
+                                               <section class="panel">
+                                                   <header class="panel-heading">
+                                                       <h2 class="panel-title">Select Groups and/or Organizations</h2>
+                                                   </header>
+                                                   <div class="panel-body">
+                                                       <form>&nbsp;</form>
+                                                       <form id="modalForm1" action="{% url 'saveRestrictTask' %}" method="post" class="form-horizontal"> 
+                                                       {% csrf_token %}
+                                                       <section class="panel">                                
+                                                           <div class="panel-body">
+                                                               <div class="validation-message">
+                                                                   <ul></ul>
+                                                               </div>
+                                                               <div class="form-group">
+                                                                   <input  type="hidden" name="task_id" value="{{task_id}}" id="task_id"/>
+                                                                   <label class="col-md-3 col-sm-3 control-label">Available Groups: </label>
+                                                                   <div class="col-md-9 col-sm-9">
+                                                                       <div class="col-md-6 col-sm-7">
+                                                                           <select class="form-control" multiple="multiple" data-plugin-multiselect data-plugin-options='{ "includeSelectAllOption": true }' name="tr_group" id="tr_group">
+                                                                               {% if groups %}
+                                                                                       {% for group in groups %}
+                                                                                           <option value="{{ group.group_id }}">{{ group.group_display_name }}</option>
+                                                                                       {% endfor %}   
+                                                                               {% endif %}
+                                                                           </select>
+                                                                       </div>
+                                                                   </div>
+                                                               </div>
+                                                               <div class="form-group">
+                                                                   <label class="col-md-3 col-sm-3 control-label">Available Organizations: </label>
+                                                                   <div class="col-md-9 col-sm-9">
+                                                                       <div class="col-md-6 col-sm-7">
+                                                                           <select class="form-control" multiple="multiple" data-plugin-multiselect data-plugin-options='{ "includeSelectAllOption": true }' name="tr_org" id="tr_org">
+                                                                               {% if organizations %}
+                                                                                   {% for organization in organizations %}
+                                                                                       <option value="{{ organization.org_id }}">{{ organization.org_name }}</option>
+                                                                                   {% endfor %}
+                                                                               {% endif %}
+                                                                           </select>
+                                                                       </div>
+                                                                   </div>
+                                                               </div>
+                                                               <div class="row">
+                                                                   <div class="col-sm-9">
+                                                                       <button type="submit" class="btn btn-primary saveButton ">Update</button>
+                                                                       <button type="reset" class="btn btn-primary resetBtn1">Clear All</button>
+                                                                   </div>
+                                                               </div></br>
+                                                           </div>
+                                                       </section>
+                                                   </form>
+                                                   </div>
+                                                   <footer class="panel-footer">
+                                                       <div class="row">
+                                                           <div class="col-md-12 text-right">
+                                                               <button class="btn btn-danger modal-dismiss">Cancel</button>
+                                                               <!-- <a href="javascript:void(0)"  onclick="closePopUp();"class="close-popup modal-dismiss">&times;</a> -->
+                                                           </div>
+                                                       </div>
+                                                   </footer>
+                                               </section>
+                                           </div>
+                                           <!-- Modal For Restrict To End-->
+                                           <div class="form-group">
+                                            <label class="col-sm-3 control-label"> </label>
+                                            <div class="col-md-4 col-sm-6">
+                                                <div class="table-responsive">
+                                                    <table class="table table-striped table-hover">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Group or Organization Name</th>
+                                                                <th>Type</th>
+                                                                <th>Action</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        {% if taskrestricts %}   
+                                                        {% for tr_id, tr_group_or_org_name, tr_type_is_group, tr_type_is_org in taskrestricts %}      
+                                                            {% if tr_type_is_org == 1 %}    
+                                                                <tr>
+                                                                    <td>{{ tr_group_or_org_name}}</td>
+                                                                    <td>Organization</td>
+                                                                    <td><a style="cursor: pointer;" onclick="DeleteRestrictTask({{ tr_id }});" data-id="{{ tr_id }}">Remove</a></td>
+                                                                </tr> 
+                                                            {% elif tr_type_is_group == 1 %}
+                                                                <tr>
+                                                                    <td>{{ tr_group_or_org_name}}</td>
+                                                                    <td>Group</td>
+                                                                    <td><a style="cursor: pointer;" onclick="DeleteRestrictTask({{ tr_id }});" data-id="{{ tr_id }}">Remove</a></td>
+                                                                </tr>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                        {% endif %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        </div>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-12">
+                                                    <button class="btn btn-primary">Update</button>
+                                                    <button type="reset" class="btn btn-default">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                    </section>
+                                </form>
+                            </div>
+                        </div>
+					<!-- end: page -->
+				</section>
+			</div>
+
+    {% endblock %}
+    {% block script %}
+        <script>
+            $(document).on('click','.resetBtn1' ,function(e){
+                        
+                $("#tr_group option:selected").removeAttr("selected");
+                $("#tr_group").multiselect('refresh');
+                $("#tr_org option:selected").removeAttr("selected");
+                $("#tr_org").multiselect('refresh');
+
+                });
+            function confirmBeforeClose()
+                {
+                return 'You have made changes on this page that will be lost if you navigate away without saving.';
+                }
+            function DeleteRestrictTask(id){
+                $.ajax({
+                    url:"{% url 'deleteRestrictTask' %}",
+                    type:'POST',
+                    dataType: 'text',
+                    data:{
+                        'id': id,
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    },
+                    success:function(data){
+                        console.log(data);
+                    },
+                    error:function(){
+                        console.log('error')
+                    },
+                    complete:function(){
+                        window.onbeforeunload = confirmBeforeClose();
+                        window.location.reload();
+                    }
+                });
+        }
+        </script>
+    {% endblock %}        
+
+

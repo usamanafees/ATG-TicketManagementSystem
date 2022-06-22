@@ -1,0 +1,236 @@
+{% extends 'itrak/base.html' %}
+
+{% block body_block %}
+{% load templates_extras %}
+    {% load static %}
+
+            <section role="main" class="content-body">
+                <header class="page-header">
+                   <h2><i class="fa fa-users" aria-hidden="true"></i> Client</h2>
+
+                    <div class="right-wrapper pull-right">
+                        <ol class="breadcrumbs">
+                            <li>
+                                <a href="{% url 'home' %}">
+                                    <i class="fa fa-home"></i>
+                                </a>
+                            </li>
+                            <li><span>Client</span></li>
+                            <li><span>View Client</span></li>
+                        </ol>
+
+                        <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+                    </div>
+                </header>
+
+                <!-- start: page -->
+                     <div class="row">
+                        <div class="col-md-12">
+                            <form id="summary-form" action="{% url 'updateClient' %}" method="post" class="form-horizontal">
+                                {% csrf_token %}
+                                <section class="panel">
+                                    <header class="panel-heading">
+                                        <h2 class="panel-title">View Client </h2>
+                                    </header>
+                                    <footer class="panel-footer">
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <a href="{% url 'editClient' %}?clientID={% get_encrypted_id data.client_id %}" data-hover="Edit Client" class="mb-xs mt-xs mr-xs btn btn-primary">Edit</a>
+                                                <a href="#" data-href="{% url 'deleteClient' %}?clientID={% get_encrypted_id data.client_id %}" data-hover="Delete Client" class="mb-xs mt-xs mr-xs btn btn-danger" data-toggle="modal" data-target="#confirm-delete">Delete</a>
+                                            </div>
+                                        </div>
+                                    </footer>
+                                    <div class="panel-body">
+                                        <div class="validation-message">
+                                            <ul></ul>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Client ID: </label>
+                                            <div class="col-sm-4">
+                                                <input type="hidden" name="client_id" value="{{ data.client_id}}" id="client_id"/>
+                                                <label>{{ data.client_cus_id}}</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Client: </label>
+                                            <div class="col-sm-4">
+                                                <label>{{ data.client_name}}</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label" for="contact_person">Contact Person:</label>
+                                            <div class="col-sm-4">
+                                                <label>{{ data.client_contact_person}}</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Email:</label>
+                                            <div class="col-sm-4">
+                                                <label>{{ data.client_email}}</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Phone:</label>
+                                            <div class="col-sm-4">
+                                                <label>{{ data.client_phone}}</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">2nd Phone/Cell:</label>
+                                            <div class="col-sm-4">
+                                                <label>{{ data.client_second_phone}}</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label" for="fax">Fax:</label>
+                                            <div class="col-sm-4">
+                                                <label>{{ data.client_fax}}</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label" for="address1">Address 1:</label>
+                                            <div class="col-sm-4">
+                                                <label>{{ data.client_address1}}</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label" for="address2">Address 2:</label>
+                                            <div class="col-sm-4">
+                                                <label>{{ data.client_address2}}</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label" for="city_state_zip">City/State/Zip:</label>
+                                            <div class="col-sm-4">
+                                                <label>{{ data.client_city}}</label>
+                                            </div>
+                                           <div class="col-sm-2 col-xs-6 all-space-auto">
+                                                <label>{{ data.client_state}}</label>
+                                            </div>
+                                           <div class="col-sm-2 col-xs-6 all-space-auto">
+                                                <label>{{ data.client_zip_code}}</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Country:</label>
+                                            <div class="col-sm-4">
+                                                <label>{{ data.client_country}}</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-3 col-sm-3 control-label">Organization:</label>
+                                            <div class="col-md-4 col-sm-4">
+                                                {% if data.organizations %}
+                                                    {% for org in data.organizations %}
+                                                        {% if org.org_id == data.client_org_id %}
+                                                            <label>{{ org.org_name}}</label>
+                                                        {% endif %}                                                    
+                                                    {% endfor %}
+                                                {% endif %}
+                                                
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Email Notification:</label>
+                                            <div class="col-sm-8">
+                                                <a href="{% url 'clientEmailNotification' %}?clientID={{data.client_id}}" target="_blank">View/Maintain Distribution List...</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            </form>
+                        </div>
+                    </div>
+                <!-- end: page -->
+            </section>
+        </div>
+         <!-- Confirm Delete Modal Start -->
+        <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <p>You are about to delete a record, this procedure is irreversible.</p>
+                        <strong>Do you want to proceed?</strong>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <a class="btn btn-danger btn-ok">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Confirm Delete Modal End -->
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        $(document).on('keyup','#client_cus_id', function(){
+          var fieldValue = $(this).val();
+          var currentId = $('#client_id').val();
+          if (fieldValue != ''){
+              $.ajax({
+                type: 'POST',
+                url: "{% url 'validateEditUnique' %}",
+                data: {fieldValue: fieldValue, currentId: currentId, tbl_name: 'Client', tbl_pk: 'client_id', tbl_field: 'client_cus_id', tbl_dlt_field: 'cl_is_delete'},
+                dataType: 'json',
+                beforeSend: function(jqXHR, settings) {
+                    //Do something before send...
+                },
+                success: function(data, textStatus, jqXHR) {
+                    if(data.response){
+                        $('#clientidValid').html('<strong class="text-danger">Client ID already exist. Try another one!</strong>');
+                        $('.saveButton').prop('disabled', true);
+                    }else{
+                        $('#clientidValid').html('');
+                        $('.saveButton').prop('disabled', false);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert(textStatus + '. ' + errorThrown);
+                }
+              });
+          }
+        });
+
+        $(document).on('keyup','#client_name', function(){
+          var fieldValue = $(this).val();
+          var currentId = $('#client_id').val();
+          if (fieldValue != ''){
+              $.ajax({
+                type: 'POST',
+                url: "{% url 'validateEditUnique' %}",
+                data: {fieldValue: fieldValue, currentId: currentId, tbl_name: 'Client', tbl_pk: 'client_id', tbl_field: 'client_name', tbl_dlt_field: 'cl_is_delete'},
+                dataType: 'json',
+                beforeSend: function(jqXHR, settings) {
+                    //Do something before send...
+                },
+                success: function(data, textStatus, jqXHR) {
+                    if(data.response){
+                        $('#clientnameValid').html('<strong class="text-danger">Client Name already exist. Try another one!</strong>');
+                        $('.saveButton').prop('disabled', true);
+                    }else{
+                        $('#clientnameValid').html('');
+                        $('.saveButton').prop('disabled', false);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert(textStatus + '. ' + errorThrown);
+                }
+              });
+          }
+        });
+        $('#confirm-delete').on('show.bs.modal', function(e) {
+            $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+        });
+    </script>
+{% endblock %}
+
+

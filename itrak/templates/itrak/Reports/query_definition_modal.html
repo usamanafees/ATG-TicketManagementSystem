@@ -1,0 +1,129 @@
+ <!-- Modal Form For Report Query Definition-->
+{% load templates_extras %}
+    <div class="popup-modal-content">
+        <div id="modalQueryDef" class="modal modal-block modal-block-primary modal-dialog">
+            <section class="panel">
+                <header class="panel-heading">
+                    <h2 class="panel-title">Query Definition</h2>
+                </header>
+                <div class="panel-body">
+                    {% if queryDetails %}
+                        <div class="row">
+                            <div class="col-md-3 col-sm-3">
+                                <b>Query Name:</b>
+                            </div>
+                            <div class="col-md-6 col-sm-6">
+                                {% if queryDetails.qb_query_name %}
+                                    {{ queryDetails.qb_query_name }}
+                                {% else %}
+                                    None
+                                {% endif %}
+                            </div>
+                        </div>
+                    
+                        <br/>
+                        <br/>
+                    
+                        <div class="row">
+                            <div class="col-md-3 col-sm-3">
+                                <b>Selected Fields:</b>
+                            </div>
+                            <div class="col-md-6 col-sm-6">
+                                {% if queryDetails.qb_selected_fields %}
+                                    {% convert_list_into_json queryDetails.qb_selected_fields as selectedFields %}
+                                    {% for selectedField in selectedFields %}
+                                        {{ selectedField }}
+                                        <br/>
+                                    {% endfor %}
+                                {% else %}
+                                    None
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <br/>
+                        <br/>
+
+                        <div class="row">
+                            <div class="col-md-3 col-sm-3">
+                                <b>Filter:</b>
+                            </div>
+                            <div class="col-md-6 col-sm-6">
+                                {% if queryDetails.qb_filter_expressions %}
+                                    {% convert_list_into_json queryDetails.qb_filter_expressions as filterExpressions %}
+                                    {% for filterExpression in filterExpressions %}
+                                        {{ filterExpression }}
+                                        <br/>
+                                    {% endfor %}
+                                {% else %}
+                                    None
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <br/>
+                        <br/>
+
+                        <div class="row">
+                            <div class="col-md-3 col-sm-3">
+                                <b>Filter Statement:</b>
+                            </div>
+                            <div class="col-md-6 col-sm-6">
+                                {% if queryDetails.qb_filter_statement %}
+                                    {{ queryDetails.qb_filter_statement }}
+                                {% else %}
+                                    None
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <br/>
+                        <br/>
+
+                        <div class="row">
+                            <div class="col-md-3 col-sm-3">
+                                <b>Shared:</b>
+                            </div>
+                            <div class="col-md-6 col-sm-6">
+                                {% if queryDetails.qb_query_is_share == 0 %}
+                                    No
+                                {% else %}
+                                    Yes
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <br/>
+                        <br/>
+
+                        <div class="row">
+                            <div class="col-md-3 col-sm-3">
+                                <b>Shared With:</b>
+                            </div>
+                            <div class="col-md-6 col-sm-6">
+                                {% if querySharedWith %}
+                                    {% for queryShared in querySharedWith %}
+                                        {{ queryShared.qb_query_share_with.display_name }}
+                                        <br/>
+                                    {% endfor %}
+                                {% else %}
+                                     None
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <br/>
+                        <br/>
+                {% endif %}
+                </div>
+                <footer class="panel-footer">
+                    <div class="row">
+                        <div class="col-md-12 text-right">
+                            <button class="btn btn-default modal-dismiss" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </footer>
+            </section>
+        </div>
+    </div>
+<!-- Modal Form For Report Query Definition End -->

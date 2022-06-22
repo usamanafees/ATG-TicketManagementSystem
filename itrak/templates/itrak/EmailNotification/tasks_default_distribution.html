@@ -1,0 +1,113 @@
+{% extends 'itrak/base.html' %}
+
+{% block body_block %}
+    {% load static %}
+
+    <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-gears" aria-hidden="true"></i> Tasks Default Distribution</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+                    <li><span>Email Notification</span></li>
+                    <li><span>Tasks Default Distribution</span></li>
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+
+        <!-- start: page -->
+        <div class="row">
+            <div class="col-md-12">
+                <section class="panel">
+                    <header class="panel-heading">
+                        <h2 class="panel-title">Tasks Default Email Notification List -- Distribution for Standard User Roles</h2>
+                    </header>
+                    <div class="panel-body">
+                        {% for message in messages %}
+                            <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            {{ message }}
+                            </div>
+                        {% endfor %}
+                        <p>Users listed below will receive email and/or SMS notification when the selected Task events occur.</p>
+                        <!-- <p>Use the 'default' record listed below to define default events for users added individually to other email distribution lists</p> -->
+                        <br>
+                        <div class="table-responsive">
+	                        <table class="table table-striped table-hover">
+	                            <thead>
+	                                <tr>
+	                                    <th></th>
+	                                    <th></th>
+	                                    {% for action in task_actions %}
+	                                        <th>{{ action.task_action_name }}</th>
+	                                    {% endfor %}
+	                                </tr>
+	                                <tr>
+	                                    <th></th>
+	                                    <th>Display Name</th>
+	                                    <th>Email</th>
+	                                    <th>Email</th>
+	                                    <th>Email</th>
+	                                    <th>Email</th>
+	                                    <th>Email</th>
+	                                </tr>
+	                            </thead>
+	                            <tbody>
+	                                {% for role in task_roles %}
+	                                    <tr>
+	                                        <td><a class="mb-xs mt-xs mr-xs modal-sizes" onclick="edit_modal({{ role.task_role_id }});" href="#modalLG" data-id="{{ role.task_name }}">Edit</a></td>
+	                                        <td>{{ role.task_name }}</td>
+	                                        <td>{% if role.task_role_id|stringformat:"s 2" in permis %}<i class="fa fa-check" style="color:green"></i>{% endif %}</td>
+	                                        <td>{% if role.task_role_id|stringformat:"s 4" in permis %}<i class="fa fa-check" style="color:green"></i>{% endif %}</td>
+	                                        <td>{% if role.task_role_id|stringformat:"s 6" in permis %}<i class="fa fa-check" style="color:green"></i>{% endif %}</td>
+	                                        <td>{% if role.task_role_id|stringformat:"s 8" in permis %}<i class="fa fa-check" style="color:green"></i>{% endif %}</td>
+	                                        <td>{% if role.task_role_id|stringformat:"s 10" in permis %}<i class="fa fa-check" style="color:green"></i>{% endif %}</td>
+	                                        <td>{% if role.task_role_id|stringformat:"s 12" in permis %}<i class="fa fa-check" style="color:green"></i>{% endif %}</td>
+	                                    </tr>
+	                                {% endfor %}
+	                            </tbody>
+	                        </table>
+	                    </div>
+                        <div id="modalLG" class="modal-block modal-block-lg mfp-hide">
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}
+{% block script %}
+    <script>
+        $(document).ready(function() {
+        });
+
+        function edit_modal(id){
+            $.ajax({
+                url:"{% url 'getModalTaskEmailPermissionsByID' %}",
+                type:'POST',
+                data:{
+                    'role_id':id,
+                },
+                success:function(data){
+                    $('#modalLG').html('');
+                    $('#modalLG').html(data);
+                },
+                error:function(){
+                    console.log('error')
+                },
+            });
+        }
+
+        function modal_reset(id){
+            edit_modal(id);
+        }
+    </script>
+{% endblock %}

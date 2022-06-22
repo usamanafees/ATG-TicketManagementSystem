@@ -1,0 +1,164 @@
+{% extends 'itrak/base.html' %}
+
+{% block body_block %}
+{% load templates_extras %}
+    {% load static %}
+
+            <section role="main" class="content-body">
+                <header class="page-header">
+                   <h2><i class="fa fa-sitemap" aria-hidden="true"></i> Department</h2>
+
+                    <div class="right-wrapper pull-right">
+                        <ol class="breadcrumbs">
+                            <li>
+                                <a href="{% url 'home' %}">
+                                    <i class="fa fa-home"></i>
+                                </a>
+                            </li>
+                            <li><span>Department</span></li>
+                            <li><span>View Department</span></li>
+                        </ol>
+
+                        <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+                    </div>
+                </header>
+
+                <!-- start: page -->
+                     <div class="row">
+                        <div class="col-md-12">
+                            {% for message in messages %}
+                                <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                            <form id="summary-form" action="{% url 'updateDepartment' %}" method="post" class="form-horizontal">
+                                {% csrf_token %}
+                                <section class="panel">
+                                    <header class="panel-heading">
+                                        <h2 class="panel-title">View Department</h2>
+                                    </header>
+                                    <footer class="panel-footer">
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <a href="{% url 'editDepartment' %}?DepID={% get_encrypted_id data.dep_id %}" data-hover="Edit Department" class="mb-xs mt-xs mr-xs btn btn-primary">Edit</a>
+                                                <a href="#" data-href="{% url 'deleteDepartment' %}?DepID={% get_encrypted_id data.dep_id %}" data-hover="Delete Department" class="mb-xs mt-xs mr-xs btn btn-danger" data-toggle="modal" data-target="#confirm-delete">Delete</a>
+                                            </div>
+                                        </div>
+                                    </footer>
+                                    <div class="panel-body">
+                                        <div class="validation-message">
+                                            <ul></ul>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-3 col-sm-4 control-label space_top_0">Department ID: </label>
+                                            <div class="col-sm-5">
+                                                <label>{{ data.dep_id }}</label>
+                                                <input type="hidden" name="dep_id" value="{{ data.dep_id }}" id="dep_id"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-3 col-sm-4 control-label">Department Name: </label>
+                                            <div class="col-sm-5">
+                                                <label>{{ data.dep_name }}</label>
+                                            </div>
+                                            <div class="col-sm-5">
+                                                <span id="departmentValid"></span>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                             <label class="col-md-3 col-sm-4 control-label" for="inputSuccess">Internal Ticket:</label>
+                                             <div class="col-sm-8">
+                                                 <div class="checkbox">
+                                                     <label>
+                                                        <input disabled= "disabled" type="checkbox" name="is_internal" {% if data.d_is_internal == True %}checked{% endif %} />
+                                                           <i>Prevent viewing of other organizations' Tickets and Users</i>
+                                                      </label>
+                                                 </div>
+                                            </div>
+                                          </div>
+                                        <div class="form-group">
+                                             <label class="col-md-3 col-sm-4 control-label" for="inputSuccess"></label>
+                                             <div class="col-sm-8">
+                                                 <div class="checkbox">
+                                                     <label>
+                                                        <input disabled= "disabled" type="checkbox" name="is_active" {% if data.d_is_active == True %}checked{% endif %} />
+                                                           <i>Active</i>
+                                                      </label>
+                                                 </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Email Notification:</label>
+                                            <div class="col-sm-8">
+                                                <a href="{% url 'depEmailNotification' %}?DepID={{data.dep_id}}" target="_blank">View/Maintain Distribution List...</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            </form>
+                        </div>
+                    </div>
+                <!-- end: page -->
+            </section>
+        </div>
+        <!-- Confirm Delete Modal Start -->
+        <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <p>You are about to delete a record, this procedure is irreversible.</p>
+                        <strong>Do you want to proceed?</strong>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <a class="btn btn-danger btn-ok">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Confirm Delete Modal End -->
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        $(document).on('keyup','#dep_name', function(){
+          var fieldValue = $(this).val();
+          var currentId = $('#dep_id').val();
+          if (fieldValue != ''){
+              $.ajax({
+                type: 'POST',
+                url: "{% url 'validateEditUnique' %}",
+                data: {fieldValue: fieldValue, currentId: currentId, tbl_name: 'Department', tbl_pk: 'dep_id', tbl_field: 'dep_name', tbl_dlt_field: 'd_is_delete'},
+                dataType: 'json',
+                beforeSend: function(jqXHR, settings) {
+                    //Do something before send...
+                },
+                success: function(data, textStatus, jqXHR) {
+                    if(data.response){
+                        $('#departmentValid').html('<strong class="text-danger">Department Name already exist. Try another one!</strong>');
+                        $('.saveButton').prop('disabled', true);
+                    }else{
+                        $('#departmentValid').html('');
+                        $('.saveButton').prop('disabled', false);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert(textStatus + '. ' + errorThrown);
+                }
+              });
+          }
+        });
+        $('#confirm-delete').on('show.bs.modal', function(e) {
+            $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+        });
+    </script>
+{% endblock %}

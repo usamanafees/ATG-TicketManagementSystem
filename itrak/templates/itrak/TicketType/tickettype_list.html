@@ -1,0 +1,169 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+				<section role="main" class="content-body">
+					<header class="page-header">
+                        <h2><i class="fa fa-eercast" aria-hidden="true"></i> Ticket Type</h2>
+                        
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span> Ticket Type</span></li>
+								<li><span> Ticket Type List</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+						<section class="panel">
+							<header class="panel-heading custom-style">
+                                <h2 class="panel-title">Ticket Type List</h2>
+                                <div class="right-detail">
+                                    <h5 class="text-danger text-bold">
+                                        Export To Excel: <a href="javascript:getXlsDownload(0)" id="xlsbrief_list" class="">XLS Sheet</a>
+                                    </h5>
+                                </div>
+							</header>
+							<div class="panel-body">
+                                 {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+{#                                data-url="{% static 'ajax/ajax-datatables-sample.json' %} "#}
+								<table class="table table-bordered table-striped datatable">
+									<thead>
+										<tr>
+											<th width="10%">Action</th>
+											<th width="30%"> Ticket Type</th>
+                                            <th width="15%">Display Order</th>
+                                            <th width="15%">Status</th>
+                                            <th width="15%">Child Level</th>
+										</tr>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+							</div>
+						</section>
+					<!-- end: page -->
+				</section>
+			</div>
+           <!-- Modal Warning -->
+        {# Delete Modal Popup on Delete#}
+        <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <p>You are about to delete a record, this procedure is irreversible.</p>
+                        <strong>Do you want to proceed?</strong>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <a class="btn btn-danger btn-ok">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <form id="standard_form" name="standard_form" method="post" action="{% url 'export_tickettypes_xls' %}">
+            <input type="hidden" name="parent_id" value="{{ parent_id }}">
+        </form>
+    {% endblock %}
+
+    {% block script %}
+        <script>
+            $(document).ready(function() {
+                var parent_id = '{{parent_id}}';
+                var level = '{{level}}';
+                var oTable = $('.datatable').dataTable({
+                    // ...
+                    columnDefs: [
+                        {
+                            name: 'action',
+                            orderable: false,
+                            searchable: false,
+                            targets: [0]
+                        },
+                        {
+                            name: 'ttype_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [1]
+                        },
+                        {
+                            name: 't_type_display_order',
+                            orderable: true,
+                            searchable: true,
+                            targets: [2]
+                        },
+                        {
+                            name: 'isActive',
+                            orderable: false,
+                            searchable: false,
+                            targets: [3]
+                        },
+                        {
+                            name: 'childlevel',
+                            orderable: false,
+                            searchable: false,
+                            targets: [4]
+                        }
+                    ],
+                    "order": [[ 1, 'asc' ]],
+                    "processing": true,
+                    "serverSide": true,
+                    "lengthMenu": [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "All"] ],
+                    "stateSave": true,
+                    "ajax": {
+                        "url": "{% url 'tickettype_list_json' %}",
+                        "type": "GET",
+                        "data": function ( d ) {
+                            d.parent_id = parent_id;
+                            d.level = level;
+                            d.csrfmiddlewaretoken = getCookie('csrftoken');
+                        }
+                    },
+                });
+                // ...
+                function getCookie(name) {
+                    var cookieValue = null;
+                    if (document.cookie && document.cookie != '') {
+                        var cookies = document.cookie.split(';');
+                        for (var i = 0; i < cookies.length; i++) {
+                            var cookie = jQuery.trim(cookies[i]);
+                            // Does this cookie string begin with the name we want?
+                            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+            });
+            function getXlsDownload(id){
+               	$('#standard_form').trigger('submit');
+            }
+        </script>
+        <script>
+        $('#confirm-delete').on('show.bs.modal', function(e) {
+            $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+        });
+        </script>
+        
+    {% endblock %}

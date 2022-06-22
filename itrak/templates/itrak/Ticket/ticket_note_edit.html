@@ -1,0 +1,183 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+        {% load tz %} {# it will Load the Django TimeZone Library#}
+        {% load templates_extras %}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-ticket" aria-hidden="true"></i> Ticket</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Tickets</span></li>
+								<li><span>Edit Ticket's Note</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+                         <div class="row">
+                            <div class="col-md-12">
+                                {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                                {% if note %}
+                                    <form id="summary-form" class="ticketForm form-horizontal" action="{% url 'updateNoteTicket' %}" method="post">
+                                        {% csrf_token %}
+                                        <section class="panel">
+                                            <header class="panel-heading">
+    {#                                            <div class="panel-actions">#}
+    {#                                                <a href="#" class="fa fa-caret-down"></a>#}
+    {#                                                <a href="#" class="fa fa-times"></a>#}
+    {#                                            </div>#}
+                                                <h2 class="panel-title">Edit Note for Ticket #{{ note.note_ticket_id }}</h2>
+                                            </header>
+                                            <footer class="panel-footer">
+                                                <div class="row">
+                                                    <div class="col-sm-9">
+                                                        <button class="btn btn-primary saveButton">Update</button>
+                                                        <button type="reset" class="btn btn-default resetBtn">Reset</button>
+                                                    </div>
+                                                </div>
+                                            </footer>
+                                            <div class="panel-body">
+                                                <div class="validation-message">
+                                                    <ul></ul>
+                                                </div>
+                                                <input type="hidden" name="ticket_id" value="{% get_encrypted_id note.note_ticket_id %}">
+                                                <input type="hidden" name="note_id" value="{% get_encrypted_id note.note_id %}">
+
+                                                <div class="form-group">
+                                                    <label class="col-md-3 control-label">Ticket Status:</label>
+                                                    <label class="col-md-1 control-label">{% if note.note_ticket.ticket_status == 0%}Opened{% else %}Closed{% endif %} </label>
+                                                    <div class="col-md-4 col-sm-4">
+                                                        <select name="ticket_substatus" id="ticket_substatus" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Client", "allowClear": true }'>
+                                                            <option value="" readonly="readonly" > </option>
+                                                            {% if substatus %}
+                                                                {% for sstatus in substatus %}
+                                                                    <option value="{{ sstatus.sub_status_id }}" {% if sstatus.sub_status_id == note.note_ticket.ticket_sub_status_id  %}selected{% endif %}>{{ sstatus.sub_status_text }}</option>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group" id="add_note_section">
+                                                    <div class="col-md-12">
+                                                        <textarea class="summernote" id="ticket_note" name="ticket_note" required="required" data-plugin-summernote data-plugin-options='{ "height": 180, "codemirror": { "theme": "ambiance" } }'>{{ note.note_detail }}</textarea>
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                         <div class="checkbox">
+                                                             <label>
+                                                                <input type="checkbox" name="is_private" value="1" id="is_private" {% if note.is_private == 1 %}checked{% endif %}>
+                                                                 <strong>Private Note </strong>
+                                                             </label>
+                                                         </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                	<label class="col-md-3 col-sm-3 control-label">Labor Hours:</label>
+                                                    <div class="col-md-6 col-sm-6">
+                                                    	<div class="row labour-timer">
+	                                                        <div class="col-md-2 col-sm-3 col-xs-4 labour-div">
+	                                                            <input type="text" name="labour_hours_hours" id="labour_hours_hours" value="{% if note.tnote_laborhour_hours != None %}{{ note.tnote_laborhour_hours }}{% else %}0{% endif %}" class="form-control" maxlength="6" onblur="checkNumericRequired(this)" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');" />
+	                                                        </div>
+	                                                        <div class="labour-div slash">:</div>
+	                                                        <div class="col-md-2 col-sm-3 col-xs-4 labour-div">
+	                                                            <input type="text" name="labour_hours_minutes" id="labour_hours_minutes" value="{% if note.tnote_laborhour_minutes != None %}{{ note.tnote_laborhour_minutes }}{% else %}0{% endif %}" class="form-control" maxlength="2" onblur="checkNumericRequired(this)" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');" />
+	                                                        </div>
+	                                                        <small class="text-info text-bold">hrs:mins</small>
+	                                                    </div>
+                                                    </div>
+	                                            </div>
+                                                <div class="form-group">
+                                                    <label class="col-md-3 col-sm-3 control-label">
+                                                        Created By:
+                                                    </label>
+                                                    <div class="col-md-6">
+                                                        {% get_tickets_dateTime_by_timezone note.note_created_at request.user.id as createdDateTime%}
+                                                        <span>
+                                                            {{ note.note_created_by.display_name }} at {{ createdDateTime }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                {% if note.note_modified_by_id %}
+                                                    <div class="form-group">
+                                                        <label class="col-md-3 col-sm-3 control-label">
+                                                            Modified By:
+                                                        </label>
+                                                        <div class="col-md-6">
+                                                            {% get_tickets_dateTime_by_timezone note.note_modified_at request.user.id as modifiedDateTime%}
+                                                           <span>
+                                                                {{ note.note_modified_by.display_name }} at {{ modifiedDateTime }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <footer class="panel-footer">
+                                                <div class="row">
+                                                    <div class="col-sm-9">
+                                                        <button class="btn btn-primary saveButton">Update</button>
+                                                        <button type="reset" class="btn btn-default resetBtn">Reset</button>
+                                                    </div>
+                                                </div>
+                                            </footer>
+                                        </section>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+					<!-- end: page -->
+				</section>
+			</div>
+
+    {% endblock %}
+
+    {% block script %}
+
+        <!-- Validation Check on Page Start -->
+        <script>
+            function checkNumericRequired(element) {
+                if(isEmpty(element.value) ) {
+                    element.value= 0;
+                }
+            }
+            function isEmpty(str){
+                return !str.replace(/\s|[0]/g, '').length;
+            }
+
+            $('.ticketForm').on('submit', function(e) {
+              if($('#ticket_note').summernote().code() == '') {
+                alert('The note can not be empty!');
+                // cancel submit
+                e.preventDefault();
+              }
+             });
+
+            $('.resetBtn').on('click', function(){
+               $('#ticket_note').code('{{ note.note_detail }}');
+               $('#ticket_substatus').select2("val" , '{{ note.note_ticket.ticket_sub_status_id }}');
+               $('#is_private').val('{% if note.is_private == 1 %}checked{% endif %}');
+               $('#labour_hours_hours').val('{% if note.tnote_laborhour_hours != None %}{{ note.tnote_laborhour_hours }}{% else %}0{% endif %}');
+               $('#labour_hours_minutes').val('{% if note.tnote_laborhour_minutes != None %}{{ note.tnote_laborhour_minutes }}{% else %}0{% endif %}');
+            });
+        </script>
+
+        <!-- Validation Check on Page End -->
+    {% endblock %}
+
+

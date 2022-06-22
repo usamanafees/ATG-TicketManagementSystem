@@ -1,0 +1,60 @@
+{% load templates_extras %}
+<section class="panel">
+    <header class="panel-heading">
+        <h2 class="panel-title">Tickets Record<span class="btn btn-danger modal-dismiss" style="float:right;">X</span></h2>
+    </header>
+    {% if tickets %}
+        <div class="panel-body">
+            <h4>{{ title }}</h4>
+            <table id="tickets_record_table" class="table table-striped table-responsive">
+                <thead>
+                    <tr>
+                        <th>Ticket#</th>
+                        <th>Status</th>
+                        <th>Opened</th>
+                        <th>Submitted By</th>
+                        <th>Assigned To</th>
+                        <th>Next Action</th>
+                        <th>Subject</th>
+                        <th>Priority</th>
+                        <th>Ticket Type</th>
+                        <th>Last Activity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                        {% get_tickets_dateTime_by_timezone1 ticket.submitted_at request.user.id as submitDateTime %}
+                        {% get_tickets_dateTime_by_timezone ticket.ticket_modified_at request.user.id as modifiedDateTime %}
+                        <tr>
+                            <td><a href="Home_ViewTicket?tickID={% get_encrypted_id ticket.ticket_id %}" target="_blank">{{ ticket.ticket_id }}</a></td>
+                            <td>{% if  ticket.ticket_status == 0 %}Opened{% else %}Close{% endif %} - {{ ticket.ticket_sub_status }}</td>
+                            <td>{% if submitDateTime %}{{ submitDateTime }}{% endif %}</td>
+                            <td>{{ ticket.ticket_caller }}</td>
+                            <td>{{ ticket.ticket_assign_to }}</td>
+                            <td>{{ ticket.ticket_next_action }}</td>
+                            <td><a href="Home_ViewTicket?tickID={% get_encrypted_id ticket.ticket_id %}" target="_blank">{{ ticket.subject }}</a></td>
+                            <td>{{ ticket.priority }}</td>
+                            <td>{{ ticket.ticket_type }} {{ ticket.ticket_subtype1 }}</td>
+                            <td>{{ modifiedDateTime }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <h4>No Ticket Found</h4>
+    {% endif %}
+    <footer class="panel-footer">
+        <div class="row">
+            <div class="col-md-12 text-right">
+                {% comment %} <button class="btn btn-primary modal-confirm">Save</button> {% endcomment %}
+                {% comment %} <button class="btn btn-default modal-dismiss">Cancel</button> {% endcomment %}
+            </div>
+        </div>
+    </footer>
+</section>
+<script>
+$(document).ready(function() {
+    $('#tickets_record_table').DataTable();
+} );
+</script>

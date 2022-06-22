@@ -1,0 +1,151 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-sitemap" aria-hidden="true"></i> Department</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Department</span></li>
+								<li><span>Edit Department</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+                         <div class="row">
+                            <div class="col-md-12">
+                                {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                                <form id="summary-form" action="{% url 'updateDepartment' %}" method="post" class="form-horizontal">
+                                    {% csrf_token %}
+                                    <section class="panel">
+                                        <header class="panel-heading">
+{#                                            <div class="panel-actions">#}
+{#                                                <a href="#" class="fa fa-caret-down"></a>#}
+{#                                                <a href="#" class="fa fa-times"></a>#}
+{#                                            </div>#}
+
+                                            <h2 class="panel-title">Edit Department</h2>
+                                        </header>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary saveButton">Update</button>
+                                                    <button type="reset" class="btn btn-default">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                        <div class="panel-body">
+                                            <div class="validation-message">
+                                                <ul></ul>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-4 control-label space_top_0">Department ID: </label>
+                                                <div class="col-sm-5">
+                                                    <label>{{ data.dep_id }}</label>
+                                                    <input type="hidden" name="dep_id" value="{{ data.dep_id }}" id="dep_id"/>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-4 control-label"><span class="required">*</span>Department Name: </label>
+                                                <div class="col-sm-5">
+                                                    <input type="text" name="dep_name" id="dep_name" value="{{ data.dep_name }}" class="form-control" title="Please enter a Department Name." placeholder="eg.: ABC" required/>
+                                                </div>
+                                                <div class="col-sm-5">
+                                                    <span id="departmentValid"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+												 <label class="col-md-3 col-sm-4 control-label" for="inputSuccess">Internal Ticket:</label>
+												 <div class="col-sm-8">
+													 <div class="checkbox">
+														 <label>
+															<input type="checkbox" name="is_internal" {% if data.d_is_internal == True %}checked{% endif %} />
+															   <i>Prevent viewing of other organizations' Tickets and Users</i>
+													 	 </label>
+													 </div>
+                                                </div>
+											  </div>
+                                            <div class="form-group">
+												 <label class="col-md-3 col-sm-4 control-label" for="inputSuccess"></label>
+												 <div class="col-sm-8">
+													 <div class="checkbox">
+														 <label>
+															<input type="checkbox" name="is_active" {% if data.d_is_active == True %}checked{% endif %} />
+															   <i>Active</i>
+													 	 </label>
+													 </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Email Notification:</label>
+                                                <div class="col-sm-8">
+                                                    <a href="{% url 'depEmailNotification' %}?DepID={{data.dep_id}}" target="_blank">View/Maintain Distribution List...</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary saveButton">Update</button>
+                                                    <button type="reset" class="btn btn-default">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                    </section>
+                                </form>
+                            </div>
+                        </div>
+					<!-- end: page -->
+				</section>
+			</div>
+
+    {% endblock %}
+
+    {% block script %}
+        <script>
+            $(document).on('keyup','#dep_name', function(){
+              var fieldValue = $(this).val();
+              var currentId = $('#dep_id').val();
+              if (fieldValue != ''){
+                  $.ajax({
+                    type: 'POST',
+                    url: "{% url 'validateEditUnique' %}",
+                    data: {fieldValue: fieldValue, currentId: currentId, tbl_name: 'Department', tbl_pk: 'dep_id', tbl_field: 'dep_name', tbl_dlt_field: 'd_is_delete'},
+                    dataType: 'json',
+                    beforeSend: function(jqXHR, settings) {
+                        //Do something before send...
+                    },
+                    success: function(data, textStatus, jqXHR) {
+                        if(data.response){
+                            $('#departmentValid').html('<strong class="text-danger">Department Name already exist. Try another one!</strong>');
+                            $('.saveButton').prop('disabled', true);
+                        }else{
+                            $('#departmentValid').html('');
+                            $('.saveButton').prop('disabled', false);
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    }
+                  });
+              }
+            });
+
+        </script>
+    {% endblock %}

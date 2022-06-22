@@ -1,0 +1,25 @@
+<section class="panel">
+    <form action="{% url 'saveBlockedAttachemts' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <header class="panel-heading">
+            <h2 class="panel-title">Add Attachment<span class="btn btn-danger modal-dismiss" style="float:right;">X</span></h2>
+        </header>
+        <div class="panel-body">
+            <p>Add an attachment to the blocked list manually by clicking the button below.</p>
+            <div class="form-group">
+                <label class="col-md-2 control-label"><span class="required">*</span>Attach File: </label>
+                <div class="col-sm-5">
+                    <input type="file" name="upload_attachemt" id="upload_favicon_file" required>
+                </div>
+            </div>
+        </div>
+        <footer class="panel-footer">
+            <div class="row">
+                <div class="col-md-12 text-right">
+                    <input type="submit" value="Save" class="btn btn-primary">
+                    <button type="button" class="btn btn-default modal-dismiss" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </footer>
+    </form>
+</section>

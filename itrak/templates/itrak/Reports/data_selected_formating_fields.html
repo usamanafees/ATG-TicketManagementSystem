@@ -1,0 +1,99 @@
+
+{% load templates_extras %}
+
+<div class="row">
+	<div class="col-lg-1 col-md-1 empty"></div>
+	<div class="col-lg-10 col-md-10 col-sm-12" id="list1">
+		<table border="0" cellspacing="0" cellpadding="0" class="table custom-field-table">
+            <thead>
+                <tr>
+                    <th>Column Name	</th>
+                    <th>Format</th>
+                    <th>Subtotal</th>
+                    <th>Justification</th>
+                    <th>Width</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if selectedFormatingFields %}
+                    {% for field in selectedFormatingFields %}
+                    <tr>
+                        <input type="hidden" name="actual_column_name" class="form-control actual_column_name" value="{{ field.actual_column_name }}">
+                        <td><input type="text" name="column_name" class="form-control column_name" value="{{ field.column_name }}" oninput="this.value = this.value.replace(/[^A-Za-z0-9 ]/g, '').replace(/(\..*)\./g, '$1');"></td>
+                        <td>
+                            {% getReportDataTypeFormatsByFieldName field.actual_column_name query_id as typeFormats %}
+                            <select class="format form-control" name="format"  {% if typeFormats is None %}disabled="" {% endif %}>
+                                <option value=""> </option>
+                                {% for format in typeFormats %}
+                                    <option value="{{ format.rpt_format_id }}" {% if field.format %}{% ifequal field.format|stringformat:"s" format.rpt_format_id|stringformat:"s" %}selected{% endifequal %}{% else %}{% getSelectedTypeFormatByFieldName field.actual_column_name query_id format.rpt_format_id %}{% endif %}>{{ format.rpt_format_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            {% getReportDataTypeSubtotalByFieldName field.actual_column_name query_id as typeSubtotal %}
+                            {% if typeSubtotal is None or field.actual_column_name in selectedGroupFields %}
+                                <select class="subtotal form-control" name="subtotal" disabled>
+                                    <option value=""> </option>
+                                </select>
+                            {% else %}
+                                <select class="subtotal form-control" name="subtotal">
+                                    <option value=""> </option>
+                                    <option value="1" {% if field.subtotal %}selected{% endif %}>Count</option>
+                                </select>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <select class="justification" name="justification" class="form-control">
+                                <option value="1" {% if field.justification %}{% ifequal field.justification|stringformat:"s" '1' %}selected{% endifequal %}{% else %}{% getSelectedTypeJustificationByFieldName field.actual_column_name query_id '1' %}{% endif %}>Center</option>
+                                <option value="2" {% if field.justification %}{% ifequal field.justification|stringformat:"s" '2' %}selected{% endifequal %}{% else %}{% getSelectedTypeJustificationByFieldName field.actual_column_name query_id '2' %}{% endif %}>Left</option>
+                                <option value="3" {% if field.justification %}{% ifequal field.justification|stringformat:"s" '3' %}selected{% endifequal %}{% else %}{% getSelectedTypeJustificationByFieldName field.actual_column_name query_id '3' %}{% endif %}>Right</option>
+                            </select>
+                        </td>
+                        <td><input type="text" name="column_width" class="form-control column_width number-fields" value="{% if field.column_width %}{{ field.column_width }}{% else %}0{% endif %}" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');"></td>
+                    </tr>
+                {% endfor %}
+                {% else %}
+                    {% for field in selectedFields %}
+                    <tr>
+                        <input type="hidden" name="actual_column_name" class="form-control actual_column_name" value="{{ field }}">
+                        <td><input type="text" name="column_name" class="form-control column_name" value="{{ field }}" oninput="this.value = this.value.replace(/[^A-Za-z0-9 ]/g, '').replace(/(\..*)\./g, '$1');"></td>
+                        <td>
+                            {% getReportDataTypeFormatsByFieldName field query_id as typeFormats %}
+                            <select class="format form-control" name="format" class="form-control" {% if typeFormats is None %}disabled="" {% endif %}>
+                                <option value=""> </option>
+                                {% for format in typeFormats %}
+                                    <option value="{{ format.rpt_format_id }}" {% getSelectedTypeFormatByFieldName field query_id format.rpt_format_id %}>{{ format.rpt_format_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            {% getReportDataTypeSubtotalByFieldName field query_id as typeSubtotal %}
+                            {% if typeSubtotal is None or field in selectedGroupFields %}
+                                <select class="subtotal form-control" name="subtotal" disabled>
+                                    <option value=""> </option>
+                                </select>
+                            {% else %}
+                                <select class="subtotal form-control" name="subtotal">
+                                    <option value=""> </option>
+                                    <option value="1">Count</option>
+                                </select>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <select class="justification form-control" name="justification">
+                                <option value="1" {% getSelectedTypeJustificationByFieldName field query_id '1' %}>Center</option>
+                                <option value="2" {% getSelectedTypeJustificationByFieldName field query_id '2' %}>Left</option>
+                                <option value="3" {% getSelectedTypeJustificationByFieldName field query_id '3' %}>Right</option>
+                            </select>
+                        </td>
+                        <td><input type="text" name="column_width" class="form-control column_width number-fields" value="{% getReportDataTypeWidthByFieldName field query_id %}" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');"></td>
+                    </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+	</div>
+	<div class="col-lg-1 col-md-1 empty"></div>
+</div>
+<script>
+</script>

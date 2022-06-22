@@ -1,0 +1,384 @@
+{% extends 'itrak/base.html' %}
+
+{% block body_block %}
+    {% load static %}
+    <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-cogs" aria-hidden="true"></i> System</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+                    <li><span>System</span></li>
+                    <li><span>Email Settings</span></li>
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+        {% for message in messages %}
+            <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                {{ message }}
+            </div>
+        {% endfor %}        
+        <!-- start: page -->
+            <form id="summary-form" action="{% url 'saveEmailSettings' %}" method="post" class="form-horizontal">
+                {% csrf_token %}
+            <section class="panel">
+                <header class="panel-heading">
+                    <h2 class="panel-title">Email Settings</h2>                               
+                </header>
+                
+                <div class="panel-body">
+                    <div class="validation-message">
+                        <ul></ul>
+                    </div>
+                    <h4><strong>Outgoing Mail Server Configuration</strong></h4> <hr>
+                    <div class="row">
+                        {% comment %} <div class="col-md-10"> {% endcomment %}
+                            <div class="form-group">
+                                <label for="" class="col-sm-3 control-label">* Email Server:</label>
+                                <div class="col-sm-8 col-md-5 col-lg-4">
+                                    <input type="text" class="form-control" name="email_server" value="{{data.email_server}}" id="email_server">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="" class="col-sm-3 control-label">Use TLS Encryption:</label>
+                                <div class="col-sm-9">
+                                    <input type="checkbox" class="" name="tls_encription" {%if data.tls_encription == 'on'%} checked {%endif%} id="tls_encription">
+                                    <label for="Port:">Port:</label>
+                                    <label>
+                                    <input type="number" class="form-control input-tiny" name="port" value="{{data.port}}" id="port">
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="" class="col-sm-3 control-label" data-toggle="tooltip" data-placement="top" title="If authentication is enabled, Incoming Email (IEM) won't be able to send mail as a different email address than the authenticated user's email address until you have properly configured your mail server to allow this."><span class="a_underline">Use Authentication:</span></label>
+                                <div class="col-sm-9">
+                                    <input type="checkbox" class="" name="user_auth" {%if data.user_auth == 'on'%} checked {%endif%} id="user_auth">                 
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="" class="col-sm-3 control-label">* Username:</label>
+                                <div class="col-sm-8 col-md-5 col-lg-4">
+                                    <input type="text" class="form-control" name="user_name" value="{{data.user_name}}" id="user_name">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="" class="col-sm-3 control-label">* Password:</label>
+                                <div class="col-sm-5 col-md-5 col-lg-4">
+                                    <input type="password" class="form-control" name="password" value="{{data.password}}" id="password">
+                                </div>
+                                <div class="col-sm-3">(Blank password = no change)</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="" class="col-sm-3 control-label">* Email Sender Address:</label>
+                                <div class="col-sm-8 col-md-5 col-lg-4">
+                                    <input type="text" class="form-control" name="email_sender_address" value="{{data.email_sender_address}}" id="email_sender_address">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="" class="col-sm-3 control-label">* Email Sender Name:</label>
+                                <div class="col-sm-8 col-md-5 col-lg-4">
+                                    <input type="text" class="form-control" name="email_sender_name" value="{{data.email_sender_name}}" id="email_sender_name">
+                                </div>
+                            </div><br>
+                            <div class="form-group">
+                                <label for="" class="col-sm-1 control-label"></label>
+                                <button type="button" data-toggle="modal" data-target="#mailServerModal" class="btn btn-primary">Test Mail Server</button>
+                            </div>
+                            
+                            <br> <br>
+                    </div>
+                    <!-- <h4><strong>Outgoing Email Settings</strong></h4> <hr>
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 control-label">Use Outgoing Email:</label>
+                            <div class="col-sm-4">
+                                <input type="checkbox" name="outgoing_email" {%if data.outgoing_email == 'on'%} checked {%endif%} id="outgoing_email">                 
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 control-label" data-toggle="tooltip" data-placement="top" title="This value is used to populate the email return address when either the <i>Email Ticket</i> or <i>Email Article</i> hyperlinks are selected within ATG Extra."><span class="a_underline">Return Email Address Default:</span></label>
+                            <div class="col-sm-4">
+                                <select class="form-control input-medium" name="return_email_address" id="return_email_address">
+                                    <option {%if data.return_email_address == 'Syatem'%} selected {%endif%} value="System">System</option>
+                                    <option {%if data.return_email_address == 'User'%} selected {%endif%} value="User">User</option>
+                                </select>                 
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 control-label">Reply separation text:</label>
+                            <div class="col-sm-4">
+                                <select class="form-control input-medium" name="reply_separation_text" id="reply_separation_text">
+                                    <option disabled="" value="Please reply above this line."></option>
+                                    <option {%if data.reply_separation_text == 'Please reply above this line'%} selected {%endif%} value="Please reply above this line">Please reply above this line.</option>
+                                    <option {%if data.reply_separation_text == '*===*'%} selected {%endif%} value="*===*">*===*</option>
+                                </select>                 
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 control-label"></label>
+                            <div class="col-sm-9">
+                                <input type="checkbox" class="" {%if data.use_html_format == 'on'%} checked {%endif%} name="use_html_format" id="use_html_format">
+                                <label for="">Use HTML Format for Outgoing Email</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 control-label"></label>
+                            <div class="col-sm-9">
+                                <input type="checkbox" class=""  {%if data.email_to_initiator == 'on'%} checked {%endif%} name="email_to_initiator"  id="email_to_initiator">
+                                <label for="">Email to Initiator</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 control-label"></label>
+                            <div class="col-sm-9">
+                                <input type="checkbox" class="" {%if data.email_on_substatus_change == 'on'%} checked {%endif%} name="email_on_substatus_change"  id="email_on_substatus_change">
+                                <label for="">Send Email on Substatus Change</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 control-label"></label>
+                            <div class="col-sm-9">
+                                <input type="checkbox" class="" {%if data.suppression_of_email_notifications == 'on'%} checked {%endif%} name="suppression_of_email_notifications" id="suppression_of_email_notifications">
+                                <label for="">Allow Suppression of Email Notification for Ticket</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 control-label"></label>
+                            <div class="col-sm-6">                                
+                                <input type="checkbox" class="ml-20" {%if data.allow_for_agents == 'on'%} checked {%endif%} name="allow_for_agents" id="allow_for_agents">
+                                <label for="">Only Allow for Agents</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 control-label"></label>
+                            <div class="col-sm-6">                                
+                                <label for="">Order that Ticket notes will appear in Email Messages</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 control-label"></label>
+                            <div class="col-sm-6">                                
+                                <input type="radio" class="ml-20" name="sorting_order" {%if data.sorting_order == 'ascending'%} checked {%endif%} value="ascending" id="ascending_order">
+                                <label for="">Ascending Order</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 control-label"></label>
+                            <div class="col-sm-6">                                
+                                <input type="radio" class="ml-20" name="sorting_order" {%if data.sorting_order == 'descending'%} checked {%endif%} value="descending" id="descending_order">
+                                <label for="">Descending Order</label>
+                            </div>
+                        </div>
+                        <br><br>
+                    </div>
+                </div>-->
+                <footer class="panel-footer">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <button class="btn btn-primary saveButton">Update</button>
+                            <button type="reset" class="btn btn-default">Reset</button>
+                        </div>
+                    </div>
+                </footer> 
+            </section>
+            </form>
+            
+        <!-- end: page -->
+    </section>
+
+<!-- Modal -->
+  <div class="modal fade" id="mailServerModal" role="dialog">
+    <div class="modal-dialog">    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Send Test Email from Mail Server</h4>
+        </div>
+        <div class="modal-body">
+            <p>Send a test email using the mail server configuration listed.</p>
+            <form class="form-inline">
+                <div class="form-group">
+                    <label for="">To Address:</label>
+                    <input type="text" class="form-control" name="email_to">
+                    <button type="button" id="smtpSettingBtn" class="btn btn-primary" onclick="smtpConnectionChecking();">Send</button>&nbsp;&nbsp;<span id="responseMsg"></span>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+
+  <div class="modal fade" id="leftLogoModal" role="dialog">
+    <div class="modal-dialog">    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Upload New Logo</h4>
+        </div>
+        <div class="modal-body">
+            <p>Use the browse button to locate the favicon logo file to upload.
+            Then, click the "Upload File" button to save the file.</p>
+            <p><strong>NOTE:</strong>The original graphic file size is 16 x 16 pixels.</p>
+            <div class="form-group">
+              <form method="post" action="{% url 'saveSiteAppearanceFiles' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="">Favicon File Name:</label>
+                        <input type="file"
+                            class="" name="upload_left_logo" id="upload_left_logo_file">
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <div class="modal fade" id="rightLogoModal" role="dialog">
+    <div class="modal-dialog">    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Upload New Logo</h4>
+        </div>
+        <div class="modal-body">
+            <p>Use the browse button to locate the favicon logo file to upload.
+            Then, click the "Upload File" button to save the file.</p>
+            <p><strong>NOTE:</strong>The original graphic file size is 16 x 16 pixels.</p>
+            <div class="form-group">
+              <form method="post" action="{% url 'saveSiteAppearanceFiles' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="">Favicon File Name:</label>
+                        <input type="file"
+                            class="" name="upload_right_logo" id="upload_right_logo_file">
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+        <script>
+            if($('#chkWorkday24').is(':checked')){
+                $('#inp_starthour').prop('disabled', true);
+                $('#inp_startminutes').prop('disabled', true);
+                $('#inp_startAMPM').prop('disabled', true);
+                $('#inp_endhour').prop('disabled', true);
+                $('#inp_endminutes').prop('disabled', true);
+                $('#inp_endAMPM').prop('disabled', true);
+            }
+            $(document).on('click','#chkWorkday24', function(){                
+                if ($(this).is(':checked')){
+                    $('#inp_starthour').prop('disabled', true);
+                    $('#inp_startminutes').prop('disabled', true);
+                    $('#inp_startAMPM').prop('disabled', true);
+                    $('#inp_endhour').prop('disabled', true);
+                    $('#inp_endminutes').prop('disabled', true);
+                    $('#inp_endAMPM').prop('disabled', true);
+                }else{
+                    $('#inp_starthour').prop('disabled', false);
+                    $('#inp_startminutes').prop('disabled', false);
+                    $('#inp_startAMPM').prop('disabled', false);
+                    $('#inp_endhour').prop('disabled', false);
+                    $('#inp_endminutes').prop('disabled', false);
+                    $('#inp_endAMPM').prop('disabled', false);
+                }
+            });
+            $('#history').click( function(){
+                alert("Inside")
+                if(org_id == ''){
+                    alert('Something went wrong. Please try again.');
+                }else{
+                $.ajax({
+                    url:"/getModalOrgTicketsById/",
+                    type:'POST',
+                    data:{
+                        'org_id':org_id,
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    },
+                    success:function(data){
+                        $('#popup-modal-content').html(data);
+                        $('#modalOrgTickets').modal("show");
+                    },
+                    error:function(){
+                        console.log('error')
+                    },
+                });
+                }
+            });
+            function smtpConnectionChecking(){
+                $("#preloader").show();
+                //smtp.gmail.com
+                //587
+                //yshaukat.iem@gmail.com
+                //Travel123!!!
+                var email_server = $("[name=email_server]").val();
+                var port = $("[name=port]").val();
+                var user_name = $("[name=user_name]").val();
+                var password = $("[name=password]").val();
+                var email_to = $("[name=email_to]").val();
+                $("#smtpSettingBtn").prop("disabled", true);
+                debugger
+                $.ajax({
+                    url:"{% url 'smtpConnectionTest' %}",
+                    type:'POST',
+                    data:{
+                        'email_server':email_server,
+                        'port':port,
+                        'user_name':user_name,
+                        'password':password,
+                        'email_to':email_to,
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    },
+                    success:function(data){
+                        if(data === 'Success! Email sent.'){
+                            $("#responseMsg").text(data);
+                            $("#responseMsg").removeClass();
+                            $("#responseMsg").addClass("text-success");
+                        }else{
+                            $("#responseMsg").text(data);
+                            $("#responseMsg").removeClass();
+                            $("#responseMsg").addClass("text-danger");
+                        }
+                        $("#smtpSettingBtn").prop("disabled", false);
+                        $("#preloader").hide();
+                    },
+                    error:function(){
+                        console.log('error')
+                        $("#preloader").hide();
+                    },
+                });
+            }
+        </script>
+{% endblock %}

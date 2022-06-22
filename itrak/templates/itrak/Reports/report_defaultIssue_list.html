@@ -1,0 +1,273 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+        {% load tz %} {# it will Load the Django TimeZone Library#}
+        {% load templates_extras %}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-ticket" aria-hidden="true"></i> Ticket</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Ticket</span></li>
+								<li><span>Ticket Detail List Results</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+						<section class="panel">
+							<header class="panel-heading">
+
+                                {% if report_id == 'OrgTimes' or report_id == 'UserTimes' %}
+                                    <h3 class="text-primary text-bold">Labor Hours Details for {{ reportTitle }}</h3>
+                                {% elif report_id == 'OrgTimeOpen' or report_id == 'UserTimeOpen' %}
+                                    <h3 class="text-primary text-bold">Total Time Open Details for {{ reportTitle }}</h3>
+                                {% else %}
+                                    <h3 class="text-primary text-bold">Tickets for {{ reportTitle }}</h3>
+                                {% endif %}
+                           </header>
+							<div class="panel-body">
+                           		<a onClick="javascript:history.go(-1);" class="back-text text-bold"><span class="fa fa-arrow-circle-left"> </span> Back</a>
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12">
+                                        {% if report_id == 'OrgTimes' or report_id == 'UserTimes' %}
+                                           <h5 class="text-primary"><b>Labor Hours Details for {{ reportTitle }} </b></h5>
+                                        {% elif report_id == 'OrgTimeOpen' or report_id == 'UserTimeOpen' %}
+                                           <h5 class="text-primary"><b>Total Time Open Details for {{ reportTitle }} </b></h5>
+                                        {% else %}
+                                            <h5 class="text-primary"><b>Tickets for {{ reportTitle }} </b></h5>
+                                        {% endif %}
+                                    </div>
+
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12">
+                                        <h5 class="text-primary">Recorded From {{ start_date }} To {{ end_date }} </h5>
+                                    </div>
+                                    {% if report_id == 'OrgTimes' or report_id == 'UserTimes' %}
+                                        <div class="col-md-12 col-sm-12">
+                                            <h5 class="text-primary">Notes Sorted By: Organization, Ticket Number, Submitted Date </h5>
+                                        </div>
+                                    {% elif report_id == 'OrgTimeOpen' or report_id == 'UserTimeOpen' %}
+                                        <div class="col-md-12 col-sm-12">
+                                            <h5 class="text-primary">Notes Sorted By: Organization, Ticket Number, Submitted Date</h5>
+                                        </div>
+                                    {% else %}
+                                        <div class="col-md-12 col-sm-12">
+                                            <h5 class="text-primary">Tickets Sorted By: Status/SubStatus, Priority, Date Opened </h5>
+                                        </div>
+                                    {% endif %}
+                                </div>
+ 								<table class="table table-bordered table-striped table-condensed mb-none" id="datatable-default">
+									<thead>
+                                        {% if report_id == 'OrgTimeOpen' or report_id == 'UserTimeOpen' %}
+                                            <tr>
+                                                <th>Organization</th>
+                                                <th>Ticket#</th>
+                                                <th>Subject</th>
+                                                <th>Status</th>
+                                                <th>Submitted Date</th>
+                                                <th>Total Time Open</th>
+                                                <th>Total Time Open (Days)</th>
+                                                <th>Adj Time Open</th>
+                                                <th>Adj Time Open (Days)</th>
+                                            </tr>
+                                        {% elif report_id == 'OrgTimes' or report_id == 'UserTimes' %}
+                                            <tr>
+                                                <th>Organization</th>
+                                                <th>Ticket#</th>
+                                                <th>Subject</th>
+                                                <th>Status</th>
+                                                <th>Note Date</th>
+                                                <th>Labor Hours</th>
+                                            </tr>
+                                        {% else %}
+                                            <tr>
+                                                <th>Ticket#</th>
+                                                <th>Opened</th>
+                                                <th>By</th>
+                                                <th>Status</th>
+                                                <th>Ticket Type</th>
+                                                <th>Subject</th>
+                                                <th>Assigned To</th>
+                                                <th>Activity Date</th>
+                                                <th>Priority</th>
+                                            </tr>
+                                        {% endif %}
+									</thead>
+									<tbody>
+                                        {% if report_id == 'OrgTimeOpen' or report_id == 'UserTimeOpen' %}
+                                            {% if tickets %}
+                                                {% for ticket in tickets %}
+                                                    <tr class="gradeA">
+                                                        <td>{{ ticket.ticket_org__org_name }}</td>
+                                                        <td><a href="Home_ViewTicket?tickID={% get_encrypted_id ticket.ticket_id %}" target="_blank" >{{ ticket.ticket_id }}</a> </td>
+                                                        <td><a href="Home_ViewTicket?tickID={% get_encrypted_id ticket.ticket_id %}" target="_blank" >{{ ticket.subject }}</a> </td>
+                                                        <td>{% if  ticket.ticket_status == 0 %}Opened{% else %}Close{% endif %} - {% if ticket.ticket_sub_status__sub_status_text == None %}{% else %}{{ ticket.ticket_sub_status__sub_status_text }}{% endif %}</td>
+                                                        <td>{{ ticket.submitted_at|date:'m/d/Y' }}</td>
+                                                        <td>{% getTotalTimeOpenFormat ticket.thours %}</td>
+                                                        <td>{% getTimeOpenDaysFormat ticket.thours %}</td>
+                                                        <td>{% getTotalTimeOpenFormat ticket.thours %}</td>
+                                                        <td>{% getTimeOpenDaysFormat ticket.thours %}</td>
+
+                                                    </tr>
+                                                {% endfor %}
+                                                <tr>
+                                                    <td colspan="2"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="5"><b>{{ reportTitle }} Total</b></td>
+                                                    <td><b>{% getTotalTimeOpenFormat g_total_hours %}</b></td></td>
+                                                    <td><b>{% getTimeOpenDaysFormat g_total_hours %}</b></td></td>
+                                                    <td><b>{% getTotalTimeOpenFormat g_total_hours %}</b></td></td>
+                                                    <td><b>{% getTimeOpenDaysFormat g_total_hours %}</b></td></td>
+                                                </tr>
+                                            {% endif %}
+                                        {% elif report_id == 'OrgTimes' or report_id == 'UserTimes' %}
+                                            {% if tickets %}
+                                                {% if report_id == 'OrgTimes' %}
+                                                    {% for ticket in tickets %}
+                                                        <tr class="gradeA">
+                                                            <td>{% if ticket.note_ticket__ticket_org__org_name %}{{ ticket.note_ticket__ticket_org__org_name }}{% endif %}</td>
+                                                            <td><a href="Home_ViewTicket?tickID={% get_encrypted_id ticket.note_ticket_id %}" target="_blank" >{{ ticket.note_ticket_id }}</a> </td>
+                                                            <td><a href="Home_ViewTicket?tickID={% get_encrypted_id ticket.note_ticket_id %}" target="_blank" >{{ ticket.note_ticket__subject }}</a> </td>
+                                                            <td>{% if  ticket.note_ticket__ticket_status == 0 %}Opened{% else %}Close{% endif %} {% if ticket.note_ticket__ticket_sub_status__sub_status_text %}- {{ ticket.note_ticket__ticket_sub_status__sub_status_text }}{% endif %}</td>
+                                                            <td>{{ ticket.note_created_at|date:'m/d/Y' }}</td>
+                                                            <td>
+                                                                {% if ticket.hours and ticket.hours != '0' %}
+                                                                    {{ ticket.hours|stringformat:".02d" }}
+                                                                {% else %}
+                                                                    00
+                                                                {% endif %}
+                                                                :
+                                                                {% if ticket.minutes and ticket.minutes != '0' %}
+                                                                    {{ ticket.minutes|stringformat:".02d" }}
+                                                                {% else %}
+                                                                    00
+                                                                {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    {% getorgidByTicketlist tickets as orgsID %}
+                                                        {% if orgsID %}
+                                                            {% for orgID in orgsID %}
+                                                                {% labourgetTicketByID tickets orgID as labourtickets%}
+                                                                    {% if labourtickets %}
+                                                                         {% for ticket in labourtickets %}
+                                                                                <tr class="gradeA">
+                                                                                    <td>{% if ticket.note_ticket__ticket_org__org_name %}{{ ticket.note_ticket__ticket_org__org_name }}{% endif %}</td>
+                                                                                    <td><a href="Home_ViewTicket?tickID={% get_encrypted_id ticket.note_ticket_id %}" target="_blank" >{{ ticket.note_ticket_id }}</a> </td>
+                                                                                    <td><a href="Home_ViewTicket?tickID={% get_encrypted_id ticket.note_ticket_id %}" target="_blank" >{{ ticket.note_ticket__subject }}</a> </td>
+                                                                                    <td>{% if  ticket.note_ticket__ticket_status == 0 %}Opened{% else %}Close{% endif %} {% if ticket.note_ticket__ticket_sub_status__sub_status_text %}- {{ ticket.note_ticket__ticket_sub_status__sub_status_text }}{% endif %}</td>
+                                                                                    <td>{{ ticket.note_created_at|date:'m/d/Y' }}</td>
+                                                                                    
+                                                                                    <td>
+                                                                                        {% if ticket.hours and ticket.hours != '0' %}
+                                                                                            {{ ticket.hours|stringformat:".02d" }}
+                                                                                        {% else %}
+                                                                                            00
+                                                                                        {% endif %}
+                                                                                        :
+                                                                                        {% if ticket.minutes and ticket.minutes != '0' %}
+                                                                                            {{ ticket.minutes|stringformat:".02d" }}
+                                                                                        {% else %}
+                                                                                            00
+                                                                                        {% endif %}
+                                                                                    </td>
+                                                                                </tr>
+                                                                                
+                                                                            {% endfor %} 
+                                                                    {% endif %}
+                                                                     <tr>
+                                                                        <td colspan="5"><b>{{ orgID.note_ticket__ticket_org__org_name }} Total</b></td>
+                                                                            <td><b>
+                                                                             {% SumlabourgetTicketByID tickets orgID as labourtickets%}
+                                                                             {{labourtickets}}
+                                                                           {% comment %} {% for ticket in labourtickets %}
+                                                                                <tr class="gradeA"> <td>
+                                                                                        {% if ticket.hours and ticket.hours != '0' %}
+                                                                                            {{ ticket.hours|stringformat:".02d" }}
+                                                                                        {% else %}
+                                                                                            00
+                                                                                        {% endif %}
+                                                                                        :
+                                                                                        {% if ticket.minutes and ticket.minutes != '0' %}
+                                                                                            {{ ticket.minutes|stringformat:".02d" }}
+                                                                                        {% else %}
+                                                                                            00
+                                                                                        {% endif %}
+                                                                                    </td>
+                                                                                </tr>
+                                                                                
+                                                                            {% endfor %}  {% endcomment %}
+                                                                        </b></td>
+                                                                    </tr>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                {% endif %}
+
+                                                <tr>
+                                                    <td colspan="2"></td>
+                                                </tr>
+                                                <tr>
+                                                    {% comment %} <td colspan="5"><b>{{ reportTitle }} Total</b></td> {% endcomment %}
+                                                    <td colspan="5"><b>Overall Total</b></td>
+                                                    <td><b>
+                                                        {% if total_hours and total_hours != '0' %}
+                                                            {{ total_hours|stringformat:".02d" }}
+                                                        {% else %}
+                                                            00
+                                                        {% endif %}
+                                                        :
+                                                        {% if total_minutes and total_minutes != '0' %}
+                                                            {{ total_minutes|stringformat:".02d" }}
+                                                        {% else %}
+                                                            00
+                                                        {% endif %}
+                                                    </b></td>
+                                                </tr>
+                                            {% endif %}
+                                        {% else %}
+                                            {% if tickets %}
+                                                {% for ticket in tickets %}
+                                                    <tr class="gradeA">
+                                                        <td><a href="Home_ViewTicket?tickID={% get_encrypted_id ticket.ticket_id %}" target="_blank" >{{ ticket.ticket_id }}</a> </td>
+                                                        <td>{{ ticket.ticket_created_at|date:'m/d/Y' }}</td>
+                                                        <td>{{ ticket.ticket_caller.display_name }}</td>
+                                                        <td>{% if  ticket.ticket_status == 0 %}Opened{% else %}Close{% endif %} - {{ ticket.ticket_sub_status.sub_status_text }}</td>
+                                                        <td>{{ ticket.ticket_type.ttype_name }}</td>
+                                                        <td><a href="Home_ViewTicket?tickID={% get_encrypted_id ticket.ticket_id %}" target="_blank" >{{ ticket.subject }}</a> </td>
+                                                        <td>{{ ticket.ticket_assign_to.display_name }}</td>
+                                                        <td>{{ ticket.ticket_modified_at|date:'m/d/Y'}}</td>
+                                                        <td>{{ ticket.priority.priority_name }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            {% endif %}
+                                        {% endif %}
+									</tbody>
+								</table>
+							</div>
+						</section>
+					<!-- end: page -->
+				</section>
+			</div>
+
+    {% endblock %}
+
+    {% block script %}
+
+    {% endblock %}
+
+

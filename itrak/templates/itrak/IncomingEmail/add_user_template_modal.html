@@ -1,0 +1,329 @@
+<section class="panel">
+    <header class="panel-heading">
+        <h2 class="panel-title">Add User Template<span class="btn btn-danger modal-dismiss" style="float:right;">X</span></h2>
+    </header>
+    <form action="{% url 'saveUserTemplateModal' %}" method="post">
+        {% csrf_token %}
+    <footer class="panel-footer">
+        <div class="row">
+            <div class="col-md-12 text-left">
+                <button class="btn btn-primary saveButton">Save Template</button>
+                <button class="btn btn-default modal-dismiss">Cancel</button>
+            </div>
+        </div>
+    </footer>
+    <div class="panel-body">
+        <p><b>Define Values</b></p> <hr>
+        <div class="validation-message">
+            <ul></ul>
+        </div>
+        <div class="form-group">
+            <label class="col-md-3 col-sm-3 control-label">User Type</label>
+            <div class="col-md-4 col-sm-4">
+                <select name="user_type" id="user_type" disabled data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Membership Type", "allowClear": true }'>
+                    <option {% if user.user_type == '0' %} selected {%endif%} value="0" >Agent</option>
+                    <option {% if user.user_type == '1' %} selected {%endif%} value="1" >End User</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label"><span class="required">*</span>User Email: </label>
+            <div class="col-sm-4">
+                <input type="text" name="user_cus_id" id="username" class="form-control" title="Please enter User ID." placeholder="eg.: 123" required/>
+            </div>
+            <div class="col-sm-4">
+                <span id="usernameValid"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label"><span class="required">*</span>First/Last Name: </label>
+            <div class="col-sm-4">
+                <input type="text" name="first_name"  class="form-control" title="Please enter First Name." onkeyup="makeDisplayName();" placeholder="eg.: ABC" required/>
+            </div>
+            <div class="col-sm-4">
+                <input type="text" name="last_name"  class="form-control" title="Please enter Last Name." onkeyup="makeDisplayName();" placeholder="eg.: XYZ" required/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label"><span class="required">*</span>Display Name: </label>
+            <div class="col-sm-4">
+                <input type="text" name="display_name" class="form-control" title="Please enter Display Name." placeholder="eg.: ABC" required/>
+            </div>
+        </div> <br>
+        {# Permission Start Here#}
+        <div class="form-group">
+            <label class="col-sm-3 control-label" for="country">User Permission:</label>
+            <div class="col-sm-4">
+                <span class="fa fa-question-circle"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label" for=""></label>
+            <div class="col-sm-4">
+                <strong class="text-primary"> Menu Options/Pages Allowed</strong>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label" for="inputSuccess"></label>
+            <div class="col-sm-6">
+                {% for submenu in sidebar.sub_menus %}
+                {% if submenu.submenu_permit_active == 1 %}
+                <div class="checkbox">
+                    <label>
+                    <input type="checkbox" name="submenus" id="{{ submenu.submenu_id }}" value="{{ submenu.submenu_id }}" >
+                        <p>{{ submenu.submenu_name }} </p>
+                    </label>
+                </div>
+                {% endif %}
+                {% endfor %}
+                {% for menu in sidebar.menus %}
+                {% if menu.menu_permit_active == 1 %}
+                <div class="checkbox">
+                    <label>
+                    <input type="checkbox" name="menus" id="{{ menu.menu_id }}" value="{{ menu.menu_id }}">
+                        <p>{{ menu.menu_name }} </p>
+                    </label>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {# Permission Ends Here#}
+        {% for permission in permissions %}
+        <div class="form-group">
+        <label class="col-sm-3 control-label" id="section_{{permission.perm_sect_id}}">{{permission}}</label>
+        <label class="col-sm-9 control-label" for="inputSuccess"></label>
+            <div class="col-sm-9 col-sm-offset-3">
+            {% for parent in permission.permission_action.all %}
+            {%if parent.is_active == 1%}
+                <div class="checkbox">
+                    <label>
+                    <input type="checkbox" name="permission_action" id="action_{{ parent.perm_act_id }}" {% if parent.perm_act_id in disabled_actions %}disabled{% endif %} value="{{ parent.perm_act_id }}" {% if parent.perm_act_id in actions_list  %}checked{% endif %}>
+                        <p {% if parent.perm_act_id in disabled_actions %}class="not-available"{% endif %}>{{ parent }} </p>
+                    </label>
+                </div>
+                {% endif %}
+                {% for child in parent.permission_sub_action.all %}
+                {%if child.is_active == 1%}
+                    <label for="" class="control-label"></label>
+                    <div class="col-sm-12">
+                        <div class="checkbox">
+                            <label>
+                            <input type="checkbox" name="permission_sub_action" id="sub_action_{{ child.sub_act_id }}" {% if child.sub_act_id in disabled_sub_action %}disabled{% endif %} value="{{ child.sub_act_id }}" {% if child.sub_act_id in sub_actions_list  %}checked{% endif %}>
+                                <p {% if child.sub_act_id in disabled_sub_action %}class="not-available"{% endif %}>{{ child }} </p>
+                            </label>
+                        </div>
+                    </div>   
+                {% endif %} 
+                {% endfor %} 
+            {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+            
+        {% comment %} <div style="float:right">
+            <input type="submit" value="Update" class="btn btn-primary">
+            <input type="button" value="Reset" onclick="email_modal_reset({{ client.client_id }})" class="btn btn-primary">
+        </div> {% endcomment %}
+        
+    </div>
+    <footer class="panel-footer">
+        <div class="row">
+            <div class="col-md-12 text-left">
+                <button class="btn btn-primary saveButton">Save Template</button>
+                <button class="btn btn-default modal-dismiss">Cancel</button>
+            </div>
+        </div>
+    </footer>
+    </form>
+</section>
+
+    {% block script %}
+        <script>
+            $(document).on('keyup','#username', function(){
+              var fieldValue = $(this).val();
+              if (fieldValue != ''){
+                  $.ajax({
+                    type: 'POST',
+                    url: "{% url 'validateAddUnique' %}",
+                    data: {fieldValue: fieldValue, tbl_name: 'User', tbl_field: 'username'},
+                    dataType: 'json',
+                    beforeSend: function(jqXHR, settings) {
+                        //Do something before send...
+                    },
+                    success: function(data, textStatus, jqXHR) {
+                        if(data.response){
+                            $('#usernameValid').html('<strong class="text-danger">UserID already exist. Try another one!</strong>');
+                            $('.saveButton').prop('disabled', true);
+                        }else{
+                            $('#usernameValid').html('');
+                            $('.saveButton').prop('disabled', false);
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    }
+                  });
+              }
+            });
+
+            $(document).on('keyup','#email', function(){
+              var fieldValue = $(this).val();
+              if (fieldValue != ''){
+                  $.ajax({
+                    type: 'POST',
+                    url: "{% url 'validateAddUnique' %}",
+
+                    data: {fieldValue: fieldValue, tbl_name: 'User', tbl_field: 'email'},
+                    dataType: 'json',
+                    beforeSend: function(jqXHR, settings) {
+                        //Do something before send...
+                    },
+                    success: function(data, textStatus, jqXHR) {
+                        if(data.response){
+                            $('#emailValid').html('<strong class="text-danger">Email already exist. Try another one!</strong>');
+                            $('.saveButton').prop('disabled', true);
+                        }else{
+                            $('#emailValid').html('');
+                            $('.saveButton').prop('disabled', false);
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    }
+                  });
+              }
+            });
+
+            function makeDisplayName() {
+                var firstName = $('input[name=first_name]').val();
+                var lastName = $('input[name=last_name]').val();
+                if(firstName == '' && lastName == '')
+                {
+                    $('input[name=display_name]').val(null);
+                }
+                else if(firstName == '')
+                {
+                    $('input[name=display_name]').val(lastName);
+                }
+                else if(lastName == '')
+                {
+                    $('input[name=display_name]').val(firstName);
+                }
+                else
+                {
+                    $('input[name=display_name]').val(lastName + ', ' + firstName);
+                }
+            }
+
+            // $(function(){
+                $(document).on('change','#user_type', function(){
+                    value = $(this).val()
+                    let clear_values = [1,2,3,4,5,6,7,11,40]
+                        clear_values.forEach(function(entry) {
+                            $("#action_"+entry).prop('disabled', false)
+                            $("#action_"+entry).parent().find('p').removeClass("not-available")
+                        });
+                    if(value == 1){
+                        let values = [1,2,3,4,5,6,7,11,40]
+                        values.forEach(function(entry) {
+                            $("#action_"+entry).prop('disabled', true);
+                            $("#action_"+entry).parent().find('p').addClass("not-available");
+                            $("#section_1").addClass("not-available");
+                        });
+                    }else{
+                        let values = [5,6,7,11,40]
+                        values.forEach(function(entry) {
+                            $("#action_"+entry).prop('disabled', true)
+                            $("#action_"+entry).parent().find('p').addClass("not-available")
+                            $("#section_1").removeClass("not-available");
+                        });
+                    }
+                });
+
+                $(document).on('click','#action_29',function(){
+                    if($('#action_29').is(':checked')){
+                        $('#sub_action_2').prop('disabled', false)
+                        $("#sub_action_2").parent().find('p').removeClass("not-available")
+                    }else{
+                        $('#sub_action_2').prop('disabled', true)
+                        $("#sub_action_2").parent().find('p').addClass("not-available")
+                    }
+                });
+                $(document).on('click','#action_2',function(){
+                    if($('#action_2').is(':checked')){
+                        $('#sub_action_1').prop('disabled', false)
+                        $("#sub_action_1").parent().find('p').removeClass("not-available")
+                    }else{
+                        $('#sub_action_1').prop('disabled', true)
+                        $("#sub_action_1").parent().find('p').addClass("not-available")
+                    }
+                });
+            //}); 
+
+            $(function(){
+                $(document).on('change','#user_type', function(){
+                    value = $(this).val()
+                    let clear_values = [1,2,3,4,5,6,7,11,40]
+                        clear_values.forEach(function(entry) {
+                            $("#action_"+entry).prop('disabled', false)
+                            $("#action_"+entry).parent().find('p').removeClass("not-available")
+                        });
+                    if(value == 1){
+                        let values = [1,2,3,4,5,6,7,11,40]
+                        values.forEach(function(entry) {
+                            $("#action_"+entry).prop('disabled', true);
+                            $("#action_"+entry).parent().find('p').addClass("not-available");
+                        });
+                        $("#section_1").addClass("not-available");
+                        $('#sub_action_1,#sub_action_2').prop('disabled', true)
+                        $("#sub_action_1,#sub_action_2").parent().find('p').addClass("not-available")
+                        if($('#action_29').is(':checked')){
+                            $('#sub_action_2').prop('disabled', false)
+                            $("#sub_action_2").parent().find('p').removeClass("not-available")
+                        } 
+                    }else{
+                        let values = [5,6,7,11,40]
+                        values.forEach(function(entry) {
+                            $("#action_"+entry).prop('disabled', true)
+                            $("#action_"+entry).parent().find('p').addClass("not-available")
+                        });
+                        $("#section_1").removeClass("not-available");
+                        //$('#sub_action_1,#sub_action_2').prop('disabled', true)
+                        //$("#sub_action_1,#sub_action_2").parent().find('p').addClass("not-available")
+                        if($('#action_2').is(':checked')){
+                            $('#sub_action_1').prop('disabled', false)
+                            $("#sub_action_1").parent().find('p').removeClass("not-available")
+                        }
+                    }
+                });
+
+                $(document).on('click','#action_29',function(){
+                    if($('#action_29').is(':checked')){
+                        $('#sub_action_2').prop('disabled', false)
+                        $("#sub_action_2").parent().find('p').removeClass("not-available")
+                    }else{
+                        $('#sub_action_2').prop('disabled', true)
+                        $("#sub_action_2").parent().find('p').addClass("not-available")
+                    }                    
+                });
+                $(document).on('click','#action_2',function(){
+                    if($('#action_2').is(':checked')){
+                        $('#sub_action_1').prop('disabled', false)
+                        $("#sub_action_1").parent().find('p').removeClass("not-available")
+                    }else{
+                        $('#sub_action_1').prop('disabled', true)
+                        $("#sub_action_1").parent().find('p').addClass("not-available")
+                    }                    
+                });
+                if($('#action_2').is(':checked')){
+                    $('#sub_action_1').prop('disabled', false)
+                    $("#sub_action_1").parent().find('p').removeClass("not-available")
+                }
+                if($('#action_29').is(':checked')){
+                    $('#sub_action_2').prop('disabled', false)
+                    $("#sub_action_2").parent().find('p').removeClass("not-available")
+                }  
+            });
+        </script>
+    {% endblock %}

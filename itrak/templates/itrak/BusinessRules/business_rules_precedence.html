@@ -1,0 +1,185 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-tasks" aria-hidden="true"></i> Business Rules</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Business Rules</span></li>
+								<li><span>Precedence Business Rules</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+                         <div class="row">
+                            <div class="col-md-12">
+                                {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                                <form id="summary-form" action="{% url 'savePrecedenceBusinessRules' %}" method="post" class="form-horizontal">
+                                    {% csrf_token %}
+                                    <section class="panel">
+                                        <header class="panel-heading">
+{#                                            <div class="panel-actions">#}
+{#                                                <a href="#" class="fa fa-caret-down"></a>#}
+{#                                                <a href="#" class="fa fa-times"></a>#}
+{#                                            </div>#}
+
+                                            <h2 class="panel-title">Auto Assignment Precedence</h2></br>
+                                                <h4>Define Order</h4>
+                                                <p>Determine order of precedence to be used when Tickets are automatically assigned. Values should be between 1 and 9 (1 having the highest precedence and 9 having the least).</p>
+                                            </header>
+                                        </header>
+
+                                        <div class="panel-body">
+                                            <div class="validation-message">
+                                                <ul></ul>
+                                            </div>
+                                         <div class="form-group">
+                                            <label class="col-md-3 col-sm-3 control-label">Class: </label>
+                                            <div class="col-md-9 col-sm-9">
+                                                <div class="col-md-6 col-sm-7">
+                                                    {% if precedence %}
+                                                    <input name="pre_class" id="pre_class" class="form-control input-tiny" value="{{precedence.pbr_class}}" step="1" min="1" max="9" type="number">
+                                                    {% else %}
+                                                    <input name="pre_class" id="pre_class" class="form-control input-tiny" value="9" step="1" min="1" max="9" type="number">
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-3 col-sm-3 control-label">Department: </label>
+                                            <div class="col-md-9 col-sm-9">
+                                                <div class="col-md-6 col-sm-7">
+                                                    {% if precedence %}
+                                                    <input name="pre_department" id="pre_department" class="form-control input-tiny" value="{{precedence.pbr_dep}}" step="1" min="1" max="9" type="number">
+                                                    {% else %}
+                                                    <input name="pre_department" id="pre_department" class="form-control input-tiny" value="1" step="1" min="1" max="9" type="number">
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-3 col-sm-3 control-label">Client: </label>
+                                            <div class="col-md-9 col-sm-9">
+                                                <div class="col-md-6 col-sm-7">
+                                                    {% if precedence %}
+                                                    <input name="pre_client" id="pre_client" class="form-control input-tiny" value="{{precedence.pbr_client}}" step="1" min="1" max="9" type="number">
+                                                    {% else %}
+                                                    <input name="pre_client" id="pre_client" class="form-control input-tiny" value="2" step="1" min="1" max="9" type="number">
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-3 col-sm-3 control-label">Ticket Type/Subtype: </label>
+                                            <div class="col-md-9 col-sm-9">
+                                                <div class="col-md-6 col-sm-7">
+                                                    {% if precedence %}
+                                                    <input name="pre_tickettype" id="pre_tickettype" class="form-control input-tiny" value="{{precedence.pbr_tickettype}}" step="1" min="1" max="9" type="number">
+                                                    {% else %}
+                                                    <input name="pre_tickettype" id="pre_tickettype" class="form-control input-tiny" value="3" step="1" min="1" max="9" type="number">
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-3 col-sm-3 control-label">Organization: </label>
+                                            <div class="col-md-9 col-sm-9">
+                                                <div class="col-md-6 col-sm-7">
+                                                    {% if precedence %}
+                                                    <input name="pre_organization" id="pre_organization" class="form-control input-tiny" value="{{precedence.pbr_org}}" step="1" min="1" max="9" type="number">
+                                                    {% else %}
+                                                    <input name="pre_organization" id="pre_organization" class="form-control input-tiny" value="4" step="1" min="1" max="9" type="number">
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-3 col-sm-3 control-label">Priority: </label>
+                                            <div class="col-md-9 col-sm-9">
+                                                <div class="col-md-6 col-sm-7">
+                                                    {% if precedence %}
+                                                    <input name="pre_priority" id="pre_priority" class="form-control input-tiny" value="{{precedence.pbr_priority}}" step="1" min="1" max="9" type="number">
+                                                    {% else %}
+                                                    <input name="pre_priority" id="pre_priority" class="form-control input-tiny" value="5" step="1" min="1" max="9" type="number">
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-3 col-sm-3 control-label">Submitted Between: </label>
+                                            <div class="col-md-9 col-sm-9">
+                                                <div class="col-md-6 col-sm-7">
+                                                    {% if precedence %}
+                                                    <input name="pre_submit_betw" id="pre_submit_betw" class="form-control input-tiny" value="{{precedence.pbr_submit_betw}}" step="1" min="1" max="9" type="number">
+                                                    {% else %}
+                                                    <input name="pre_submit_betw" id="pre_submit_betw" class="form-control input-tiny" value="7" step="1" min="1" max="9" type="number">
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-3 col-sm-3 control-label">Submitted On: </label>
+                                            <div class="col-md-9 col-sm-9">
+                                                <div class="col-md-6 col-sm-7">
+                                                    {% if precedence %}
+                                                    <input name="pre_submit_on" id="pre_submit_on" class="form-control input-tiny" value="{{precedence.pbr_submit_on}}" step="1" min="1" max="9" type="number">
+                                                    {% else %}
+                                                    <input name="pre_submit_on" id="pre_submit_on" class="form-control input-tiny" value="8" step="1" min="1" max="9" type="number">
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        </div>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary saveButton">Update</button>
+                                                    <button type="reset" class="btn btn-default resetBtn">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                    </section>
+                                </form>
+                            </div>
+                        </div>
+					<!-- end: page -->
+				</section>
+			</div>
+
+    {% endblock %}
+
+    {% block script %}
+        <script>
+
+             $('.resetBtn').on('click', function(e){
+                    $("#pre_class").("val", "");
+                    $("#pre_department").("val", "");
+                    $("#pre_client").select2("val", "");
+                    $("#pre_tickettype").select2("val", "");
+                    $("#pre_organization").select2("val", "");
+                    $("#pre_priority").select2("val", "");
+                    $("#pre_submit_betw").select2("val", "");
+                    $("#pre_submit_on").select2("val", "");
+                });
+
+        </script>
+{% endblock %}
+
+

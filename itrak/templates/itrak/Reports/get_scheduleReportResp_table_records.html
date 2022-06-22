@@ -1,0 +1,17 @@
+
+    {% load static %}
+    {% load tz %} {# it will Load the Django TimeZone Library#}
+    {% load templates_extras %}
+
+    {% for record in records %}
+        
+        <tr id="tbl_row{{ record.org_contract_id }}">
+            <td>{{ record.sr_resp_recipt_user.display_name }}</td>
+            <td>{{ record.sr_resp_recipt_user.email}}</td>
+            <td><a href="" class="delete_record" data-toggle="modal" data-target="#confirm-tsk-delete" data-href="javascript:deleteTMTask({{ record.sr_resp_id }});" >del</a></td>
+        </tr>
+        
+        
+    {% endfor %}
+
+                                                               

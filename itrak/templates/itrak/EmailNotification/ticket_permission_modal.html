@@ -1,0 +1,39 @@
+<section class="panel">
+    <header class="panel-heading">
+        <h2 class="panel-title">Edit<span class="btn btn-danger modal-dismiss" style="float:right;">X</span></h2>
+    </header>
+    <div class="panel-body">
+        <h4>Edit Email Notification Record</h4>
+        <p><b>Name:</b>{{ role.t_name }}</p>
+        <br>
+        <p><b>Standard User Types</b></p>
+        <form action="{% url 'updateTicketsEmailPermission' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="role_name" id="role_name" value="{{ role.t_name }}">
+            <table class="table table-striped table-hover">
+                <tr>
+                    <th></th>
+                    <th>Email</th>
+                </tr>
+                {% for action in tickets_actions %}
+                    <tr>
+                        <td>{{ action.t_action_name }}</td>
+                        <td><input type="checkbox" name="action_name[]" value="{{ action.t_action_name }}" {% if action.t_action_id in permit %}checked{% endif %}></td>
+                    </tr>
+                {% endfor %}
+            </table>
+            <div style="float:right">
+                <input type="submit" value="Update" class="btn btn-primary">
+                <input type="button" value="Reset" onclick="modal_reset({{ role.t_role_id }})" class="btn btn-primary">
+            </div>
+        </form>
+    </div>
+    <footer class="panel-footer">
+        <div class="row">
+            <div class="col-md-12 text-right">
+                {% comment %} <button class="btn btn-primary modal-confirm">Save</button> {% endcomment %}
+                {% comment %} <button class="btn btn-default modal-dismiss">Cancel</button> {% endcomment %}
+            </div>
+        </div>
+    </footer>
+</section>

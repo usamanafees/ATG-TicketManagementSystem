@@ -1,0 +1,107 @@
+{% extends 'itrak/base.html' %}
+{% block body_block %}
+    {% load static %}
+    {% load tz %} {# it will Load the Django TimeZone Library#}
+    {% load templates_extras %}
+
+    <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-file" aria-hidden="true"></i> New Report</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+                    <li><span>Reports</span></li>
+                    <li><span>New Report</span></li>
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+
+        <div class="row">
+            <div class="col-md-12">
+                {% for message in messages %}
+                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+
+                <section class="panel">
+                    <header class="panel-heading">
+                        <h2 class="panel-title">New Report</h2>
+                    </header>
+
+                    <div class="panel-body">
+                        <center><h3>Build Report: Step 3 of 6 - Set Group Defaults</h3></center>
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                <a id="btn-cancel" class="btn btn-primary">Cancel </a>
+                                <a id="btn-back" class="btn btn-primary">< Back</a>
+                                <a id="next" class="btn btn-primary">Next ></a>
+                            </div>
+                        </div>
+                        <br>
+                        <center><p class="font-italic">Do you want to change any <strong>group defaults</strong>?<br/>Note: "Show Footer" must be checked in order for any totals to be displayed for the group.</p></center>
+                        <br>
+                        <div class="row">
+                            <div id="fields">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+{% endblock %}
+
+{% block script %}
+<script>
+
+    $(function () {
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'getQuerySelectedFields' %}",
+            data: {step:3},
+            success: function (data) {
+                $('#fields').html('');
+                $('#fields').html(data);
+            }
+        });
+    });
+
+    $("#next").click(function(){
+         var sort_order = $('#list1 .order').map(function() { return $(this).val(); }).get().join()
+         var sort_header = $('#list1 .show_header:checked').map(function() { return $(this).val(); }).get().join()
+         var sort_footer = $('#list1 .show_footer:checked').map(function() { return $(this).val(); }).get().join()
+         $.ajax({
+             type: 'POST',
+             url: "{% url 'setReportSortOrderVal' %}",
+             data: {sort_order:sort_order,sort_header:sort_header,sort_footer:sort_footer},
+             success: function (data) {
+                 window.location.href = "{% url 'fourthReport' %}";
+             }
+         });
+    });
+
+
+    $("#btn-cancel").click(function(){
+        window.location.href = "{% url 'reportWriterReports' %}";
+    });
+
+    $("#btn-back").click(function(){
+        window.location.href = "{% url 'secondReport' %}";
+    });
+
+</script>
+{% endblock %}

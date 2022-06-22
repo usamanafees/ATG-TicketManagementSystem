@@ -1,0 +1,166 @@
+   {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+        {% load tz %}
+  <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-gears" aria-hidden="true"></i> User Summary</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+{#                    <li><span>Email Notification</span></li>#}
+{#                    <li><span>Email Defaults</span></li>#}
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+
+
+        <!-- start: page -->
+        <div class="row">
+            <div class="col-md-12">
+                <section class="panel">
+                    <header class="panel-heading">
+                        <h2 class="panel-title">View List</h2>
+                    </header>
+                    <div class="panel-body">
+                        <div class="panel-body">
+                            <div class="panel-body">
+										<div class="table-responsive">
+											<table class="table table-bordered mb-none">
+												<thead>
+													<tr>
+														<th>Active User Counts</th>
+														<th>Count</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>Agents</td>
+														<td><a style="cursor: pointer;" onClick="getSummaryList(event,'Agents');">{{ agentsCount }}</a></td>
+													</tr>
+                                                    <tr>
+														<td>End Users</td>
+														<td><a style="cursor: pointer;" onClick="getSummaryList(event,'endUser');">{{ endUsers }}</a></td>
+													</tr>
+                                                    <tr>
+														<td>Can assign Tickets</td>
+														<td><a style="cursor: pointer;" onClick="getSummaryList(event,'can_assign_tickets');">{{can_assign_tickets}}</a></td>
+													</tr>
+                                                    <tr>
+														<td>Can be assigned Tickets</td>
+														<td><a style="cursor: pointer;" onClick="getSummaryList(event,'can_be_assigned_tickets');">{{can_be_assigned_tickets}}</a></td>
+													</tr>
+                                                    <tr>
+														<td>Can submit Tickets on behalf of other users</td>
+														<td><a style="cursor: pointer;" onClick="getSummaryList(event,'can_submit_tickets');">{{can_submit_tickets}}</a></td>
+													</tr>
+                                                    <tr>
+														<td>Can access and maintain Administration functions</td>
+														<td><a style="cursor: pointer;" onClick="getSummaryList(event,'can_access_and_maintain_admin');" >{{can_access_and_maintain_admin}}</a></td>
+													</tr>
+                                                    <tr>
+														<td>Sys Admin</td>
+														<td><a style="cursor: pointer;" onClick="getSummaryList(event,'sysAdmin');">{{ sysAdmin }}</a></td>
+													</tr>
+                                                    <tr>
+														<td>With log in permission</td>
+														<td><a style="cursor: pointer;" onClick="getSummaryList(event,'withlogin');">{{ loginPermit }}</a></td>
+													</tr>
+                                                    <tr>
+														<td>Without log in permission</td>
+														<td><a style="cursor: pointer;" onClick="getSummaryList(event,'withoutlogin');">{{ notloginPermit }}</a></td>
+													</tr>
+                                                     <tr>
+                                                         <td><b>Total Active Users</b></td>
+														<td><a style="cursor: pointer;" onClick="getSummaryList(event,'totalActive');">{{ activeUser }}</a></td>
+													</tr>
+                                                    <tr>
+                                                         <td>Total Inactive Users</td>
+														<td><a style="cursor: pointer;" onClick="getSummaryList(event,'totalInActive');">{{ inactiveUser }}</a></td>
+													</tr>
+                                                    <tr>
+                                                         <td><b>Total Users</b></td>
+														<td><a style="cursor: pointer;" onClick="getSummaryList(event,'totalUsers');">{{ totalUser }}</a></td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</div>
+                        </div>
+                        <footer class="panel-footer">
+                            <div class="row">
+                                <p><b>Note</b>: Agent and End User counts may be adjusted by changing a user's Type (Agent or End User) or by marking a user inactive. Both of these changes can be made on the user edit screen.</p>
+                            </div>
+                        </footer>
+                    </form>
+                        <br>
+
+
+                    </div>
+                </section>
+            </div>
+
+</div>
+        </div>
+    </section>
+        <div id="popup-modal-content"></div>
+                       <!-- Modal Warning -->
+        {# Delete Modal Popup on Delete#}
+        <div style="z-index: 1050;" class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <p>You are about to delete a record, this procedure is irreversible.</p>
+                        <strong>Do you want to proceed?</strong>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <a class="btn btn-danger btn-ok">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% block script %}
+            <script>
+             function getSummaryList(e,type) {
+                e.preventDefault()
+                $.ajax({
+                url:"{% url 'getSummaryList' %}",
+                type:'POST',
+                dataType: 'text',
+                data:{
+                    'type':type,
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                },
+                success:function(data){
+                        $('#popup-modal-content').html(data);
+                        $('#modalUser').modal("show");
+                },
+                error:function(){
+                    console.log('error')
+                },
+            });
+            }
+            $(document).ready(function(){
+                $('#confirm-delete').on('show.bs.modal', function(e) {
+                  $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+                });
+            });
+        </script>
+        {% endblock %}
+    {% endblock %}

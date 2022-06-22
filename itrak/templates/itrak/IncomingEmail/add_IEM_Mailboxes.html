@@ -1,0 +1,725 @@
+{% extends 'itrak/base.html' %}
+
+{% block body_block %}
+    {% load static %}
+    <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-envelope" aria-hidden="true"></i> Incoming Email</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+                    <li><span>Incoming Email</span></li>
+                    <li><span>IEM Mailboxes Add</span></li>
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+        
+        {% for message in messages %}
+            <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                {{ message }}
+            </div>
+        {% endfor %}        
+        <!-- start: page -->
+                <form id="summary-form" action="{% url 'saveMailBox' %}" method="post" class="form-horizontal">
+                {% csrf_token %}
+            <section class="panel">
+                <header class="panel-heading">
+                    <h2 class="panel-title">Add Mailbox</h2>                               
+                </header>
+                <footer class="panel-footer">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <button class="btn btn-primary saveButton">Add Mailbox</button>
+                            <button type="reset" class="btn btn-default">Reset</button>
+                        </div>
+                    </div>
+                </footer>
+                <div class="panel-body">
+                    <div class="validation-message">
+                        <ul></ul>
+                    </div>
+                    <h4><strong>Email Account Information</strong></h4> <hr>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label">Active:</label>
+                                    <input type="checkbox" name="active" {% if data.work_day == "ON" %} checked {% endif %} checked value="checked" id="active">                                    
+                                </div>
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label">Server Type:</label>
+                                    <input type="radio" {% if data.open_tickets_only == "Open" %} checked {% endif %} name="server_type" value="Exchange" id="server_exchange">
+                                    Exchange  
+                                    <input type="radio" name="server_type" {% if data.open_tickets_only == "OpenClosed" %} checked {% endif %} checked value="IMAP" id="server_imap">
+                                    IMAP                                             
+                                    <input type="radio" name="server_type" {% if data.open_tickets_only == "OpenClosed" %} checked {% endif %} value="POP3" id="server_pop3">
+                                    POP3                                             
+                                </div>
+                                <div class="form-group" id="hide_on_imap1" style="display: none;">
+                                    <label for="" class="col-sm-3 control-label">Enable Autodiscover:</label>
+                                    <input type="checkbox" name="enable_auto_discover" checked {% if data.open_tickets_only == "OpenClosed" %} checked {% endif %} value="checked" id="enable_autodiscover">                                   
+                                </div>
+                                <div class="form-group" id="hide_on_exchange1">
+                                    <label for="" class="col-sm-3 control-label">* Mail Server:</label>
+                                    <div class="col-sm-5">
+                                        <input type="text" name="mail_server" id="mail_server" class="form-control" required title="Mail Server required">                                        
+                                    </div> 
+                                </div> 
+                                <div class="form-group" id="hide_on_exchange2">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-5">
+                                        <input type="checkbox" name="use_TLS"  value="checked"> <span>Use TLS</span>
+                                        <span class="tls-span">TLS Port:</span>
+                                        <input type="text" name="TLS_port" id="TLS_port" class="form-control tls-port">                                        
+                                    </div> 
+                                </div>
+                                <div class="form-group" id="hide_domain" style="display: none;">
+                                    <label for="" class="col-sm-3 control-label">* Domain:</label>
+                                    <div class="col-sm-5">
+                                        <input type="text" name="domain" class="form-control" id="domain1">                                        
+                                    </div> 
+                                </div>    
+                                <div class="form-group" id="hide_on_imap2" style="display: none;">
+                                    <label for="" class="col-sm-3 control-label">* Version:</label>
+                                    <div class="col-md-5">
+                                        <select class="form-control input-xlarge" name="version" id="inp_Version">
+                                            <option value="Exchange2013">Exchange2013</option>
+                                            <option value="Exchange2013_SP1">Exchange2013_SP1</option>
+                                            <option value="Exchange2016">Exchange2016</option>
+                                        </select>       
+                                    </div>                           
+                                </div>
+                                <div class="form-group" id="hide_EWS_server_url" style="display: none;">
+                                    <label for="" class="col-sm-3 control-label">* EWS Server Url:</label>
+                                    <div class="col-sm-5">
+                                        <input type="text" name="EWS_server_url" class="form-control" id="domain">                                        
+                                    </div> 
+                                </div> 
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label">* Account ID:</label>
+                                    <div class="col-sm-5">
+                                        <input type="text" name="account_id" id="account_id" placeholder="example@provider.com" class="form-control" title="Account ID required" required>                                        
+                                    </div> 
+                                </div>     
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label">* Password:</label>
+                                    <div class="col-sm-5">
+                                        <input type="password" name="password" id="password" class="form-control" title="Password required" required>                                        
+                                    </div> 
+                                </div>     
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label">Return Address:</label>
+                                    <div class="col-sm-5">
+                                        <input type="text" name="return_address" class="form-control" >                                        
+                                    </div> 
+                                </div>     
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label">From Name:</label>
+                                    <div class="col-sm-5">
+                                        <input type="text" name="from_name" class="form-control" >                                        
+                                    </div>                                     
+                                </div>     
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <span class="info">
+                                        <b>Note:</b> If Outgoing Email (OEM) authentication is enabled, additional mail server permissions are required<br>
+                                        to send mail as a different email address than the email address configured in Outgoing Email settings.
+                                    </span>                                        
+                                    </div>                                     
+                                </div>     
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"> Delete messages after processing:</label>
+                                    <input type="checkbox" class="" checked name="delete_message_processing" value="checked" id="delete_message_processing">
+                                </div>
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label">
+                                        <input type="button" class="btn btn-primary btn-small" value="Test Connection" id="TestConnectionButton">
+                                    </label>
+                                    <label for="" class="col-sm-3 control-label">
+                                        <span id="testConnectionMsg"></span>
+                                    </label>
+                                </div>                                                                                
+                            </div>  
+                        </div><br>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h4><strong>Email Processing Options and Defaults</strong></h4> <hr> 
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label">Assign To:</label>
+                                    <div class="col-md-4 col-sm-6">
+                                        <select name="assign_to" id="assign_to" data-plugin-selectTwo class="form-control populate placeholder input-xlarge" data-plugin-options='{ "placeholder": "Select Caller", "allowClear": true }'>
+                                            <option value="" readonly="readonly" >Select an User<small class="text-primary">(None Selected)</small></option>
+                                            {% if users %}
+                                                {% for user in users %}
+                                                    <option value="{{ user.id }}">{{ user.display_name }}</option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                    </div>
+                                </div>  
+                                <!-- <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label">Apply Quick Pick:</label>
+                                    <div class="col-sm-5">
+                                        <input type="radio" name="quick_pick" checked value="Do_not_apply" class="" id="quick_pick1">Do not apply a Quick Pick                                        
+                                    </div>                                     
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-5">
+                                        <input type="radio" name="quick_pick" class="" value="quick_pick_name" id="quick_pick2">If the email subject contains a Quick Pick name                                       
+                                    </div>                                     
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-5">
+                                        <input type="radio" name="quick_pick" class="" value="quick_pick_name_exactly" id="quick_pick3">If the email subject matches a Quick Pick name <strong>exactly</strong>                                        
+                                    </div>                                     
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <span>
+                                        <input type="radio" name="quick_pick" class="" value="quick_pick_for_every_email" id="quick_pick4">Use the following Quick Pick for every email that is processed:                                     
+                                    </span>
+                                    <span>
+                                        <select class="form-control input-medium" disabled id="inp_DefaultQuickpick" name="default_quick_pick"><option disabled="disabled" selected="selected" value="0"></option>
+                                        </select>
+                                    </span>
+                                    </div>                                     
+                                </div>   -->
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label">Assign Ticket Type:</label>
+                                    <div class="col-sm-9">
+                                        <input type="radio" name="assign_ticket_type" checked class="" value="do_not_derive" >Do not derive the Ticket Type from the email subject                                     
+                                    </div>                                     
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <input type="radio" name="assign_ticket_type" class="" value="ticket_type_or_subtype_name" >If the email subject contains an Ticket Type or Subtype name                                     
+                                    </div>                                     
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <input type="radio" name="assign_ticket_type" class="" value="ticket_type_or_subtype_name_exactly" >If the email subject matches an Ticket Type or Subtype name <strong>exactly</strong>                                     
+                                    </div>                                     
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label">* Default Ticket Type:</label>
+                                    <div class="col-md-4 col-sm-5">
+                                        <select name="default_ticket_type" id="default_ticket_type" title="Select Ticket Type" required="required" data-plugin-selectTwo class="form-control populate ticket_type placeholder" data-plugin-options='{ "placeholder": "Select Ticket Type", "allowClear": true }'>
+                                            <option value="" readonly="readonly" >Select Ticket Type </option>
+                                            {% if ticketTypes %}
+                                                {% for ttype in ticketTypes %}
+                                                    <option value="{{ ttype.ttype_id }}">{{ ttype.ttype_name }}</option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                    </div>                                                                               
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <span class="info"><b>Note:</b> The default Ticket Type will be assigned if an Ticket Type hasn't been derived already.</span>                                    
+                                    </div>                                     
+                                </div>  
+                            </div>
+                        </div><br>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h4><strong>Submitting User</strong></h4> <hr>                                  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label">* Select one of the following options:</label>
+                                    <div class="col-sm-5">
+                                        <input type="radio" name="submitting_user" class="" value="Accept_email_from_existing_ATG_iTrak_users_only" id="submitting_user1" checked>Accept email from existing ATG Extra users only                                      
+                                    </div>                                     
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <input type="radio" name="submitting_user" class="" value="Submit_new_Ticket_or_add_Note_as_this_user" id="submitting_user2">Submit new Ticket or add Note as this user: 
+                                        <!-- <input class="form-control input-xlarge" type="text" name="submit_as" id="keyword_IEMSubmit1" autocomplete="off" size="20" maxlength="50">-->
+                                        <select name="caller_id1" id="caller_id1" data-plugin-selectTwo class="form-control populate placeholder input-xlarge" data-plugin-options='{ "placeholder": "Select Caller", "allowClear": true }'>
+                                            <option value="" readonly="readonly" >Select an User<small class="text-primary">(None Selected)</small></option>
+                                            {% if users %}
+                                                {% for user in users %}
+                                                    <option value="{{ user.id }}">{{ user.display_name }}</option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>                                       
+                                    </div>                                     
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <input type="radio" name="submitting_user" class="" value="Create_users_from_this_template" id="submitting_user3">Create users from this template: 
+                                        {% comment %} <input class="form-control input-xlarge" type="text" name="submit_as" id="keyword_IEMSubmit2" autocomplete="off" size="20" maxlength="50">                                       {% endcomment %}
+                                        <!-- <input type="button" class="btn btn-primary" value="Add User Template" id="AddTemplateButton" href="#modalLG" name="AddTemplateButton"> -->
+                                        <select name="caller_id2" id="caller_id2" data-plugin-selectTwo class="form-control populate placeholder input-xlarge" data-plugin-options='{ "placeholder": "Select Caller", "allowClear": true }'>
+                                            <option value="" readonly="readonly" >Select User Template<small class="text-primary">(None Selected)</small></option>
+                                            {% if user_templates %}
+                                                {% for user_template in user_templates %}
+                                                    <option value="{{ user_template.user_temp_id }}">{{ user_template.display_name }}</option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                        <a class="mb-xs mt-xs mr-xs modal-sizes btn btn-primary" id="AddTemplateButton" href="#modalLG" data-id="{{ role.t_name }}">Add User Template</a>
+                                    </div>                                     
+                                </div>
+                                <div id="modalLG" class="modal-block modal-block-lg mfp-hide">
+                                </div>
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <input type="radio" name="submitting_user" class="" value="Create_users_with_these_default_values" id="submitting_user4">Create users with these default values: 
+                                    </div>                                     
+                                </div>   
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <span style="padding-left: 20px !important;">Organization:</span>
+                                        {% comment %} <input class="form-control input-xlarge" type="text" name="submit_user_organization" size="40" maxlength="50" id="keyword_OrgSubmit" autocomplete="off">                                         {% endcomment %}
+                                        <select name="submit_user_organization" id="submit_user_organization" data-plugin-selectTwo class="form-control populate placeholder input-xlarge" data-plugin-options='{ "placeholder": "Select an Organization", "allowClear": true }' title="Please enter Organization.">
+                                            <option value="" readonly="readonly" >Select an Organization </option>
+                                            {% if organizations %}
+                                                {% for org in organizations %}
+                                                    <option value="{{ org.org_id }}">{{ org.org_name }}</option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                    </div>                                     
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <span style="padding-left: 20px !important;">Client:</span>
+                                        {% comment %} <input class="form-control input-xlarge" type="text" name="submit_user_client" onchange="" id="keyword_IEMLocation" autocomplete="off" size="40" maxlength="50">                                         {% endcomment %}
+                                        <select name="submit_user_client" id="submit_user_client" data-plugin-selectTwo class="form-control populate placeholder input-xlarge" data-plugin-options='{ "placeholder": "Select an Client", "allowClear": true }'>
+                                            <option value="" readonly="readonly" >Select an Client<small class="text-primary">(None Selected)</small></option>
+                                            {% if clients %}
+                                                {% for client in clients %}
+                                                    <option value="{{ client.client_id }}">{{ client.client_name }}</option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                    </div>                                     
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-5">
+                                        <h4 class="additional-option">Additional Options</h4>                                        
+                                    </div>                                     
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <input type="checkbox" name="additional_option1" value="additional_option1" disabled class="" id="additional_option1">Email login instructions when new user is created from a template                                     
+                                    </div>                                     
+                                </div>                                   
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <span class="info"><b>Note:</b> Created users require a template with the "can change their own password" permission in order to set their password.
+                                        </span>                                    
+                                    </div>                                     
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <span class="info"><b>Note:</b> Created users require Self Service Password Reset and Outgoing Email (OEM) to be enabled in order to set their password.<br></span>                                   
+                                    </div>                                     
+                                </div>
+                                <!-- <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <input type="checkbox" disabled name="additional_option2" value="additional_option2" class="" id="additional_option2">Attempt to determine organization from email domain when creating a user                                     
+                                    </div>                                     
+                                </div>  -->
+                                <!-- <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <input type="checkbox" name="additional_option3" value="additional_option3" checked class="" id="additional_option3">Require users to have issue visibility to add notes                                    
+                                    </div>                                     
+                                </div>    -->
+                            </div>
+                        </div><br>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h4><strong>CC Users on Ticket distribution list</strong></h4> <hr>                                  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label">Enable CC List:</label>
+                                    <div class="col-sm-9">
+                                        <input type="checkbox" name="enable_cc_list" class="" value="enable_cc_list" id="enable_cc_list">Include users from the email's CC list on the Ticket's distribution list                                      
+                                    </div>                                     
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label">* Select one of the following three options:</label>
+                                    <div class="col-sm-9">
+                                        <input type="radio" checked name="cc_user" class="" value="Only_add_existing_ATG_iTrak_users_to_Issue_distribution_list" id="cc_user1">Only add existing ATG Extra users to Issue distribution list 
+                                    </div>                                     
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <input type="radio" name="cc_user" class="" value="Create_users_from_this_template" disabled id="cc_user2">Create users from this template: 
+                                        {% comment %}<input class="form-control input-xlarge" disabled type="text" name="add_user_template" id="add_user_template" autocomplete="off" size="20" maxlength="50">{% endcomment %}
+                                        <select name="add_user_template" id="add_user_template" disabled data-plugin-selectTwo class="form-control populate placeholder input-xlarge" data-plugin-options='{ "placeholder": "Select Caller", "allowClear": true }'>
+                                            <option value="" readonly="readonly" >Select User Template<small class="text-primary">(None Selected)</small></option>
+                                            {% if user_templates %}
+                                                {% for user_template in user_templates %}
+                                                    <option value="{{ user_template.user_temp_id }}">{{ user_template.display_name }}</option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                        <a class="mb-xs mt-xs mr-xs modal-sizes btn btn-primary" id="add_user_template_btn"  href="#modalLG" data-id="{{ role.t_name }}" >Add User Template</a>
+                                    </div>                                     
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <input type="radio" name="cc_user" class="" value="Create_users_with_these_default_values" disabled id="cc_user3">Create users with these default values: 
+                                    </div>                                     
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <span style="padding-left: 20px !important;">Organization:</span>
+                                        {% comment %}<input class="form-control input-xlarge" disabled type="text" name="cc_user_organization" size="40" maxlength="50" id="organization" autocomplete="off">{% endcomment %}
+                                        <select name="cc_user_organization" id="organization" disabled data-plugin-selectTwo class="form-control populate placeholder input-xlarge" data-plugin-options='{ "placeholder": "Select an Organization", "allowClear": true }' title="Please enter Organization.">
+                                            <option value="" readonly="readonly" >Select an Organization </option>
+                                            {% if organizations %}
+                                                {% for org in organizations %}
+                                                    <option value="{{ org.org_id }}">{{ org.org_name }}</option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                    </div>                                     
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <span style="padding-left: 20px !important;">Client:</span>
+                                        {% comment %}<input class="form-control input-xlarge" disabled type="text" name="cc_user_client" onchange="" id="client" autocomplete="off" size="40" maxlength="50">{% endcomment %}
+                                        <select name="cc_user_client" id="client" disabled data-plugin-selectTwo class="form-control populate placeholder input-xlarge" data-plugin-options='{ "placeholder": "Select an Client", "allowClear": true }'>
+                                            <option value="" readonly="readonly" >Select an Client<small class="text-primary">(None Selected)</small></option>
+                                            {% if clients %}
+                                                {% for client in clients %}
+                                                    <option value="{{ client.client_id }}">{{ client.client_name }}</option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                    </div>                                     
+                                </div> 
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <input type="checkbox" disabled name="cc_user_checkbox1" class="" value="cc_user_checkbox1" id="cc_user4">Email login instructions when new user is created from a template                                     
+                                    </div>                                     
+                                </div>                                   
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <span class="info"><b>Note:</b> Created users require a template with the "can change their own password" permission in order to set their password.
+                                        </span>                                    
+                                    </div>                                     
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <span class="info"><b>Note:</b> Created users require Self Service Password Reset and Outgoing Email (OEM) to be enabled in order to set their password.<br></span>                                   
+                                    </div>                                     
+                                </div>
+                                <!-- <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <input type="checkbox" disabled name="cc_user_checkbox2" class="" value="cc_user_checkbox2" id="cc_user5">Attempt to determine organization from email domain when creating a user                                     
+                                    </div>                                     
+                                </div>-->
+                            </div>
+                        </div>
+                        <!-- <div class="row">
+                            <div class="col-md-12">
+                                <h4><strong>Notes</strong></h4> <hr>                                  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label">Reopen Tickets:</label>
+                                    <div class="col-sm-9">
+                                        <input type="checkbox" name="reopen_tickets" class="" value="reopen_tickets" >Reopen Ticket if note added after close                                      
+                                    </div>                                     
+                                </div><br>
+                                <h4><strong>Error Handling and Limitations</strong></h4><hr> 
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label">Notify on Error:</label>
+                                    <div class="col-sm-5">
+                                        <input class="form-control input-xlarge" type="text" name="notify_on_error" id="keyword_IEMSubmi1" autocomplete="off" size="20" maxlength="50">                                      
+                                    </div>                                     
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label">Max Size:</label>
+                                    <div class="col-sm-9">
+                                        <input class="form-control input-xlarge" type="text" name="max_size" id="keyword_IEMSubmi2" autocomplete="off" size="20" maxlength="50">
+                                        max size (kb) &nbsp;&nbsp;&nbsp;<i>no limit if blank</i>                                      
+                                    </div>                                     
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label">Loop Prevention:</label>
+                                    <div class="col-sm-9">
+                                        <span>Refuse email when over</span>
+                                        <input class="form-control inputTiny" type="text" name="refuse_count" id="LoopCount1" value="5" size="2"> email messages 
+                                    </div>                                     
+                                </div>  
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <div class="col-sm-9">
+                                        <span>are received from same sender within</span>
+                                        <input class="form-control inputTiny" type="text" name="within_count" id="LoopCount2" value="5" size="2"> minutes. 
+                                    </div>                                     
+                                </div>                             
+                            </div>
+                        </div><br> -->
+                    </div>
+                    <footer class="panel-footer">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <button class="btn btn-primary saveButton">Add Mailbox</button>
+                                <button type="reset" class="btn btn-default">Reset</button>
+                            </div>
+                        </div>
+                    </footer>
+            </section>
+            </form>
+    </section>
+
+<!-- Modal -->
+  <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Modal Header</h4>
+        </div>
+        <div class="modal-body">
+          <p>Some text in the modal.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+    <script>            
+        $(document).on('click','#server_exchange', function(){
+            if($('#server_exchange').is(':checked')){
+                $('#hide_on_exchange1').hide();
+                $('#hide_on_exchange2').hide();
+                $('#hide_on_imap1').show();
+                $('#hide_on_imap2').show();
+                $("#delete_message_processing").prop('disabled', false);
+            }
+            if($('#enable_autodiscover').is(':checked')){ 
+                $("#hide_on_exchange1").hide();
+                $('#hide_domain').hide();
+                $('#hide_EWS_server_url').hide();
+            }else{
+                $("#hide_on_exchange1").show();
+                $('#hide_domain').show();
+                $('#hide_EWS_server_url').show();
+            }
+        });                
+        $(document).on('click','#server_imap', function(){
+            if($('#server_imap').is(':checked')){
+                $('#hide_on_imap1').hide();
+                $('#hide_on_imap2').hide();
+                $('#hide_domain').hide();
+                $('#hide_EWS_server_url').hide();
+                $('#hide_on_exchange1').show();
+                $('#hide_on_exchange2').show();
+                $("#delete_message_processing").prop('disabled', false);
+            }
+        });                
+        $(document).on('click','#server_pop3', function(){
+            $('#hide_on_imap1').hide();
+            $('#hide_on_imap2').hide();
+            $('#hide_on_exchange1').show();
+            $('#hide_on_exchange2').show();
+            $("#delete_message_processing").prop('disabled', true);
+        });                
+        $(document).on('click','#submitting_user3', function(){                
+            $("#additional_option1").prop('disabled', false);
+            $("#additional_option2").prop('disabled', false);
+        });              
+        $(document).on('click','#submitting_user4', function(){                
+            $("#additional_option1").prop('disabled', true);
+            $("#additional_option1").prop('checked', false);
+            $("#additional_option2").prop('disabled', false);
+        });                
+        $(document).on('click','#submitting_user1,#submitting_user2', function(){                
+            $("#additional_option1").prop('disabled', true);
+            $("#additional_option2").prop('disabled', true);
+            $("#additional_option1").prop('checked', false);
+            $("#additional_option2").prop('checked', false);
+        });                
+        $(document).on('click','#quick_pick4', function(){                
+            $("#inp_DefaultQuickpick").prop('disabled', false);
+        });                
+        $(document).on('click','#quick_pick1, #quick_pick2, #quick_pick3', function(){                
+            $("#inp_DefaultQuickpick").prop('disabled', true);
+        });                
+        $(document).on('click','#enable_cc_list', function(){  
+            if($('#enable_cc_list').is(':checked')){              
+                $("#add_user_template").prop('disabled', false);
+                $("#add_user_template_btn").prop('disabled', false);
+                $("#organization").prop('disabled', false);
+                $("#client").prop('disabled', false);
+                $("#cc_user2").prop('disabled', false);
+                $("#cc_user3").prop('disabled', false);
+            }else{
+                $("#add_user_template").prop('disabled', true);
+                $("#add_user_template_btn").prop('disabled', true);
+                $("#organization").prop('disabled', true);
+                $("#client").prop('disabled', true);
+                $("#cc_user2").prop('disabled', true);
+                $("#cc_user3").prop('disabled', true);
+                $("#cc_user4").prop('disabled', true);
+                $("#cc_user5").prop('disabled', true);
+                $("#cc_user1").prop('checked', true);
+            }                    
+        });           
+        $(document).on('click','#cc_user2', function(){                
+            $("#cc_user4").prop('disabled', false);
+            $("#cc_user5").prop('disabled', false);
+        });                
+        $(document).on('click','#cc_user3', function(){                
+            $("#cc_user4").prop('disabled', true);
+            $("#cc_user5").prop('disabled', false);
+        });                
+        $(document).on('click','#cc_user1', function(){                
+            $("#cc_user4").prop('disabled', true);
+            $("#cc_user5").prop('disabled', true);
+        });     
+        $(document).on('click','#enable_autodiscover', function(){                
+            if($('#enable_autodiscover').is(':checked')){ 
+                $("#hide_on_exchange1").hide();
+                $('#hide_domain').hide();
+                $('#hide_EWS_server_url').hide();
+            }else{
+                $("#hide_on_exchange1").show();
+                $('#hide_domain').show();
+                $('#hide_EWS_server_url').show();
+            }
+        });
+        $(document).on('click','#submitting_user1,#submitting_user2,#submitting_user3,#submitting_user4', function(){                
+            if($('#submitting_user1').is(':checked')){
+                $("#caller_id1").removeAttr("selected");
+                $("#select2-chosen-3").text("Select an User(None Selected)");
+                $("#caller_id2").removeAttr("selected");
+                $("#select2-chosen-4").text("Select User Template(None Selected)");
+                $("#submit_user_organization").removeAttr("selected");
+                $("#select2-chosen-5").text("Select an Organization(None Selected)");
+                $("#submit_user_client").removeAttr("selected");
+                $("#select2-chosen-6").text("Select an Client(None Selected)");
+            }else if($('#submitting_user2').is(':checked')){
+                $("#caller_id2").removeAttr("selected");
+                $("#select2-chosen-4").text("Select User Template(None Selected)");
+                $("#submit_user_organization").removeAttr("selected");
+                $("#select2-chosen-5").text("Select an Organization(None Selected)");
+                $("#submit_user_client").removeAttr("selected");
+                $("#select2-chosen-6").text("Select an Client(None Selected)");
+            }else if($('#submitting_user3').is(':checked')){
+                $("#caller_id1").removeAttr("selected");
+                $("#select2-chosen-3").text("Select an User(None Selected)");               
+                $("#submit_user_organization").removeAttr("selected");
+                $("#select2-chosen-5").text("Select an Organization(None Selected)");
+                $("#submit_user_client").removeAttr("selected");
+                $("#select2-chosen-6").text("Select an Client(None Selected)");
+            }else{
+                $("#caller_id1").removeAttr("selected");
+                $("#select2-chosen-3").text("Select an User(None Selected)");
+                $("#caller_id2").removeAttr("selected");
+                $("#select2-chosen-4").text("Select User Template(None Selected)");
+            }
+        });
+        $(document).on('click','#AddTemplateButton', function(){
+            $.ajax({
+                url:"{% url 'addUserTemplate' %}",
+                type:'POST',
+                data:{},
+                success:function(data){
+                    $('#modalLG').html('');
+                    $('#modalLG').html(data);
+                },
+                error:function(){
+                    console.log('error')
+                },
+            });
+        });
+        $(document).on('click','#add_user_template_btn', function(){
+            $.ajax({
+                url:"{% url 'addUserTemplate' %}",
+                type:'POST',
+                data:{},
+                success:function(data){
+                    $('#modalLG').html('');
+                    $('#modalLG').html(data);
+                },
+                error:function(){
+                    console.log('error')
+                },
+            });
+        });
+
+        $(document).on('click','#TestConnectionButton', function(){
+            $("#preloader").show();
+            var mail_server = $("#mail_server").val();
+            var account_id = $("#account_id").val();
+            var password = $("#password").val();
+            var TLS_port = $("#TLS_port").val();
+            $("#TestConnectionButton").attr("disabled", true);
+            $.ajax({
+                url:"{% url 'testConnectionMailBox' %}",
+                type:'POST',
+                data:{
+                    mail_server: mail_server,
+                    account_id: account_id,
+                    password: password,
+                    TLS_port: TLS_port
+                },
+                success:function(data){
+                    if(data === 'OK'){
+                        $("#TestConnectionButton").attr("disabled", false);
+                        $("#testConnectionMsg").text("Connection Successful.");
+                        $("#testConnectionMsg").removeClass();
+                        $("#testConnectionMsg").addClass("text-success");
+                    }else{
+                        $("#TestConnectionButton").attr("disabled", false);
+                        $("#testConnectionMsg").text("Connection Fail.");
+                        $("#testConnectionMsg").removeClass();
+                        $("#testConnectionMsg").addClass("text-danger");
+                    }
+                    $("#preloader").hide();
+                },
+                error:function(){
+                    $("#preloader").hide();
+                    $("#testConnectionMsg").text("Connection Failed.");
+                    $("#testConnectionMsg").addClass("text-danger");
+                    console.log('error')
+                },
+            });
+        });
+    </script>
+{% endblock %}

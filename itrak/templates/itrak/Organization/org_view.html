@@ -1,0 +1,345 @@
+{% extends 'itrak/base.html' %}
+{% load templates_extras %}
+{% block body_block %}
+    {% load static %}
+
+            <section role="main" class="content-body">
+                <header class="page-header">
+                   <h2><i class="fa fa-building-o" aria-hidden="true"></i> Organization</h2>
+
+                    <div class="right-wrapper pull-right">
+                        <ol class="breadcrumbs">
+                            <li>
+                                <a href="{% url 'home' %}">
+                                    <i class="fa fa-home"></i>
+                                </a>
+                            </li>
+                            <li><span>Organization</span></li>
+                            <li><span>View Organization</span></li>
+                        </ol>
+
+                        <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+                    </div>
+                </header>
+
+                <!-- start: page -->
+                     <div class="row">
+                        <div class="col-md-12">
+                            <form id="summary-form" action="{% url 'updateOrg' %}" method="post" class="form-horizontal">
+                                {% csrf_token %}
+                                <section class="panel">
+                                    <header class="panel-heading">
+                                        <h2 class="panel-title">View Organization </h2>
+                                    </header>
+                                    <footer class="panel-footer">
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <a href="{% url 'editOrg' %}?orgID={% get_encrypted_id data.org_id %}" data-hover="Edit Organization" class="mb-xs mt-xs mr-xs btn btn-primary">Edit</a>
+                                                <a href="#" data-href="{% url 'deleteOrg' %}?orgID={% get_encrypted_id data.org_id %}" data-hover="Delete Organization" class="mb-xs mt-xs mr-xs btn btn-danger" data-toggle="modal" data-target="#confirm-delete">Delete</a>
+                                            </div>
+                                        </div>
+                                    </footer>
+                                    <div class="panel-body">
+                                        <div class="validation-message">
+                                            <ul></ul>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label space_top_0">Organization ID: </label>
+                                            <div class="col-sm-5" style="margin-top: 7px;">
+                                                <label>{{ data.org_id }}</label>
+                                                <input type="hidden" name="org_id" value="{{ data.org_id }}" id="org_id"/>
+                                            </div>
+                                          </div>
+                                          <div class="form-group">
+                                            <label class="col-sm-3 control-label">Organization Name: </label>
+                                            <div class="col-sm-5" style="margin-top: 7px;">
+                                                <label>{{ data.org_name }}</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                             <label class="col-sm-3 control-label" for="inputSuccess">Internal Only:</label>
+                                             <div class="col-sm-8">
+                                                 <div class="checkbox">
+                                                     <label>
+                                                        <input disabled= "disabled" type="checkbox" name="is_internal" {% if data.is_internal == True %}checked{% endif %} />
+                                                           <i>Prevent viewing of other organizations' Tickets and Users</i>
+                                                      </label>
+                                                 </div>
+                                            </div>
+                                          </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label" for="site_title">Site Title:</label>
+                                            <div class="col-sm-5">
+                                                <label>{{ data.site_title }}</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label" for="contact_person">Contact Person:</label>
+                                            <div class="col-sm-5">
+                                                <label>{{ data.org_contact_person }}</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label" for="address1">Address 1:</label>
+                                            <div class="col-sm-5">
+                                                <label>{{ data.org_address1 }}</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label" for="address2">Address 2:</label>
+                                            <div class="col-sm-5">
+                                                <label>{{ data.org_address2 }}</label>                                            
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label" for="city_state_zip">City/State/Zip:</label>
+                                            <div class="col-sm-5">
+                                                <label>{{ data.org_city }}</label>
+                                            </div>
+                                           <div class="col-sm-2 col-xs-6 all-space-auto">
+                                                <label>{{ data.org_state }}</label>    
+                                            </div>
+                                           <div class="col-sm-2 col-xs-6 all-space-auto">
+                                                <label>{{ data.org_zip_code }}</label> 
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Email:</label>
+                                            <div class="col-sm-5">
+                                                <label>{{ data.org_email }}</label> 
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Phone:</label>
+                                            <div class="col-sm-5">
+                                                <label>{{ data.org_phone_no }}</label> 
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Web Address:</label>
+                                            <div class="col-sm-5" style="margin-top: 7px;">
+                                                <label>{{ data.org_www_address }}</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class=" col-md-3 control-label text-primary"></label>
+                                            <div class="col-lg-6">
+                                                <strong class="form-control-static text-primary">From/Reply To</strong>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class=" col-md-3 control-label text-primary"></label>
+                                            <div class="col-lg-6">
+                                                <p class="form-control-static text-primary">Email sent by the system to users in this Organization will use the following as the From / Reply To Email Address. (If blank or invalid, Outgoing Email System Defaults will be used)</p>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label" for="from_reply_name">Email Name:</label>
+                                            <div class="col-sm-5">
+                                                <label>{{ data.org_from_reply_address }}</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Email Address:</label>
+                                            <div class="col-sm-5">
+                                                <label>{{ data.org_from_reply_email }}</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Service Contracts:</label>
+                                            <div class="col-sm-8">
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered  table-tasks">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Contract Name</th>
+                                                                <th>Begin Date</th>
+                                                                <th>End Date</th>
+                                                                <th>Hours</th>
+                                                                <th>Hours Used</th>
+                                                                <th>Hours Bal</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group"></div>
+                                        <div class="form-group"></div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Note:</label>
+                                            <div class="col-sm-8">
+                                                <label>{{ data.org_note}}</label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-3 control-label">Email Notification:</label>
+                                            <div class="col-sm-8">
+                                                <a href="{% url 'orgEmailNotification' %}?orgID={{data.org_id}}" target="_blank">View/Maintain Distribution List...</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            </form>
+                        </div>
+                    </div>
+                <!-- end: page -->
+            </section>
+        </div>
+<!-- Delete Modal Popup on Task Manager Task Delete -->
+ <div class="modal fade" id="confirm-tsk-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                            </div>
+
+                            <div class="modal-body">
+                                <p>You are about to delete a record, this procedure is irreversible.</p>
+                                <strong>Do you want to proceed?</strong>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                <a class="btn btn-danger btn-ok">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+<!-- Edit Modal Popup on  Servvice Contract Edit -->
+            <div class="modal fade" id="confirm-tsk-edit" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                <h4 class="modal-title" id="myModalLabel">Edit Service Contract</h4>
+                            </div>
+
+                            <div class="modal-body">
+                                <form id="modalForm" action="" method="post" class="form-horizontal">
+                                <input type="hidden" name="edit_contract_org_id" id="edit_contract_org_id">
+                                                    {% csrf_token %}
+                                                        <div class="form-group ">
+                                                            <div class="task-complete">
+                                                            <label class="col-sm-3 control-label"><span class="required">*</span>Contract Name:</label>
+                                                                <div class="col-sm-5">
+                                                                    <input type="text" class="form-control input-sm"  name="edit_contract_name" id="edit_contract_name">
+                                                                </div>
+                                                            </div>      
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <div class="task-complete">
+                                                            <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span>Begin Date:</label>
+                                                            </div>
+                                                                <div class="col-sm-6 col-md-3">
+                                                                    <div class="input-group date" id="datePicker">
+                                                                        <input type="text" name="edit_contract_begin_date"  id="edit_contract_begin_date" data-plugin-datepicker class="form-control data-datepicker" />
+                                                                            <span class="input-group-addon">
+                                                                                <i class="fa fa-calendar"></i>
+                                                                            </span>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-4 col-sm-3">
+                                                                    <small class="text-info align-text">mm-dd-yyyy</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group">
+                                                            <div class="task-complete">
+                                                            <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span>End Date:</label>
+                                                            </div>
+                                                                <div class="col-sm-6 col-md-3">
+                                                                    <div class="input-group date" id="datePicker">
+                                                                        <input type="text" name="edit_contract_end_date"  id="edit_contract_end_date" data-plugin-datepicker class="form-control data-datepicker" />
+                                                                            <span class="input-group-addon">
+                                                                                <i class="fa fa-calendar"></i>
+                                                                            </span>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-4 col-sm-3">
+                                                                    <small class="text-info align-text">mm-dd-yyyy</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <div class="task-complete">
+                                                                <label class="col-sm-3 control-label"><span class="required">*</span> Hours Purchased:</label>
+                                                                </div>
+                                                                    <div class="col-sm-5">
+                                                                        <input type="number" class="form-control input-sm"  name="edit_contract_hours_purchased" id="edit_contract_hours_purchased" onblur="" oninput="">
+                                                                    </div>
+                                                            </div>
+                                                           <div class="modal-buton">
+                                                                 <input type="button" class="btn btn-primary clear-btn modal-dismiss" value="Update"  onClick="updateServiceContractTask(event,edit_contract_org_id)">
+                                                            </div>
+                                                    </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>  
+                <!-- Confirm Delete Modal Start -->
+                <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                            </div>
+
+                            <div class="modal-body">
+                                <p>You are about to delete a record, this procedure is irreversible.</p>
+                                <strong>Do you want to proceed?</strong>
+                            </div>
+                            
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                <a class="btn btn-danger btn-ok">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Confirm Delete Modal End -->                
+{% endblock %}
+
+{% block script %}
+<script>
+    $(function(){
+        // COMPONENT
+        var org_id = $('#org_id').val();
+        initializaServiceContracts(org_id);
+    });
+    function initializaServiceContracts(org_id){
+        console.log("sdsad",org_id);
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'getserviceContractByOrgViewId' %}",
+            data: {
+                org_id: org_id,
+                'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+                },
+            beforeSend: function(jqXHR, settings) {
+                //Do something before send...
+            },
+            success:function(data){
+                $('.table-tasks tbody').html(data);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert(textStatus + '. ' + errorThrown);
+            }
+        });
+    }
+</script>
+<script>
+$('#confirm-delete').on('show.bs.modal', function(e) {
+    $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+});
+</script>
+{% endblock %}

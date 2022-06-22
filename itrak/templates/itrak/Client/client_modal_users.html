@@ -1,0 +1,63 @@
+<!-- Modal Form For Org Users-->
+{% load templates_extras %}
+<div class="popup-modal-content">
+    <div id="modalClientUsers" class="modal modal-block modal-block-primary modal-dialog">
+        <section class="panel">
+            <header class="panel-heading custom-style">
+                <h2 class="panel-title">Client Users</h2>
+                <div class="right-detail">
+                    {% if users %}
+                    <h5 class="text-danger text-bold">
+                        Export To Excel: <a href="javascript:getXlsDownload(0)" id="xlsbrief_list" class="">XLS Sheet</a>
+                    </h5>
+                    {% endif %}
+                </div>
+            </header>
+            <div class="panel-body">
+                {% if users %}
+                    <table class="table table-bordered table-task-modal">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                                <tr>
+                                    <td><a href="Home_ViewUser?UserID={% get_encrypted_id user.id %}" target="_blank" >{{ user.username }}</a></td>
+                                    <td>{{ user.first_name }}</td>
+                                    <td>{{ user.last_name }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>No Record Found</p>
+                {% endif %}
+            </div>
+            <footer class="panel-footer">
+                <div class="row">
+                    <div class="col-md-12 text-right">
+                    <button class="btn btn-default modal-dismiss" data-dismiss="modal">Close</button>
+                </div>
+                </div>
+            </footer>
+        </section>
+    </div>
+</div>
+<form id="standard_form" name="standard_form" method="post" action="{% url 'export_client_users_xls' %}">
+    <input type="hidden" name="client_id" value="{{ client_id }}">
+</form>
+<!-- Modal Form For Org Users End-->
+
+
+
+{% block script %}
+    <script>
+        function getXlsDownload(id){
+            $('#standard_form').trigger('submit');
+        }
+    </script>
+{% endblock %}

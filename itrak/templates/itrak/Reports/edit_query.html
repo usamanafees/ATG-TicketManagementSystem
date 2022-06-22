@@ -1,0 +1,177 @@
+{% extends 'itrak/base.html' %}
+{% block body_block %}
+    {% load static %}
+    {% load tz %} {# it will Load the Django TimeZone Library#}
+    {% load templates_extras %}
+
+    <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-file" aria-hidden="true"></i> Edit Query</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+                    <li><span>Reports</span></li>
+                    <li><span>Edit Query</span></li>
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+
+        <div class="row">
+            <div class="col-md-12">
+                {% for message in messages %}
+                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+
+                <section class="panel">
+                    <header class="panel-heading">
+                        <h2 class="panel-title">Edit Query</h2>
+                    </header>
+
+                    <div class="panel-body">
+                        <center><h3>Build Query: Step 1 of 3 - Select Fields</h3></center>
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                <a id="btn-cancel" class="btn btn-primary">Cancel </a>
+                                <a id="next" class="btn btn-primary">Next ></a>
+                            </div>
+                        </div>
+                        <br>
+                        <center><p class="font-italic">	Select the Data Set from the dropdown list, then drag and drop the desired fields from the "Available" to the "Selected" column.</p></center>
+                        <br>
+                        <div class="form-group">
+                        	<div class="row">
+	                            <label class="col-lg-2 col-md-3 col-sm-5 control-label"><span class="required">* </span> Data Sets:</label>
+	                            <div class="col-lg-5 col-md-5 col-sm-6">
+	                                <select id="data_pairs" class="form-control" disabled>
+	                                    <option value=""> </option>
+	                                    {% for pair in pairs %}
+	                                        <option value={{ pair.ds_pair_id }} {% if pair_set and pair.ds_pair_id == pair_set %}selected{% endif %}>{{ pair.ds_pair_name }}</option>
+	                                    {% endfor %}
+	                                </select>
+	                            </div>
+	                            <a class="col-lg-4 col-md-4 col-sm-4" href="#modalReportDataSet" id="view_data_sets">view all data sets/fields</a>
+	                        </div>
+                        </div>
+                        <div class="row">
+                            <div id="fields">
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="panel-footer">
+                        <div class="row">
+                            <div class="col-sm-12 text-center">
+                            	<a href="javascript:void(0)" class="btn btn-primary" id="btn-addAll">Add All</a>
+                            	<a href="javascript:void(0)" class="btn btn-primary" id="btn-removeAll">Remove All</a>
+                            	<label class="required-lable"><span class="required">*</span> Required</label>
+                            </div>
+                        </div>
+                    </footer>
+                </section>
+            </div>
+            <div id="popup-modal-content"></div>
+        </div>
+
+    </section>
+
+{% endblock %}
+
+{% block script %}
+<script>
+
+    $(function () {
+        data_pair = $('#data_pairs').val()
+        if(data_pair != 'None'){
+            $("#data_pairs option[value='']").remove();
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'getPairSelectedFields' %}",
+                data: {data_pair:data_pair},
+                success: function (data) {
+                    $('#fields').html('');
+                    $('#fields').html(data);
+                }
+            });
+        }
+    })
+
+    $('#data_pairs').on('change', function() {
+        $("#data_pairs option[value='None']").remove();
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'getPairFields' %}",
+            data: {data_pair:this.value},
+            success: function (data) {
+                $('#fields').html('');
+                $('#fields').html(data);
+            }
+        });
+    });
+
+    $("#next").click(function(){
+        if ($("#list2 .item").length < 1){
+            alert("No Fields selected!");
+        }else{
+            var unselected_fields = $('#list1 .item').map(function() { return $(this).text(); }).get().join()
+            var selected_fields = $('#list2 .item').map(function() { return $(this).text(); }).get().join()
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'setSelectedFields' %}",
+                data: {selected_fields:selected_fields,unselected_fields:unselected_fields},
+                success: function (data) {
+                    window.location.href = "{% url 'editQueryStep2' %}?qbQuery="+{{ query_id }};
+                }
+            });
+        }
+    });
+
+    $('#view_data_sets').on('click', function (e) {
+        e.preventDefault();
+        $.ajax({
+            url: "{% url 'getModalReportDataSet' %}",
+            type:'POST',
+            data:{
+                'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+            },
+            success:function(data){
+                $('#popup-modal-content').html(data);
+                $('#modalReportDataSet').modal("show");
+            },
+            error:function(){
+                console.log('error')
+            },
+        });
+    });
+
+    $("#btn-cancel").click(function(){
+        window.location.href = "{% url 'reportWriterQueries' %}?qbQuery="+{{ query_id }};
+    });
+
+    $("#btn-addAll").click(function(){
+        $('#list1 .item').each(function(i, obj) {
+            $(this).fadeOut(function(){
+                $(this).appendTo('#list2').fadeIn();
+            });
+        });
+    });
+
+
+    $("#btn-removeAll").click(function(){
+        $('#list2 .item').each(function(i, obj) {
+            $(this).fadeOut(function(){
+                $(this).appendTo('#list1').fadeIn();
+            });
+        });
+    });
+
+</script>
+{% endblock %}

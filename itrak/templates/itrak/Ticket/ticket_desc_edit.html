@@ -1,0 +1,149 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+        {% load tz %} {# it will Load the Django TimeZone Library#}
+        {% load templates_extras %}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-ticket" aria-hidden="true"></i> Ticket</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Tickets</span></li>
+								<li><span>Edit Ticket's Description</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+                         <div class="row">
+                            <div class="col-md-12">
+                                {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                                {% if ticket %}
+                                    <form id="summary-form" class="ticketForm form-horizontal" action="{% url 'updateDescTicket' %}" method="post">
+                                        {% csrf_token %}
+                                        <section class="panel">
+                                            <header class="panel-heading">
+    {#                                            <div class="panel-actions">#}
+    {#                                                <a href="#" class="fa fa-caret-down"></a>#}
+    {#                                                <a href="#" class="fa fa-times"></a>#}
+    {#                                            </div>#}
+                                                <h2 class="panel-title">Edit Description for Ticket #{{ ticket.ticket_id }}</h2>
+                                            </header>
+                                            <footer class="panel-footer">
+                                                <div class="row">
+                                                    <div class="col-sm-9">
+                                                        <button class="btn btn-primary saveButton">Update</button>
+                                                        <button type="reset" class="btn btn-default resetBtn">Reset</button>
+                                                    </div>
+                                                </div>
+                                            </footer>
+                                            <div class="panel-body">
+                                                <div class="validation-message">
+                                                    <ul></ul>
+                                                </div>
+                                                <input type="hidden" name="ticket_id" value="{% get_encrypted_id ticket.ticket_id %}">
+                                                <div class="form-group">
+                                                    <label class="col-md-3 control-label">Ticket Status: </label>
+                                                    <label class="col-md-1 control-label">{% if ticket.ticket_status == 0%}Opened{% else %}Closed{% endif %} </label>
+                                                    <div class="col-md-4 col-sm-4">
+                                                        <select name="ticket_substatus" id="ticket_substatus" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Client", "allowClear": true }'>
+                                                            <option value="" readonly="readonly" > </option>
+                                                            {% if substatus %}
+                                                                {% for sstatus in substatus %}
+                                                                    <option value="{{ sstatus.sub_status_id }}" {% if sstatus.sub_status_id == ticket.ticket_sub_status_id  %}selected{% endif %}>{{ sstatus.sub_status_text }}</option>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group" id="add_desc_section">
+                                                    <div class="col-md-12">
+                                                        <textarea class="summerdesc" id="ticket_desc" name="ticket_desc" required="required" data-plugin-summernote data-plugin-options='{ "height": 180, "codemirror": { "theme": "ambiance" } }'>{{ ticket.description }}</textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="col-md-3 col-sm-3 control-label space_top_0">
+                                                        Created By:
+                                                    </label>
+                                                    <div class="col-md-6">
+                                                    	{% get_tickets_dateTime_by_timezone ticket.ticket_created_at request.user.id as createdDateTime%}
+                                                    	<span>
+                                                            {{ ticket.ticket_created_by.display_name }} at {{ createdDateTime }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                {% if ticket.ticket_modified_by_id %}
+                                                    <div class="form-group">
+                                                        <label class="col-md-3 col-sm-3 control-label space_top_0">
+                                                            Modified By:
+                                                        </label>
+                                                        <div class="col-md-6">
+                                                            {% get_tickets_dateTime_by_timezone ticket.ticket_modified_at request.user.id as modifiedDateTime%}
+                                                            <span>
+                                                                {{ ticket.ticket_modified_by.display_name }} at {{ modifiedDateTime }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <footer class="panel-footer">
+                                                <div class="row">
+                                                    <div class="col-sm-9">
+                                                        <button class="btn btn-primary saveButton">Update</button>
+                                                        <button type="reset" class="btn btn-default resetBtn">Reset</button>
+                                                    </div>
+                                                </div>
+                                            </footer>
+                                        </section>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+					<!-- end: page -->
+				</section>
+			</div>
+
+    {% endblock %}
+
+    {% block script %}
+
+        <!-- Validation Check on Page Start -->
+        <script>
+            function isEmpty(str){
+                return !str.replace(/\s|[0]/g, '').length;
+            }
+
+            $('.ticketForm').on('submit', function(e) {
+              if($('#ticket_desc').summernote().code() == '') {
+                alert('Description can not be empty!');
+                // cancel submit
+                e.preventDefault();
+              }
+             });
+
+            $('.resetBtn').on('click', function(){
+               $('#ticket_desc').code('{{ ticket.description }}');
+               $('#ticket_substatus').select2("val" , '{{ ticket.ticket_sub_status_id }}');
+            });
+        </script>
+
+        <!-- Validation Check on Page End -->
+    {% endblock %}
+
+

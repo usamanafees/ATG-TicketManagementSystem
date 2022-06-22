@@ -1,0 +1,138 @@
+{% extends 'itrak/base.html' %}
+{% block body_block %}
+    {% load static %}
+    {% load tz %} {# it will Load the Django TimeZone Library#}
+    {% load templates_extras %}
+
+    <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-file" aria-hidden="true"></i> New Report</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+                    <li><span>Reports</span></li>
+                    <li><span>New Report</span></li>
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+
+        <div class="row">
+            <div class="col-md-12">
+                {% for message in messages %}
+                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+
+                <section class="panel">
+                    <header class="panel-heading">
+                        <h2 class="panel-title">New Report</h2>
+                    </header>
+
+                    <div class="panel-body">
+                        <center><h3>Build Report: Step 5 of 6 - Select Formatting</h3></center>
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                <a id="btn-cancel" class="btn btn-primary">Cancel </a>
+                                <a id="btn-back" class="btn btn-primary">< Back</a>
+                                <a id="next" class="btn btn-primary">Next ></a>
+                            </div>
+                        </div>
+                        <br>
+                        <center><p class="font-italic">Do you want to change any column defaults?</p></center>
+                        <center><p class="font-italic">
+                            <input type="checkbox">Suppress Report Details
+                        </p></center>
+                        <center><p class="font-italic">Note: If checked, a subtotal must be selected or a group specified in order for the report to contain any output.</p></center>
+                        <br>
+                        <div class="row">
+                            <div id="fields">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+{% endblock %}
+
+{% block script %}
+<script>
+    $(function () {
+        $("#preloader").show();
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'getQuerySelectedFields' %}",
+            data: {step:5},
+            success: function (data) {
+                $("#preloader").hide();
+                $('#fields').html('');
+                $('#fields').html(data);
+            }
+        });
+    });
+
+    $("#next").click(function(e){
+        var is_valid = checkColumnWidth(event)
+        if(is_valid == true){
+            var actual_column_names = $('#fields .actual_column_name').map(function() { return $(this).val(); }).get().join()
+            var column_names = $('#fields .column_name').map(function() { return $(this).val(); }).get().join()
+            var formats = $('#fields .format').map(function() { return $(this).val(); }).get().join()
+            var subtotals = $('#fields .subtotal').map(function() { return $(this).val(); }).get().join()
+            var justifications = $('#fields .justification').map(function() { return $(this).val(); }).get().join()
+            var column_widths = $('#fields .column_width').map(function() { return $(this).val(); }).get().join()
+
+             $.ajax({
+                 type: 'POST',
+                 url: "{% url 'setSavedFormatExpression' %}",
+                 data: {
+                     actual_column_names : actual_column_names,
+                     column_names : column_names,
+                     formats : formats,
+                     subtotals : subtotals,
+                     justifications : justifications,
+                     column_widths : column_widths
+                    },
+                 success: function (data) {
+                    window.location.href = "{% url 'sixthReport' %}";
+                 }
+             });
+        }
+    });
+
+    function  checkColumnWidth(e){
+        var success = true;
+        $(".number-fields").each(function(){
+            if(($(this).val() < 0 || $(this).val() > 500) && $(this).val() != ''){
+                e.preventDefault();
+                alert('Field width must be between 0 and 500');
+                success =  false;
+            }
+        });
+        return success;
+    }
+
+    $("#btn-cancel").click(function(){
+        window.location.href = "{% url 'reportWriterReports' %}";
+    });
+
+    $("#btn-back").click(function(){
+        window.location.href = "{% url 'fourthReport' %}";
+    });
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,213 @@
+
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+    {% load static %}
+    {% load tz %} {# it will Load the Django TimeZone Library#}
+    {% load templates_extras %}
+    {% load check_permissions %}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+
+        <section role="main" class="content-body">
+            <header class="page-header">
+               <h2><i class="fa fa-file" aria-hidden="true"></i> Report</h2>
+
+                <div class="right-wrapper pull-right">
+                    <ol class="breadcrumbs">
+                        <li>
+                            <a href="{% url 'home' %}">
+                                <i class="fa fa-home"></i>
+                            </a>
+                        </li>
+                        <li><span>Reports</span></li>
+                        <li><span>Saved Searches</span></li>
+                    </ol>
+
+                    <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+                </div>
+            </header>
+
+            	<!-- start: page -->
+                     <div class="row">
+                        <div class="col-md-12">
+                            {% for message in messages %}
+                                <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                            <section class="panel">
+                                    <header class="panel-heading">
+                                        <h2 class="panel-title">Select Saved Search</h2>
+                                    </header>
+                                    <footer class="panel-footer">
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <a href="#" onclick="editSavedSearch(event)" data-hover="Edit Report" class="mb-xs mt-xs mr-xs btn btn-primary editBtn">Edit</a>
+                                                <a href="#" data-hover="Delete Report" class="mb-xs mt-xs mr-xs btn btn-danger deleteBtn" data-toggle="modal" data-target="#confirm-delete">Delete</a>
+                                                <a href="#" onclick="runSavedSearch(event)" data-hover="Run Report" class="mb-xs mt-xs mr-xs btn btn-primary runBtn">Run</a>
+                                            </div>
+                                        </div>
+                                    </footer>
+                                    <div class="panel-body">
+                                        <div class="validation-message">
+                                            <ul></ul>
+                                        </div>
+                                        <div class="clearfix"></div>
+                                        <div class="form-group">
+                                            <label class="col-md-3 control-label">Saved Searches:</label>
+                                            <!-- Action Permission check -->
+                                            {% if "Rep_perm_Can_add_edit_and_run_shared_saved_searches"|check_action_permission:user.id %}
+                                                <div class="col-md-8">
+                                                    <select class="custom-select" name="save_search" id="save_search" size="20" style="width: 50%;height: 100%">
+                                                    {% if savedSearches %}
+                                                        {% for search in savedSearches %}
+                                                            <option value="{{ search.saved_search_id }}">{{ search.search_title }}
+                                                            {% if search.is_share == 1 %}*{% endif %}</option>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                    </select>
+                                                    <div class="full-wdith">
+                                                        <label class="required-lable"><span class="required">*</span> Shared</label>
+                                                    </div>
+                                                </div>
+                                            {% else %}
+                                                <div class="col-md-8">
+                                                    <select class="custom-select" onchange="checkPermissions(this);" name="save_search" id="save_search" size="20" style="width: 50%;height: 100%">
+                                                    {% if savedSearches %}
+                                                        {% for search in savedSearches %}
+                                                            <option value="{{ search.saved_search_id }}">{{ search.search_title }}
+                                                            {% if search.is_share == 1 %}*{% endif %}</option>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                    </select>
+                                                    <div class="full-wdith">
+                                                        <label class="required-lable"><span class="required">*</span> Shared</label>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <footer class="panel-footer">
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <a href="#" onclick="editSavedSearch(event)" data-hover="Edit Report" class="mb-xs mt-xs mr-xs btn btn-primary editBtn">Edit</a>
+                                                <a href="#" data-hover="Delete Report" class="mb-xs mt-xs mr-xs btn btn-danger deleteBtn" data-toggle="modal" data-target="#confirm-delete">Delete</a>
+                                                <a href="#" onclick="runSavedSearch(event)" data-hover="Run Report" class="mb-xs mt-xs mr-xs btn btn-primary runBtn">Run</a>
+                                            </div>
+                                        </div>
+                                    </footer>
+                                </section>
+                        </div>
+                    </div>
+                <!-- end: page -->
+            </section>
+			</div>
+
+        {# Delete Modal Popup on Delete#}
+        <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <p>You are about to delete a record, this procedure is irreversible.</p>
+                        <strong>Do you want to proceed?</strong>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <a class="btn btn-danger btn-ok">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% endblock %}
+
+    {% block script %}
+        <script>
+            function checkPermissions(e){
+                var saved_search_id = e.value;
+                $('#preloader').show();
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'isSaveSearchShareable' %}",
+                    data: {saved_search_id: saved_search_id},
+                    dataType: 'json',
+                    beforeSend: function(jqXHR, settings) {
+                        //Do something before send...
+                    },
+                    success: function(data, textStatus, jqXHR) {
+                        if(data){
+                            $(".editBtn").attr("disabled", true);
+                            $(".deleteBtn").attr("disabled", true);
+                            $(".runBtn").attr("disabled", true);
+                        }else{
+                            $(".editBtn").attr("disabled", false);
+                            $(".deleteBtn").attr("disabled", false);
+                            $(".runBtn").attr("disabled", false);
+                        }
+                        $('#preloader').hide();
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    }
+                });
+            }
+            //Run the Saved Search
+            function runSavedSearch(event) {
+                save_id = $('#save_search').val();
+                if(save_id == null){
+                    alert('No Saved Search Selected')
+                }
+                // else if(save_id.length > 1){
+                //     alert('Multiple reports cannot be Selected. Please Select one')
+                // }
+                else{
+                    window.location.href = "{% url 'saveSearchProcess' %}?savedSearch="+save_id;
+                }
+            }
+
+            //Edit the Saved Search
+            function editSavedSearch(event) {
+                save_id = $('#save_search').val();
+                if(save_id == null){
+                    alert('No Saved Search Selected')
+                }else{
+                    window.location.href = "{% url 'searchTicket' %}?reportNbr="+save_id;
+                }
+            }
+        </script>
+        <script>
+            $('.btn-ok').click(function(){
+                search_id = $('#save_search').val();
+                if(search_id == null){
+                    alert('No Saved Search Selected')
+                }else{
+                  $.ajax({
+                        type: 'POST',
+                        url: "{% url 'savedSearchRemove' %}",
+                        data: {save_id: search_id},
+                        dataType: 'json',
+                        beforeSend: function(jqXHR, settings) {
+                            //Do something before send...
+                        },
+                        success: function(data, textStatus, jqXHR) {
+                            location.reload();
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            alert(textStatus + '. ' + errorThrown);
+                        }
+                      });
+                }
+            });
+
+        </script>
+
+    {% endblock %}
+

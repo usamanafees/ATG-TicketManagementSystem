@@ -1,0 +1,949 @@
+    {% include "itrak/includes/header.html" %}
+   {% include "itrak/includes/top_bar.html" %}
+
+	<body>
+
+        {% block body_block %}
+        {% load static %}
+		{% load templates_extras %}
+		{% load check_permissions %}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-ticket" aria-hidden="true"></i> Ticket</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Ticket</span></li>
+								<li><span>Search Results</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+						<section class="panel">
+							<header class="panel-heading custom-style">
+
+                                <h3 class="text-primary text-bold">{{ search_title }}</h3>
+                                {% if tickets.count > 0 %}
+                                    <div class="right-detail">
+                                        <h5 class="text-danger text-bold">
+                                            Export To Excel: <a href="javascript:getXlsDownload(0)" id="xlsbrief_list" class="">Brief</a> | <a href="javascript:getXlsDownload(1)" id="xlsdetail_list" class="">Detailed</a>
+                                        </h5>
+                                    </div>
+                                {% endif %}
+							</header>
+							<div class="panel-body h5_mar_0">
+								<a onClick="javascript:history.go(-1);" class="back-text"><span class="fa fa-arrow-circle-left"> </span> Back</a>
+                                {% if output_view == 'TotalTimeTech' or output_view == 'TotalTimeOrg' %}
+                                    <div class="row">
+                                        <div class="col-md-3 col-sm-4">
+                                            <h5 class="text-primary"><b>Total Time by Tech, Org </b></h5>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="row">
+                                        <div class="col-md-3 col-sm-4">
+                                            {% if output_view == 'TaskList' %}
+                                                <h5 class="text-primary"><b>Number of Tasks that Matched: </b></h5>
+                                            {% else %}
+                                                <h5 class="text-primary"><b>Number of Tickets that Matched: </b></h5>
+                                            {% endif %}
+
+                                        </div>
+                                        <div class="col-md-3 col-sm-5">
+                                            <span class="text-primary col-md-10 col-sm-10">{{ tickets.count }}</span>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                {% if not fielddict.items %}
+                                    <div class="row">
+                                        <div class="col-md-3 col-sm-4">
+                                        <h5 class="text-primary"><b>Search Criteria: </b></h5>
+                                    </div>
+                                    <div class="col-md-3 col-sm-5">
+                                        <span class="text-primary col-md-10 col-sm-10">All Records</span>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    {% for key,value in fielddict.items %}
+                                        <div class="row">
+                                            <div class="col-md-3 col-sm-4">
+                                                <h5 class="text-primary"><b>{{ key }}: </b></h5>
+                                            </div>
+                                            <div class="col-md-3 col-sm-5">
+                                                <span class="text-primary col-md-10 col-sm-10">{{ value }}</span>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+
+                                {% if output_view != 'CountOnly' and output_view != 'Statistics' %}
+                                    {% if sortresponses %}
+                                        <div class="row">
+                                            <div class="col-md-3 col-sm-4">
+                                                <h5 class="text-primary"><b>Sorted By: </b></h5>
+                                            </div>
+                                            <div class="col-md-3 col-sm-5">
+                                                {% if sortresponses %}
+                                                    {% for sortresponse in sortresponses %}
+                                                        <span class="text-primary col-md-10 col-sm-10">{{ sortresponse }}</span>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% elif output_view == 'TotalTimeTech' or output_view == 'TotalTimeOrg' %}
+                                        <div class="row">
+                                            <div class="col-md-3 col-sm-4">
+                                                <h5 class="text-primary"><b>Sorted By: </b></h5>
+                                            </div>
+                                            <div class="col-md-3 col-sm-5">
+                                                <span class="text-primary col-md-10 col-sm-10">Tech Name, Organization, Note Date</span>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <div class="row">
+                                            <div class="col-md-3 col-sm-4">
+                                                <h5 class="text-primary"><b>Sorted By: </b></h5>
+                                            </div>
+                                            <div class="col-md-3 col-sm-5">
+                                                <span class="text-primary col-md-10 col-sm-10">No sort selected</span>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+                                <form id="standard_form" name="standard_form" method="post" action="{% url 'export_tickets_xls' %}">
+                                    <input type="hidden" name="tickets" value="{{ ticketid_list }}">
+                                    <input type="hidden" id="xlsType" name="xlsType" value="0">
+                                </form>
+                                <form id="stats_form" name="stats_form" method="post" action="{% url 'ticketSearchStatsList' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="tickets" value="{{ ticketid_list }}">
+                                    <input type="hidden" id="startType" name="startType" value="Open">
+                                </form>
+                                <div class="table-responsive">
+									<table class="table table-bordered table-striped table-condensed mb-none" id="datatable-default">
+										<thead>
+											<tr>
+                                                {% if output_view == 'BriefList' %}
+	                                                <th>Ticket#</th>
+	                                                <th>Opened</th>
+	                                                <th>By</th>
+	                                                <th>Status</th>
+	                                                <th>Ticket Type</th>
+													<th>Subject</th>
+													<!-- Action Permission check -->
+													{% if "da_Can_view_Assigned_To_information_in_Tickets_and_email_notifications"|check_action_permission:user.id %}
+													<th>Assigned To</th>
+													{% endif %}
+	                                           {% elif output_view == 'BriefListwHours' %}
+	                                                <th>Ticket#</th>
+	                                                <th>Opened</th>
+	                                                <th>By</th>
+	                                                <th>Status</th>
+	                                                <th>Ticket Type</th>
+													<th>Subject</th>
+													<!-- Action Permission check -->
+													{% if "da_Can_view_Assigned_To_information_in_Tickets_and_email_notifications"|check_action_permission:user.id %}
+													<th>Assigned To</th>
+													{% endif %}
+	                                                <th>Hours</th>
+	                                           {% elif output_view == 'BriefListwLocations' %}
+	                                                <th>Ticket#</th>
+	                                                <th>Opened</th>
+	                                                <th>By</th>
+	                                                <th>Status</th>
+	                                                <th>Ticket Type</th>
+													<th>Subject</th>
+													<!-- Action Permission check -->
+													{% if "da_Can_view_Assigned_To_information_in_Tickets_and_email_notifications"|check_action_permission:user.id %}
+													<th>Assigned To</th>
+													{%endif%}
+	                                                <th>Account ID</th>
+	                                                <th>Account </th>
+	                                           {% elif output_view == 'BriefListwOrganizations' %}
+	                                               <th>Ticket#</th>
+	                                                <th>Opened</th>
+	                                                <th>By</th>
+	                                                <th>Status</th>
+	                                                <th>Ticket Type</th>
+													<th>Subject</th>
+													<!-- Action Permission check -->
+													{% if "da_Can_view_Assigned_To_information_in_Tickets_and_email_notifications"|check_action_permission:user.id %}
+													<th>Assigned To</th>
+													{%endif%}
+	                                                <th>Last Activity</th>
+	                                                <th>Organization</th>
+                                               {% elif output_view == 'BriefListwRespTime' %}
+	                                                <th>Ticket#</th>
+	                                                <th>Opened</th>
+	                                                <th>By</th>
+	                                                <th>Status</th>
+	                                                <th>Ticket Type</th>
+													<th>Subject</th>
+													<!-- Action Permission check -->
+													{% if "da_Can_view_Assigned_To_information_in_Tickets_and_email_notifications"|check_action_permission:user.id %}
+	                                                <th>Assigned To</th>
+													{%endif%}
+													<th>First Note Added</th>
+													<th>First Note Added by Assignee</th>
+                                               {% elif output_view == 'BriefListwTasks' %}
+	                                                <th>Ticket#</th>
+	                                                <th>Opened</th>
+	                                                <th>By</th>
+	                                                <th>Status</th>
+	                                                <th>Ticket Type</th>
+													<th>Subject</th>
+													<!-- Action Permission check -->
+													{% if "da_Can_view_Assigned_To_information_in_Tickets_and_email_notifications"|check_action_permission:user.id %}
+													<th>Assigned To</th>
+													{%endif%}
+	                                                <th>Entered On</th>
+	                                                <th>Priority</th>
+	                                                <th>Task</th>
+	                                           {% elif output_view == 'BriefList2' %}
+	                                                <th>Ticket#</th>
+	                                                <th>Subject</th>
+	                                                <th>Priority</th>
+	                                                <th>Submitted Date</th>
+	                                                <th>Submitted By</th>
+	                                                <th>Last Activity</th>
+	                                                <th>SubStatus</th>
+	                                                <th>Account</th>
+	                                           {% elif output_view == 'RepAssignedReport' %}
+	                                                <th>Ticket#</th>
+	                                                <th>Date Opened</th>
+	                                                <th>Opened By</th>
+	                                                <th>Priority</th>
+	                                                <th>Ticket Type</th>
+	                                                <th>Subtype</th>
+	                                                <th>Subject</th>
+	                                                <th>Assignee</th>
+	                                                <th>Department</th>
+	                                                <th>Next Action</th>
+	                                                <th>Last Activity</th>
+                                               {% elif output_view == 'TaskList' %}
+                                                    <th>Ticket#</th>
+													<th>Task Description</th>
+													<!-- Action Permission check -->
+													{% if "da_Can_view_Assigned_To_information_in_Tickets_and_email_notifications"|check_action_permission:user.id %}
+													<th>Assigned To</th>
+													{%endif%}
+                                                    <th>Date Completed</th>
+                                                    <th>Comments</th>
+	                                           {% elif output_view == 'Statistics' %}
+	                                                <th colspan="2">Ticket Metrics</th>
+                                               {% elif output_view == 'TotalTimeTech' %}
+                                                    <th>Name</th>
+                                                    <th>Organization</th>
+                                                    <th>Ticket#</th>
+                                                    <th>Subject</th>
+                                                    <th>Status</th>
+                                                    <th>Note Date</th>
+                                                    <th>Time Entered</th>
+                                               {% elif output_view == 'TotalTimeOrg' %}
+                                                    <th>Organization</th>
+                                                    <th>Tech Name</th>
+                                                    <th>Ticket#</th>
+                                                    <th>Subject</th>
+                                                    <th>Status</th>
+                                                    <th>Note Date</th>
+                                                    <th>Time Entered</th>
+												{% elif output_view == 'DetailListWoNotes' or output_view == 'DetailListWithNotes' %}
+													<br/>
+													<br/>
+													
+	                                           {% endif %}
+											</tr>
+										</thead>
+										<tbody>
+                                        {% if tickets.count == 0 %}
+                                            <tr class="gradeA">
+                                                {% if output_view == 'BriefList' %}
+                                                    <td class="text-primary text-bold text-center" colspan="7">No Record Found.</td>
+                                                {% elif output_view == 'BriefListwHours' %}
+                                                    <td class="text-primary text-bold text-center" colspan="8">No Record Found.</td>
+                                                {% elif output_view == 'BriefListwLocations' %}
+                                                    <td class="text-primary text-bold text-center" colspan="9">No Record Found.</td>
+                                                {% elif output_view == 'BriefListwOrganizations' %}
+                                                    <td class="text-primary text-bold text-center" colspan="9">No Record Found.</td>
+                                                {% elif output_view == 'BriefListwRespTime' %}
+                                                    <td class="text-primary text-bold text-center" colspan="9">No Record Found.</td>
+                                                {% elif output_view == 'BriefListwTasks' %}
+                                                    <td class="text-primary text-bold text-center" colspan="10">No Record Found.</td>
+                                                {% elif output_view == 'BriefList2' %}
+                                                    <td class="text-primary text-bold text-center" colspan="8">No Record Found.</td>
+                                                {% elif output_view == 'RepAssignedReport' %}
+                                                    <td class="text-primary text-bold text-center" colspan="11">No Record Found.</td>
+                                                {% elif output_view == 'TaskList' %}
+                                                    <td class="text-primary text-bold text-center" colspan="5">No Record Found.</td>
+                                                {% elif output_view == 'Statistics' %}
+                                                    <td class="text-primary text-bold text-center" colspan="2">No Record Found.</td>
+                                                {% elif output_view == 'TotalTimeTech' %}
+                                                    <td class="text-primary text-bold text-center" colspan="7">No Record Found.</td>
+                                                {% elif output_view == 'TotalTimeOrg' %}
+                                                    <td class="text-primary text-bold text-center" colspan="7">No Record Found.</td>
+												{% elif output_view == 'DetailListWoNotes' or output_view == 'DetailListWithNotes' %}
+												    <td class="text-primary text-bold text-center">No Record Found.</td>
+												{%else%}
+													<td class="text-primary text-bold text-center" colspan="7">No Record Found.</td>
+                                                {% endif %}
+
+                                                </tr>
+
+                                        {% else %}
+	                                        {% if output_view == 'Statistics' %}
+	                                            {% tickets_status tickets as ticket_stats %}
+	                                            <tr class="gradeA">
+	                                                <td>Ticket Open</td>
+                                                    <td>
+														{% if ticket_stats.t_open > 0 %}
+															<a href="javascript:getTicketSearchStatList('Open')" class="">{{ ticket_stats.t_open }}</a>
+														{%else%}
+															{{ ticket_stats.t_open }}
+														{%endif%}
+													</td>
+	                                            </tr>
+	                                            <tr class="gradeA">
+	                                                <td>Ticket Closed</td>
+                                                    <td>
+														{% if ticket_stats.t_close > 0 %}
+															<a href="javascript:getTicketSearchStatList('Close')" class="">{{ ticket_stats.t_close }}</a>
+														{%else%}
+															{{ ticket_stats.t_close }}
+														{%endif%}
+													</td>
+	                                            </tr>
+	                                            <tr class="gradeA">
+	                                                <td>Total Tickets Open/Closed	</td>
+                                                    <td>
+														{% if tickets.count > 0 %}
+															<a href="javascript:getTicketSearchStatList('OpenClose')" class="">{{ tickets.count }}</a>
+														{%else%}
+															{{ tickets.count }}
+														{%endif%}
+													</td>
+	                                            </tr>
+	                                            <tr class="gradeA">
+                                                    <td colspan="2"> </td>
+	                                            </tr>
+	                                            <tr class="gradeA">
+	                                                <td>Avg Time Submit to Assign	 </td>
+	                                                <td>{{ ticket_stats.avg_time_submit_assign }}</td>
+	                                            </tr>
+	                                            <tr class="gradeA">
+	                                                <td>Avg Time Assign to Close	</td>
+	                                                <td>{{ ticket_stats.avg_time_assign_close }}</td>
+	                                            </tr>
+	                                            <tr class="gradeA">
+	                                                <td>Avg Time Submit to Close </td>
+	                                                <td>{{ ticket_stats.avg_time_submit_close }}</td>
+	                                            </tr>
+	                                            <tr class="gradeA">
+                                                    <td colspan="2"> </td>
+	                                            </tr>
+	                                            <tr class="gradeA">
+	                                                <td>Total Tickets Time Entered </td>
+	                                                <td>{{ ticket_stats.tt_time_extered }}</td>
+	                                            </tr>
+	                                            <tr class="gradeA">
+                                                    <td colspan="2"> </td>
+	                                            </tr>
+	                                            <tr class="gradeA">
+	                                                <td>Tickets Assigned </td>
+                                                    <td>
+														{% if ticket_stats.t_assigned > 0 %}
+															<a href="javascript:getTicketSearchStatList('Assign')" class="">{{ ticket_stats.t_assigned }}</a>
+														{%else%}
+															{{ ticket_stats.t_assigned }}
+														{%endif%}
+													</td>
+	                                            </tr>
+	                                            <tr class="gradeA">
+	                                                <td>Tickets Unassigned </td>
+                                                    <td>
+														{% if ticket_stats.t_unassigned > 0 %}
+															<a href="javascript:getTicketSearchStatList('Unassign')" class="">{{ ticket_stats.t_unassigned }}</a>
+														{%else%}
+															{{ ticket_stats.t_unassigned }}
+														{%endif%}
+													</td>
+	                                            </tr>
+	                                            <tr class="gradeA">
+	                                                <td>Total Tickets Assigned/Unassigned	</td>
+                                                    <td>
+														{% if tickets.count > 0 %}
+															<a href="javascript:getTicketSearchStatList('AssignUnassign')" class="">{{ tickets.count }}</a>
+														{%else%}
+															{{ tickets.count }}
+														{%endif%}
+													</td>
+	                                            </tr>
+	                                            <tr class="gradeA">
+                                                    <td colspan="2"> </td>
+	                                            </tr>
+	                                            <tr class="gradeA">
+	                                                <td>Total Tickets Reopened </td>
+                                                    <td>
+														{% if ticket_stats.t_reopen > 0 %}
+															<a href="javascript:getTicketSearchStatList('Reopen')" class="">{{ ticket_stats.t_reopen }}</a>
+														{%else%}
+															{{ ticket_stats.t_reopen }}
+														{%endif%}
+													</td>
+	                                            </tr>
+	                                        {% else %}
+	                                            {% if tickets %}
+	                                                {% for ticket in tickets %}
+	                                                    <tr class="gradeA">
+	                                                        {% if output_view == 'BriefList' %}
+	                                                            <td>{{ ticket.ticket_id }}</td>
+	                                                            {% get_tickets_dateTime_by_timezone1 ticket.submitted_at request.user.id as dateTime %}
+	                                                            <td>{{ dateTime }}</td>
+	                                                            <td>{{ ticket.ticket_created_by.display_name }}</td>
+	                                                            <td>{% if  ticket.ticket_status == 0 %}Opened{% else %}Close{% endif %} - {{ ticket.ticket_sub_status.sub_status_text }}</td>
+	                                                            <td>{{ ticket.ticket_type.ttype_name }}</td>
+																<td><a href="Home_ViewTicket?tickID={% get_encrypted_id ticket.ticket_id %}" target="_blank" >{{ ticket.subject }}</a> </td>
+																<!-- Action Permission check -->
+																{% if "da_Can_view_Assigned_To_information_in_Tickets_and_email_notifications"|check_action_permission:user.id %}
+																<td>{{ ticket.ticket_assign_to.display_name }}</td>
+																{% endif %}
+														     {% elif output_view == 'BriefListwHours' %}
+	                                                            <td>{{ ticket.ticket_id }}</td>
+	                                                            {% get_tickets_dateTime_by_timezone1 ticket.submitted_at request.user.id as dateTime %}
+	                                                            <td>{{ dateTime }}</td>
+	                                                            <td>{{ ticket.ticket_created_by.display_name }}</td>
+	                                                            <td>{% if  ticket.ticket_status == 0 %}Opened{% else %}Close{% endif %} - {{ ticket.ticket_sub_status.sub_status_text }}</td>
+	                                                            <td>{{ ticket.ticket_type.ttype_name }}</td>
+																<td><a href="Home_ViewTicket?tickID={% get_encrypted_id ticket.ticket_id %}" target="_blank" >{{ ticket.subject }}</a> </td>
+																<!-- Action Permission check -->
+																{% if "da_Can_view_Assigned_To_information_in_Tickets_and_email_notifications"|check_action_permission:user.id %}
+																<td>{{ ticket.ticket_assign_to.display_name }}</td>
+																{% endif %}
+                                                                {% getLabourHoursByTicketId ticket.ticket_id as LabourHours %}
+                                                                <td>{{ LabourHours }}</td>
+	                                                        {% elif output_view == 'BriefListwLocations' %}
+	                                                            <td>{{ ticket.ticket_id }}</td>
+	                                                            {% get_tickets_dateTime_by_timezone1 ticket.submitted_at request.user.id as dateTime %}
+	                                                            <td>{{ dateTime }}</td>
+	                                                            <td>{{ ticket.ticket_created_by.display_name }}</td>
+	                                                            <td>{% if  ticket.ticket_status == 0 %}Opened{% else %}Close{% endif %} - {{ ticket.ticket_sub_status.sub_status_text }}</td>
+	                                                            <td>{{ ticket.ticket_type.ttype_name }}</td>
+	                                                            <td><a href="Home_ViewTicket?tickID={% get_encrypted_id ticket.ticket_id %}" target="_blank" >{{ ticket.subject }}</a> </td>
+																<!-- Action Permission check -->
+																{% if "da_Can_view_Assigned_To_information_in_Tickets_and_email_notifications"|check_action_permission:user.id %}
+																<td>{{ ticket.ticket_assign_to.display_name }}</td>
+																{%endif%}
+	                                                            <td>{{ ticket.account.id }}</td>
+	                                                            <td>{{ ticket.account.acc_name }}</td>
+	                                                        {% elif output_view == 'BriefListwOrganizations' %}
+	                                                            <td>{{ ticket.ticket_id }}</td>
+	                                                            {% get_tickets_dateTime_by_timezone1 ticket.submitted_at request.user.id as dateTime %}
+	                                                            <td>{{ dateTime }}</td>
+	                                                            <td>{{ ticket.ticket_created_by.display_name }}</td>
+	                                                            <td>{% if  ticket.ticket_status == 0 %}Opened{% else %}Close{% endif %} - {{ ticket.ticket_sub_status.sub_status_text }}</td>
+	                                                            <td>{{ ticket.ticket_type.ttype_name }}</td>
+	                                                            <td><a href="Home_ViewTicket?tickID={% get_encrypted_id ticket.ticket_id %}" target="_blank" >{{ ticket.subject }}</a> </td>
+																<!-- Action Permission check -->
+																{% if "da_Can_view_Assigned_To_information_in_Tickets_and_email_notifications"|check_action_permission:user.id %}
+																<td>{{ ticket.ticket_assign_to.display_name }}</td>
+																{%endif%}
+                                                                {% get_tickets_dateTime_by_timezone ticket.ticket_modified_at request.user.id as dateTime %}
+	                                                            <td>{{ dateTime }}</td>
+                                                                <td>{{ ticket.ticket_org.org_name }}</td>
+	                                                        {% elif output_view == 'BriefListwRespTime' %}
+	                                                            <td>{{ ticket.ticket_id }}</td>
+	                                                            {% get_tickets_dateTime_by_timezone1 ticket.submitted_at request.user.id as dateTime %}
+	                                                            <td>{{ dateTime }}</td>
+	                                                            <td>{{ ticket.ticket_created_by.display_name }}</td>
+	                                                            <td>{% if  ticket.ticket_status == 0 %}Opened{% else %}Close{% endif %} - {{ ticket.ticket_sub_status.sub_status_text }}</td>
+	                                                            <td>{{ ticket.ticket_type.ttype_name }}</td>
+																<td><a href="Home_ViewTicket?tickID={% get_encrypted_id ticket.ticket_id %}" target="_blank" >{{ ticket.subject }}</a> </td>
+																<!-- Action Permission check -->
+																{% if "da_Can_view_Assigned_To_information_in_Tickets_and_email_notifications"|check_action_permission:user.id %}
+																<td>{{ ticket.ticket_assign_to.display_name }}</td>
+																{%endif%}
+																 {% firstNoteAdded request.user.id ticket.ticket_id ticket.submitted_at ticket.ticket_caller_id  as note  %}
+																 <td>{{note}}</td>
+																 {% firstNoteAddedByAssignee ticket.ticket_id ticket.submitted_at ticket.ticket_assign_to  as noteassign %}
+																 <td>{{noteassign}}</td>
+	                                                        {% elif output_view == 'BriefListwTasks' %}
+	                                                            <td>{{ ticket.tmgr_ticket_id}}</td>
+	                                                            {% get_tickets_dateTime_by_timezone1 ticket.tmgr_ticket.submitted_at request.user.id as dateTime %}
+	                                                            <td>{{ dateTime }}</td>
+	                                                            <td>{{ ticket.tmgr_ticket.ticket_caller.display_name }}</td>
+	                                                            <td>{% if  ticket.tmgr_ticket.ticket_status == 0 %}Opened{% else %}Close{% endif %} - {{ ticket.tmgr_ticket.ticket_sub_status.sub_status_text }}</td>
+	                                                            <td>{{ ticket.tmgr_ticket.ticket_type.ttype_name }}</td>
+	                                                            <td><a href="Home_ViewTicket?tickID={% get_encrypted_id ticket.tmgr_ticket_id %}" target="_blank" >{{ ticket.tmgr_ticket.subject }}</a> </td>
+																<!-- Action Permission check -->
+																{% if "da_Can_view_Assigned_To_information_in_Tickets_and_email_notifications"|check_action_permission:user.id %}
+																<td>{{ ticket.tmgr_ticket.ticket_assign_to.display_name }}</td>
+																{% endif %}
+																<td>{{ ticket.tmgr_ticket.ticket_created_at|date:'m/d/Y'}}</td>
+	                                                            <td>{{ ticket.tmgr_ticket.priority.priority_name }}</td>
+	                                                            <td>{{ ticket.tmgr_task.task_description }}</td>
+	                                                        {% elif output_view == 'BriefList2' %}
+	                                                            <td>{{ ticket.ticket_id }}</td>
+	                                                            <td><a href="Home_ViewTicket?tickID={% get_encrypted_id ticket.ticket_id %}" target="_blank" >{{ ticket.subject }}</a> </td>
+	                                                            <td>{{ ticket.priority.priority_name }}</td>
+	                                                            {% get_tickets_dateTime_by_timezone1 ticket.submitted_at request.user.id as dateTime %}
+	                                                            <td>{{ dateTime }}</td>
+	                                                            <!-- <td>{{ ticket.submitted_date|date:'m/d/Y'}} {{ ticket.submitted_time|date:'H:i a' }}</td> -->
+	                                                            <td>{{ ticket.ticket_created_by.display_name }}</td>
+	                                                            {% get_tickets_dateTime_by_timezone ticket.ticket_modified_at request.user.id as dateTime %}
+	                                                            <td>{{ dateTime }}</td>
+	                                                            <td>{{ ticket.ticket_sub_status.sub_status_text }}</td>
+	                                                            <td>{{ ticket.account.acc_name }}</td>
+	                                                        {% elif output_view == 'RepAssignedReport' %}
+	                                                            <td>{{ ticket.ticket_id }}</td>
+	                                                            {% get_tickets_dateTime_by_timezone1 ticket.submitted_at request.user.id as dateTime %}
+	                                                            <td>{{ dateTime }}</td>
+	                                                            <td>{{ ticket.ticket_created_by.display_name }}</td>
+	                                                            <td>{{ ticket.priority.priority_name }}</td>
+	                                                            <td>{{ ticket.ticket_type.ttype_name }}</td>
+	                                                            <td>{{ ticket.ticket_subtype1.ttype_name }}</td>
+	                                                            <td><a href="Home_ViewTicket?tickID={% get_encrypted_id ticket.ticket_id %}" target="_blank" >{{ ticket.subject }}</a> </td>
+	                                                            <td>{{ ticket.ticket_assign_by.display_name }}</td>
+	                                                            <td>{{ ticket.ticket_caller.user_dep.dep_name }}</td>
+	                                                            <td>{{ ticket.ticket_next_action.display_name }}</td>
+                                                                {% get_tickets_dateTime_by_timezone ticket.ticket_modified_at request.user.id as dateTime %}
+                                                                <td>{{ dateTime }}</td>
+	                                                        {% elif output_view == 'TaskList' %}
+                                                                <td><a href="Home_ViewTicket?tickID={% get_encrypted_id ticket.tmgr_ticket_id %}" target="_blank" >{{ ticket.tmgr_ticket_id }}</a> </td>
+	                                                            <td>{{ ticket.tmgr_task.task_description|striptags|truncatechars:140 }}</td>
+																<!-- Action Permission check -->
+																{% if "da_Can_view_Assigned_To_information_in_Tickets_and_email_notifications"|check_action_permission:user.id %}
+																<td>{{ ticket.task_assigned_to.display_name }}</td>
+																{%endif%}
+                                                                {% if ticket.tmgr_completion_at %}
+                                                                    <td>{{ ticket.tmgr_completion_at|date:'m/d/Y h:i A' }}</td>
+	                                                            {% else %}
+	                                                            <td></td>
+	                                                            {% endif %}
+                                                                <td>{{ ticket.task_note }}</td>
+                                                            {% elif output_view == 'TotalTimeTech' %}
+                                                                <td>{{ ticket.note_created_by.display_name }}</td>
+                                                                <td>{{ ticket.note_ticket.ticket_org.org_name }}</td>
+                                                                <td>{{ ticket.note_ticket_id }}</td>
+	                                                            <td><a href="Home_ViewTicket?tickID={% get_encrypted_id ticket.note_ticket_id %}" target="_blank" >{{ ticket.note_ticket.subject }}</a> </td>
+                                                                <td>{% if ticket.note_ticket.ticket_status == 0 %}Opened{% else %}Closed{% endif %}-{{ ticket.note_ticket.ticket_sub_status.sub_status_text }}</td>
+	                                                            {% get_tickets_dateTime_by_timezone ticket.note_created_at request.user.id as dateTime %}
+	                                                            <td>{{ dateTime }}</td>
+                                                                <td>{{ ticket.hours|stringformat:"02d" }}:{{ ticket.minutes|stringformat:"02d" }}</td>
+                                                            {% elif output_view == 'TotalTimeOrg' %}
+                                                                <td>{{ ticket.note_ticket.ticket_org.org_name }}</td>
+                                                                <td>{{ ticket.note_created_by.display_name }}</td>
+                                                                <td>{{ ticket.note_ticket_id }}</td>
+	                                                            <td><a href="Home_ViewTicket?tickID={% get_encrypted_id ticket.note_ticket_id %}" target="_blank" >{{ ticket.note_ticket.subject }}</a> </td>
+                                                                <td>{% if ticket.note_ticket.ticket_status == 0 %}Opened{% else %}Closed{% endif %}-{{ ticket.note_ticket.ticket_sub_status.sub_status_text }}</td>
+	                                                            {% get_tickets_dateTime_by_timezone ticket.note_created_at request.user.id as dateTime %}
+	                                                            <td>{{ dateTime }}</td>
+                                                                <td>{{ ticket.hours|stringformat:"02d" }}:{{ ticket.minutes|stringformat:"02d" }}</td>
+															{% elif output_view == 'DetailListWoNotes' or output_view == 'DetailListWithNotes' %}
+																<td class="ticket-box">
+																	<div class="top-custom-title">
+																		<h5>{{ticket.ticket_id}}-{{ticket.subject}}</h5>
+																		<h2>View Ticket</h2>
+																	</div>
+																	<h5 class="inner-title">Overview</h5>
+																	<div class="panel-body view-ticket bg-white">
+																		<div class="form-group">
+																			<label class="col-md-3 control-label">Ticket#:</label>
+																			<div class="col-md-6">
+																			<label>{{ ticket.ticket_id }}</label>
+																		</div>
+																	</div>
+																	<div class="form-group">
+																		<label class="col-md-3 control-label">Ticket Status:</label>
+																		<div class="col-md-6">
+																			<label>{% if ticket.ticket_status == 0 %}Opened{% else %}Closed{% endif %}-{{ ticket.ticket_sub_status.sub_status_text}}</label>
+																		</div>
+																	</div>
+																	<div class="form-group">
+																		<label class="col-md-3 control-label">Organization:</label>
+																		<div class="col-md-6">
+																			<label>{{ticket.ticket_org.org_name}}</label>
+																		</div>
+																	</div>
+																	<div class="form-group">
+																		<label class="col-md-3 control-label">Submitted By:</label>
+																		<div class="col-md-6">
+																		{% if ticket.submitted_at %}
+																			{% get_tickets_dateTime_by_timezone1 ticket.submitted_at request.user.id as dateTime %}
+																			<label>{{ ticket.ticket_created_by.display_name}} on {{ dateTime }}</label>
+																		{% endif %}
+																		</div>
+																	</div>
+																	<div class="form-group">
+																		<label class="col-md-3 control-label">Subject:</label>
+																		<div class="col-md-6">
+																			<label>{{ticket.subject}}</label>
+																		</div>
+																	</div>
+																	<div class="form-group">
+																		<label class="col-sm-3 control-label">Description: </label>
+																		<input type="hidden" name="description_code" id="note{{ ticket.ticket_id }}" value="{{ ticket.description }}">
+																		<div class="col-md-8 col-sm-8">
+																			<div class="well well-sm t_notes" name="note{{ ticket.ticket_id }}" ></div>
+																		</div>
+																	</div>
+																	<div class="form-group">
+																		<label class="col-md-3 control-label">Ticket Type:</label>
+																		<div class="col-md-6">
+																			<label>{{ticket.ticket_type.ttype_name}}</label>
+																		</div>
+																	</div>
+																	<div class="form-group">
+																		<label class="col-md-3 control-label">Subtype 1:</label>
+																		<div class="col-md-6">
+																			<label>{{ticket.ticket_subtype1.ttype_name}}</label>
+																		</div>
+																	</div>
+																	<div class="form-group">
+																		<label class="col-md-3 control-label">Subtype 2:</label>
+																		<div class="col-md-6">
+																			<label>{{ticket.ticket_subtype2.ttype_name}}</label>
+																		</div>
+																	</div>
+																	<div class="form-group">
+																		<label class="col-md-3 control-label">Subtype 3:</label>
+																		<div class="col-md-6">
+																			<label>{{ticket.ticket_subtype3.ttype_name}}</label>
+																		</div>
+																	</div>
+																	<div class="form-group">
+																		<label class="col-md-3 control-label">Subtype 4:</label>
+																		<div class="col-md-6">
+																			<label>{{ticket.ticket_subtype4.ttype_name}}</label>
+																		</div>
+																	</div>
+																	<div class="form-group">
+																		<label class="col-md-3 control-label">Priority:</label>
+																		<div class="col-md-6">
+																			<label>{{ticket.priority.priority_name}}</label>
+																		</div>
+																	</div>
+																	<div class="form-group">
+																		<label class="col-md-3 control-label">Total Time Open:</label>
+																		<div class="col-md-6">
+																			{% getAdjHoursByTicketId ticket.ticket_id  as AdjTimeOpen %}
+																			<label>{{ AdjTimeOpen }}</label>
+																		</div>
+																	</div>
+																	<div class="form-group">
+																		<label class="col-md-3 control-label">Adj Time Open:</label>
+																		<div class="col-md-6">
+																			{% getAdjHoursByTicketId ticket.ticket_id  as AdjTimeOpen %}
+																			<label>{{ AdjTimeOpen }}</label>
+																		</div>
+																	</div>
+																	<div class="form-group">
+																		<label class="col-md-3 control-label">Labor Hours:</label>
+																		<div class="col-md-6">
+																		{% getLabourHoursByTicketId ticket.ticket_id  as labourHourss %}
+																			<label>{{ labourHourss }}</label>
+																		</div>
+																	</div>
+																	<hr>
+																	<!-- Action Permission check -->
+																	{% if "da_Can_view_Assigned_To_information_in_Tickets_and_email_notifications"|check_action_permission:user.id %}
+																	<h5 class="inner-title">Responsibility</h5><hr>
+																	<div class="form-group">
+																		<label class="col-md-3 col-sm-3 control-label">Assigned To:</label>
+																		{% if assigned_logs %}
+																			<div class="col-md-8 col-sm-8">
+																			{% if ticket.ticket_assign_to_id == None %}
+																				{% get_tickets_dateTime_by_timezone ticket.ticket_assign_at request.user.id as dateTime %}
+																				<label>-Unassigned- on <span class="text-primary text-bold">{{ dateTime }}</span></label><br/>
+																			{% endif %}
+																			{% for urlog_user_id, urlog_created_at, display_name in assigned_logs %}
+																				{% get_tickets_dateTime_by_timezone urlog_created_at request.user.id as dateTime %}
+																				<label>{{ display_name }} on <span class="text-primary text-bold">{{ dateTime }}</span></label><br/>
+																			{% endfor %}
+																			</div>
+																		{% endif %}
+																	</div>
+																	{%endif%}
+																	<div class="form-group">
+																		<label class="col-md-3 col-sm-3 control-label">Next Action:</label>
+																		{% if next_action_logs %}
+																			<div class="col-md-8 col-sm-8">
+																				{% if ticket.ticket_next_action_id == None %}
+																				{% get_tickets_dateTime_by_timezone ticket.ticket_next_action_at request.user.id as dateTime %}
+																				<label>-Unassigned- on <span class="text-primary text-bold">{{ dateTime }}</span></label><br/>
+																			{% endif %}
+																			{% for urlog_user_id, urlog_created_at, display_name in next_action_logs %}
+																				{% get_tickets_dateTime_by_timezone urlog_created_at request.user.id as dateTime %}
+																				<label>{{ display_name }} on <span class="text-primary text-bold">{{ dateTime}}</span></label><br/>
+																			{% endfor %}
+																			</div>
+																		{% endif %}
+																	</div>
+																	<div class="form-group">
+																		<label class="col-md-3 control-label">Email Notification:</label>
+																		<div class="col-md-6">
+																		<label><a>View/Maintain Distribution List...</a></label>
+																		</div>
+																	</div>
+																	<hr>
+																	<h5 class="inner-title">Resolution Info</h5><hr>
+																	<div class="form-group">
+																		<label class="col-md-3 col-sm-3 control-label">Closed By:</label>
+																		<div class="col-md-8 col-sm-8">
+																		 {% get_tickets_dateTime_by_timezone ticket.ticket_closed_at request.user.id as dateTime %}
+																			<label>{{ ticket.ticket_closed_by.display_name }} {% if dateTime %}on {{ dateTime }} {% endif %} </label>
+																		</div>
+																	</div>
+																	<div class="form-group">
+																		<label class="col-md-3 col-sm-3 control-label">Reopened By:</label>
+																		<div class="col-md-8 col-sm-8">
+																			{% get_tickets_dateTime_by_timezone ticket.ticket_is_reopen_at request.user.id as dateTime %}
+																			<label>{{ user.display_name }} {% if dateTime %}on {{ dateTime }} {% endif %}</label>
+																		</div>
+																	</div>
+																	<hr>
+																	<h5 class="inner-title">Supporting Info</h5><hr>
+																	<div class="form-group">
+																		<label class="col-md-3 col-sm-3 control-label">Account ID</label>
+																		<div class="col-md-8 col-sm-8">
+																			<label>{{ ticket.account.acc_name}} </label>
+																		</div>
+																	</div>
+																	<div class="form-group">
+																		<br/>
+																		<label class="col-md-3 col-sm-3 control-label">ATG:</label>
+																		<div class="col-md-8 col-sm-8">
+																			<div class="bg-info" style="padding: 15px 15px">
+																				<div class="form-group">
+																					<label class="col-md-2 col-sm-5 space_right_0">Record Locator: </label>
+																					<div class="col-md-4 col-sm-7">
+																						<label><b>{{ ticket.ticket_record_locator}}</b></label>
+																					</div>
+																					<label class="col-md-2 col-sm-5 space_right_0">Caller Name: </label>
+																					<div class="col-md-4 col-sm-7">
+																						<label><b>{{ ticket.ticket_caller_name}}</b></label>
+																					</div>
+																				</div>
+																				<div class="form-group">
+																					<label class="col-md-2 col-sm-5 space_right_0">Caller Phone: </label>
+																					<div class="col-md-4 col-sm-7">
+																						<label><b>{{ ticket.ticket_caller_phone}}</b></label>
+																					</div>
+																					<label class="col-md-2 col-sm-5 space_right_0">Caller Email: </label>
+																					<div class="col-md-4 col-sm-7">
+																						<label><b>{{ ticket.ticket_caller_email}}</b></label>
+																					</div>
+																				</div>
+																				<div class="form-group">
+																					<label class="col-md-2 col-sm-5 space_right_0">Passenger Name: </label>
+																					<div class="col-md-4 col-sm-7">
+																						<label><b>{{ ticket.ticket_passenger_name}}</b></label>
+																					</div>
+																				</div>
+																			</div>
+																		</div>
+																	</div>
+																	<hr>
+																	<h5 class="inner-title">Tasks</h5><hr>
+																		<div class="row">
+																			<div class="col-md-2 col-sm-2"></div>
+																			<div class="col-md-9 col-sm-9">
+																				<div class="table-responsive mr_left_space_100">
+																					<table class="task-inner-table" cellspacing="0" cellpadding="0">
+																						<thead>
+																							<tr>
+																								<th>Task</th>
+																								<th>Assgined To</th>
+																								<th>Completed</th>
+																								<th>Time</th>
+																							</tr>
+																						</thead>
+																						{% getTaskManagerByTicketId ticket.ticket_id as tasks %}
+																						{% if tasks %}
+																							<tbody>
+																							{% for task in tasks %}
+																								<tr>
+																									<td>{{ task.tmgr_task.task_description }}</td>
+																									<td>{{task.task_assigned_to.display_name}}</td>
+																									<td>
+																									
+																									{% if task.tmgr_completion_at %}
+																										{{ task.tmgr_completion_at |date:"m/d/Y f A" }}
+																									{% else %}
+																										{% if task.task_type == 1 or task.task_type == '1' %}
+																											<a href='javascript:void(0)'>Yes </a>
+																											<a href='javascript:void(0)'> | No</a>
+																											<a href='javascript:void(0)'> | N/A</a>
+																										{% else %}
+																											<a href='javascript:void(0)'>task complete?</a>
+																										{% endif %}
+																									{% endif %}
+																									</td>
+																									{%if task.tmgr_laborhour_hours == 0 and task.tmgr_laborhour_minutes == 0 %}
+																									<td>00:00</td>
+																									{%else%}
+																									<td>{{task.tmgr_laborhour_hours}}:{{task.tmgr_laborhour_minutes}}</td>
+																									{%endif%}
+																								</tr>
+																							{%endfor%}
+																							</tbody>
+																						{% endif %}																		
+																					</table>
+																				</div>
+																			</div>
+																		</div>
+																		<hr>
+																		{% get_tickets_attachments ticket.ticket_id  as attchements %}
+																		{% if attchements %}
+																		<h5 class="inner-title">Attachments</h5><hr>
+																		<div class="form-group">
+																		<a href="{% url 'attachTicket' %}?ticketNbr={{ ticket.ticket_id  }}" style="cursor:pointer;">
+																		<label class="col-md-3 col-sm-3 control-label">Attachments:</label>
+																		</a>
+																		<div class="col-md-8 col-sm-8">
+																			{%for attachement in attchements %}
+																			<a style="cursor:pointer;"  href='{{ MEDIA_URL }}{{ attachement.file_path }}' download>
+																			<label>{{ attachement.file_name}}</label><br/>
+																			<label>{{attachement.file_path}}</label><br/>
+																			<label>{{attachement.file_size}}</label><br/>	
+																			</a>
+																			 {% get_tickets_dateTime_by_timezone attachement.attach_created_at request.user.id as dateTime %}
+																			{% comment %} <label>{{ ticket.ticket_closed_by.display_name }} {% if dateTime %}on {{ dateTime }} {% endif %} </label> {% endcomment %}
+																			<label>{{ dateTime }}</label>
+																			{%endfor%}
+																		</div>
+																		</div>
+																		{% endif %}
+																		<hr>
+																	{%if output_view == 'DetailListWithNotes'%}		
+																	<h5 class="inner-title">Notes</h5><hr>
+																	{%endif%}
+																</td>			
+															{% endif %}
+														</tr>
+	                                                {% endfor %}
+                                                    {% if output_view == 'BriefListwHours' %}
+                                                        <tr class="gradeA">
+                                                            <td colspan="2"> </td>
+                                                        </tr>
+                                                        <tr class="gradeA">
+                                                            <td class="text-right text-bold" colspan="7">Sum Hours: </td>
+                                                            {% tickets_status tickets as ticket_stats %}
+                                                            <td>{{ ticket_stats.tt_time_extered }}</td>
+                                                        </tr>
+                                                    {% elif output_view == 'TotalTimeTech' or output_view == 'TotalTimeOrg' %}
+                                                        <tr class="gradeA">
+                                                            <td></td>
+                                                            <td colspan="5"><b>Tech Total</b></td>
+                                                            <td><b>{{ laborhours.thours|stringformat:"02d" }}:{{ laborhours.tminutes|stringformat:"02d" }}</b></td>
+                                                        </tr>
+                                                        <tr class="gradeA">
+                                                            <td></td>
+                                                            <td colspan="5"><b>Org Total</b></td>
+                                                            <td><b>{{ laborhours.thours|stringformat:"02d" }}:{{ laborhours.tminutes|stringformat:"02d" }}</b></td>
+                                                        </tr>
+                                                        <tr class="gradeA">
+                                                            <td colspan="7"> </td>
+                                                        </tr>
+                                                        <tr class="gradeA">
+                                                            <td></td>
+                                                            <td colspan="5"><b>Overall Total</b></td>
+                                                            <td><b>{{ laborhours.thours|stringformat:"02d" }}:{{ laborhours.tminutes|stringformat:"02d" }}</b></td>
+                                                        </tr>
+                                                    {% endif %}
+	                                            {% else %}
+	                                                <tr>
+	                                                    {% if output_view == 'BriefList' %}
+	                                                        <td colspan="7" class="text-center">No Tickets matched the search criteria.</td>
+	                                                    {% elif output_view == 'BriefListwHours' %}
+	                                                        <td colspan="8" class="text-center">No Tickets matched the search criteria.</td>
+	                                                    {% elif output_view == 'BriefListwLocations' %}
+	                                                        <td colspan="9" class="text-center">No Tickets matched the search criteria.</td>
+	                                                    {% elif output_view == 'BriefListwOrganizations' %}
+	                                                        <td colspan="9" class="text-center">No Tickets matched the search criteria.</td>
+	                                                    {% elif output_view == 'BriefListwRespTime' %}
+	                                                        <td colspan="9" class="text-center">No Tickets matched the search criteria.</td>
+	                                                    {% elif output_view == 'BriefListwTasks' %}
+	                                                        <td colspan="10" class="text-center">No Tickets matched the search criteria.</td>
+	                                                    {% elif output_view == 'BriefList2' %}
+	                                                        <td colspan="8" class="text-center">No Tickets matched the search criteria.</td>
+	                                                    {% elif output_view == 'RepAssignedReport' %}
+	                                                        <td colspan="10" class="text-center">No Tickets matched the search criteria.</td>
+	                                                    {% elif output_view == 'Statistics' %}
+	                                                        <td colspan="2" class="text-center">No Tickets matched the search criteria.</td>
+	                                                    {% elif output_view == 'TaskList' %}
+                                                            <td colspan="10" class="text-center">No Tickets matched the search criteria.</td>
+	                                                    {% endif %}
+                                                    </tr>
+	                                            {% endif %}
+	                                        {% endif %}
+                                        {% endif %}
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</section>
+					<!-- end: page -->
+				</section>
+			</div>
+
+           <!-- Modal Warning -->
+        {# Delete Modal Popup on Delete#}
+        <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <p>You are about to delete a record, this procedure is irreversible.</p>
+                        <strong>Do you want to proceed?</strong>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <a class="btn btn-danger btn-ok">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% endblock %}
+
+    </body>
+    {% include "itrak/includes/footer.html" %}
+    {% block script %}
+        <script>
+            function getXlsDownload(id){
+                $('#xlsType').val(id)
+               	$('#standard_form').trigger('submit');
+            }
+
+            function getTicketSearchStatList(startType){
+                $('#startType').val(startType)
+               	$('#stats_form').trigger('submit');
+            }
+
+			$(function(){
+				$('.description').html($('#description_code').val());
+			})
+
+			$('.t_notes').each(function(i, obj) {
+				$(this).html($('#'+$(this).attr('name')).val());
+
+			});
+        </script>
+
+
+    {% endblock %}
+

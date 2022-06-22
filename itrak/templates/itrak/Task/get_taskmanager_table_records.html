@@ -1,0 +1,17 @@
+
+    {% for record in records %}
+
+        <tr id="tbl_row{{ record.task_order_val }}">
+            <td>{{ record.task_order_val }}</td>
+            <td><input type="text" id="table-task-id{{ record.task_order_val }}" value="{{ record.task_id_text_val }}" readonly class="form-control"></td>
+            <td><input type="text" id="table-task-assign-to{{ record.task_order_val }}" value="{{ record.task_assign_to_text_val }}" readonly class="form-control"></td>
+        </tr>
+    {% endfor %}
+
+<script>
+
+$(document).ready(function() {
+
+});
+
+</script>

@@ -1,0 +1,74 @@
+    {% load static %}
+    {% load templates_extras %}
+    {% load my_filters %}
+
+    {% if group_records %}
+        {% for record in group_records %}
+            {% getGroupFieldRecordsDictByIndex record as group_record %}
+            {% if group_record.header == 1 and group_record.tcount > 0 %}
+                <tr>
+                    {% for i in group_id|times %}<td></td>{% endfor %}
+                    <td width="{% if group_record.column_width %}{{ group_record.column_width }}{% else %}0{% endif %}" style="min-width:fit-content;border-right:none;text-align:{% if group_record.justification == '1' %}center{% elif group_record.justification == '2' %}left{% else %}right{% endif %}">
+                        {% getformatingValue group_record.group_record_name group_record.format  as frmt %}
+                        <strong>{{ frmt}}</strong>
+                    </td>
+                    <td colspan="{{ group_record.colspan }}"></td>
+                </tr>
+            {% endif %}
+            {% to_dict_list groupFilterArgs group_record.group_record_column group_record.group_record_name as groupFilterArgs %}
+            {% if group_id < groups|length %}
+                {% getGroupSortByIndex groups_sorting group_id as group_sorting_array %}
+                {% getGroupFieldFormatingByColumnName records group_sorting_array fields_formating report_query_pair_id groupFilterArgs as child_group_records %}
+                {% include "itrak/Reports/reportwriter_report_records.html" with group_records=child_group_records group_id=group_id|add:'1' groupFilterArgs=groupFilterArgs %}
+            {% else %}
+                {% getGroupChildFields record records selected_columns group_id groupFilterArgs as report_group_fields %}
+                {% if report_group_fields %}
+                    {% for record in report_group_fields %}
+                        <tr>
+                            {% for key, value in record.items %}
+
+{#                                {% getdateformatingValue1 value as frmt %}#}
+                                {% getFieldFormatingByColumnName fields_formating forloop.counter0  as format %}
+                                <td width="{% if format.column_width %}{{ format.column_width }}{% else %}0{% endif %}" style="min-width:fit-content;text-align:{% if format.justification == '1' %}center{% elif format.justification == '2' %}left{% else %}right{% endif %}">
+                                    {% if forloop.counter > group_id %}
+                                        {% if key == 'ticket_id' %}
+                                            {% if value %}
+                                                {% getformatingValue1 value format.format key as frmt %}
+                                                <a href="Home_ViewTicket?tickID={% get_encrypted_id frmt %}" target="_blank" >{{ frmt }}</a>
+                                            {% endif %}
+                                        {% elif key == 'description' %}
+                                            {% if value %}
+                                                <input type="hidden" name="description_code" class="description_code" value="{{ value }}">
+                                                <div class="well well-sm description" ></div>
+                                            {% endif %}
+                                        {% else %}
+                                            {% if value %}
+                                            {% comment %}{% getformatingValue1 value format.format key as frmt %}{% endcomment %}
+                                            {% getformatingValue1 value format key as frmt %}
+                                                {{ frmt }}
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+                {% pop_dict_list groupFilterArgs as groupFilterArgs %}
+            {% endif %}
+            {% if group_record.footer == 1 and group_record.tcount > 0 %}
+                <tr>
+                    {% for i in group_id|times %}<td></td>{% endfor %}
+                    <td width="{% if group_record.column_width %}{{ group_record.column_width }}{% else %}0{% endif %}" style="min-width:fit-content;border-right:none;text-align:{% if group_record.justification == '1' %}center{% elif group_record.justification == '2' %}right{% else %}left{% endif %}">
+                        {% getformatingValue group_record.group_record_name group_record.format  as frmt %}
+
+                        <strong>{{ frmt }} Total: {{ group_record.tcount }}</strong>
+                    </td>
+                    <td colspan="{{ group_record.colspan }}"></td>
+                </tr>
+
+            {% endif %}
+        {% endfor %}
+        {% pop_dict_list groupFilterArgs as groupFilterArgs %}
+    {% endif %}

@@ -1,0 +1,116 @@
+{% extends 'itrak/base.html' %}
+
+{% block body_block %}
+    
+{% load static %}
+<style>
+    .switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input {
+  display: none;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked+.slider {
+  background-color: #2196F3;
+}
+
+input:focus+.slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked+.slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+
+/* Rounded sliders */
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+</style>
+            <section role="main" class="content-body">
+                <header class="page-header">
+                   <h2><i class="fa fa-building-o" aria-hidden="true"></i> Configure Ticket Fields</h2>
+                    <div class="right-wrapper pull-right">
+                        <ol class="breadcrumbs">
+                            <li>
+                                <a href="{% url 'home' %}">
+                                    <i class="fa fa-home"></i>
+                                </a>
+                            </li>
+                            <li><span>Configure Ticket Fields</span></li>
+                        </ol>
+                        <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+                    </div>
+                </header>
+
+                <!-- start: page -->
+                    <section class="panel">
+                        <header class="panel-heading header-height" style="overflow: hidden;">
+                            <!-- {% for ticket_field in ticket_fields %}
+                            <h1>|{{ ticket_field.field_name }}|</h1>
+                            {% endfor %} -->
+
+
+                            <!-- {% for configured_ticket_field in configured_ticket_fields %} -->
+                            <h1>|{{ configured_ticket_fields }}|</h1>
+                            <!-- {% endfor %} -->
+
+
+
+
+                            <!-- <h2 class="panel-title">Organization List</h2> -->
+                            <!-- <div class="pull-right">
+                                <a href="{% url 'organizatoinUsers' %}" class="btn btn-primary" style="margin-top: -20px; display: block;">Show Users</a>
+                            </div> -->
+                        </header>
+                      
+                    </section>
+                <!-- end: page -->
+            </section>
+        </div>
+        <div id="popup-modal-content"></div>
+{% endblock %}
+
+{% block script %}
+
+    <script>
+
+    </script>
+{% endblock %}

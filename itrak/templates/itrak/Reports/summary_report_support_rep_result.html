@@ -1,0 +1,91 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+        {% load tz %} {# it will Load the Django TimeZone Library#}
+        {% load templates_extras %}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-ticket" aria-hidden="true"></i> Ticket</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Ticket</span></li>
+								<li><span>Summary Report Results</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+						<section class="panel">
+							<header class="panel-heading">
+
+                                <h3 class="text-primary text-bold">Tickets by Rep - Results</h3>
+                           </header>
+							<div class="panel-body">
+                                <a onClick="javascript:history.go(-1);" class="back-text text-bold"><span class="fa fa-arrow-circle-left"> </span> Back</a>
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12">
+                                        <h5 class="text-primary"><b>Tickets per Support Representative  </b></h5>
+                                    </div>
+
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12">
+                                        <h5 class="text-primary">Recorded From {{ start_date }} To {{ end_date }} </h5>
+                                    </div>
+                                </div>
+ 								<table class="table table-bordered table-striped table-condensed mb-none" id="datatable-default">
+									<thead>
+										<tr>
+                                            <th>Entered By</th>
+                                            <th># of tickets</th>
+                                            <th>% of tickets</th>
+                                            <th># of Open Issues</th>
+										</tr>
+									</thead>
+                                    <thead>
+										<tr>
+                                            <th colspan="4"></th>
+										</tr>
+									</thead>
+									<tbody>
+                                        {% if tickets and sort_by == '1' %}
+                                            {% for ticket in tickets %}
+                                                <tr class="gradeA">
+                                                    <td>{{ ticket.ticket_created_by__display_name }}</td>
+                                                    <td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ticket.ticket_created_by_id }}&columnId=TOT">{{ ticket.tcount }}</a></td>
+                                                    <td>{% widthratio ticket.tcount total_tickets 100 %}%</td>
+                                                    {% if tickets_open %}{% if ticket.ticket_created_by_id in tickets_open_list %}{% for OB in tickets_open %}{% if OB.ticket_created_by_id == ticket.ticket_created_by_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ticket.ticket_created_by_id }}&columnId=OB">{{ OB.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                </tr>
+                                            {% endfor %}
+                                                <tr class="gradeA">
+                                                    <td><b>Total Number of Tickets</b></td>
+                                                    <td colspan="3"><b>{{ total_tickets }}</b></td>
+                                                </tr>
+                                        {% endif %}
+									</tbody>
+								</table>
+							</div>
+						</section>
+					<!-- end: page -->
+				</section>
+			</div>
+
+    {% endblock %}
+
+    {% block script %}
+        <script>
+        </script>
+    {% endblock %}
+
+

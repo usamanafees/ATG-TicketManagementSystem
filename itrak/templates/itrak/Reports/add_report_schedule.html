@@ -1,0 +1,778 @@
+{% extends 'itrak/base.html' %}
+
+{% block body_block %}
+    {% load static %}
+    {% load tz %}
+    {# it will Load the Django TimeZone Library#}
+    {% load templates_extras %}
+
+    <section role="main" class="content-body">
+        <header class="page-header">
+                       <h2><i class="fa fa-ticket" aria-hidden="true"></i>Report</h2>
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Report</span></li>
+								<li><span>Add Scheduled Report</span></li>
+							</ol>
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+		</header>
+        <!-- start: page -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <form id="summary-form" class="ticketForm form-horizontal" action="{% url 'saveScheduleReport' %}" method="post">
+                                    {% csrf_token %}
+                                    <section class="panel">
+                                        <header class="panel-heading">
+						                    <h2 class="panel-title">Add Scheduled Report</h2>
+                                        </header>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary saveButton">Save</button>
+                                                    <a class="btn btn-default resetBtn">Reset</a>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                        <div class="panel-body">
+                                            <div class="validation-message">
+                                                <ul></ul>
+                                            </div>
+                                             <div class="form-group">
+                                                <label class="col-md-3 control-label"><span class="required">*</span>Schedule Name:</label>
+                                                <div class="col-md-5 col-sm-6">
+                                                   <input type="text" name="sch_name" id="sch_name" class="form-control" placeholder="eg.: ABC" title="Enter Schedule Name" required/>
+                                                </div>
+                                                <div class="col-sm-6 col-md-offset-3">
+                                                     <div class="checkbox">
+                                                         <label>
+                                                            <input type="checkbox" name="is_active" id="is_active" value="1"checked>
+                                                             <strong>Active</strong>
+                                                         </label>
+                                                     </div>
+                                                </div>
+                                            </div>
+                                              <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span> Report Type: </label>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <select name="rp_type" id="rp_type" required="required" title="Select Report"  class="form-control" >
+                                                        <option value="0" readonly="readonly"selected >Saved Search</option>
+                                                        <option value="1">Report Writer Report</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                             <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span> Report Name: </label>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <select name="rep_name" id="rep_name"  class="form-control " title="Enter Report Name " required>
+                                                        <option value="" readonly="readonly" selected ></option>
+                                                          
+                                                    </select>
+                                                </div>
+                                            </div>
+                                              <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span> Output Type: </label>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <select name="out_type" id="out_type" required="required" title="Select Report"  class="form-control ">
+                                                        <option value="0" readonly="readonly" selected>Excel</option>
+                                                        <option value="1">HTML</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span>Schedule:</label>
+                                                <div class="col-md-4 col-sm-6  full-width-inner">
+                                                    <select name="schedule" id="schedule" required="required" title="Select Report"  class="form-control " >
+                                                        {%for scheduleReportspan in schedule_report_span%}
+                                                        <option value="{{scheduleReportspan.sch_rep_span_id}}"  >{{scheduleReportspan.sch_rep_span_name}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                    
+                                                </div>
+                                            </div>
+                                            <div class="form-group" id="field_value_div" style="display:None">
+                                               <label class="col-md-3 col-sm-3 control-label">On:</label>
+                                               <div class="col-md-4 col-sm-6  full-width-inner">
+                                                  <select id="week_days" name="week_days" class="form-control" multiple>
+                                                    <option value="1">Monday</option>
+                                                    <option value="2">Tuesday</option>
+                                                    <option value="3">Wednesday</option>
+                                                    <option value="4">Thursday</option>
+                                                    <option value="5">Friday</option>
+                                                    <option value="6">Saturday</option>
+                                                    <option value="7">Sunday</option>     
+                                                    </select>
+                                               </div>
+                                            </div>
+                                            <div id="field_value_div1" style="display:None">
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label" for=""></label>
+                                                    <div class="col-sm-9 inner-content-adjust">
+                                                    	<div class="row">
+	                                                        <div class="col-sm-12">
+	                                                            <label>
+	                                                                <input type="radio" class="radio-button" name="is_MonthDay_Specific" value="0" checked>
+	                                                                    <strong>Day</strong>
+	                                                            </label>
+	                                                        </div>
+		                                                    <div class="col-sm-2 col-xs-2 width-adjust">
+		                                                        <select name="Day_value" id="Day_value" required="" title=""  class="form-control " >
+		                                                                <option value="1" readonly="readonly" selected >1</option>
+		                                                                <option value="2">2</option>
+		                                                                <option value="3">3</option>
+		                                                                <option value="4">4</option>
+		                                                                <option value="5">5</option>
+		                                                                <option value="6">6</option>
+		                                                                <option value="7">7</option>
+		                                                                <option value="8">8</option>
+		                                                                <option value="9">9</option>
+		                                                                <option value="10">10</option>
+		                                                                <option value="11">11</option>
+		                                                                <option value="12">12</option>
+		                                                                <option value="13">13</option>
+		                                                                <option value="14">14</option>
+		                                                                <option value="15">15</option>
+		                                                                <option value="16">16</option>
+		                                                                <option value="17">17</option>
+		                                                                <option value="18">18</option>
+		                                                                <option value="19">19</option>
+		                                                                <option value="20">20</option>
+		                                                                <option value="21">21</option>
+		                                                                <option value="22">22</option>
+		                                                                <option value="23">23</option>
+		                                                                <option value="24">24</option>
+		                                                                <option value="25">25</option>
+		                                                                <option value="26">26</option>
+		                                                                <option value="27">27</option>
+		                                                                <option value="28">28</option>
+		                                                                <option value="29">29</option>
+		                                                                <option value="30">30</option>
+		                                                                <option value="31">31</option>
+		                                                        </select>
+		                                                    </div>
+		                                                    <div class="col-sm-1 col-xs-1 all-space-auto">
+		                                                        of every
+		                                                    </div>
+		                                                    <div class="col-sm-2 col-xs-2 width-adjust">
+		                                                        <select name="Day_every_month" id="Day_every_month" required="" title=""  class="form-control " >
+		                                                            <option value="1" readonly="readonly" selected >1</option>
+		                                                            <option value="2">2</option>
+		                                                            <option value="3">3</option>
+		                                                            <option value="4">4</option>
+		                                                            <option value="5">5</option>
+		                                                            <option value="6">6</option>
+		                                                            <option value="7">7</option>
+		                                                            <option value="8">8</option>
+		                                                            <option value="9">9</option>
+		                                                            <option value="10">10</option>
+		                                                            <option value="11">11</option>
+		                                                            <option value="12">12</option>
+		                                                            <option value="13">13</option>
+		                                                            <option value="14">14</option>
+		                                                            <option value="15">15</option>
+		                                                            <option value="16">16</option>
+		                                                            <option value="17">17</option>
+		                                                            <option value="18">18</option>
+		                                                            <option value="19">19</option>
+		                                                            <option value="20">20</option>
+		                                                            <option value="21">21</option>
+		                                                            <option value="22">22</option>
+		                                                            <option value="23">23</option>
+		                                                            <option value="24">24</option>
+		                                                            <option value="25">25</option>
+		                                                            <option value="26">26</option>
+		                                                            <option value="27">27</option>
+		                                                            <option value="28">28</option>
+		                                                            <option value="29">29</option>
+		                                                            <option value="30">30</option>
+		                                                            <option value="31">31</option>
+		                                                            <option value="32">32</option>
+		                                                            <option value="33">33</option>
+		                                                            <option value="34">34</option>
+		                                                            <option value="35">35</option>
+		                                                            <option value="36">36</option>
+		                                                            <option value="37">37</option>
+		                                                            <option value="38">38</option>
+		                                                            <option value="39">39</option>
+		                                                            <option value="40">40</option>
+		                                                            <option value="41">41</option>
+		                                                            <option value="42">42</option>
+		                                                            <option value="43">43</option>
+		                                                            <option value="44">44</option>
+		                                                            <option value="45">45</option>
+		                                                            <option value="46">46</option>
+		                                                            <option value="47">47</option>
+		                                                            <option value="48">48</option>
+		                                                            <option value="49">49</option>
+		                                                            <option value="50">50</option>
+		                                                            <option value="51">51</option>
+		                                                            <option value="52">52</option>
+		                                                            <option value="53">53</option>
+		                                                            <option value="54">54</option>
+		                                                            <option value="55">55</option>
+		                                                            <option value="56">56</option>
+		                                                            <option value="57">57</option>
+		                                                            <option value="58">58</option>
+		                                                            <option value="59">59</option>
+		                                                            <option value="60">60</option>
+		                                                            <option value="61">61</option>
+		                                                            <option value="62">62</option>
+		                                                            <option value="63">63</option>
+		                                                            <option value="64">64</option>
+		                                                            <option value="65">65</option>
+		                                                            <option value="66">66</option>
+		                                                            <option value="67">67</option>
+		                                                            <option value="68">68</option>
+		                                                            <option value="69">69</option>
+		                                                            <option value="70">70</option>
+		                                                            <option value="71">71</option>
+		                                                            <option value="72">72</option>
+		                                                            <option value="73">73</option>
+		                                                            <option value="74">74</option>
+		                                                            <option value="75">75</option>
+		                                                            <option value="76">76</option>
+		                                                            <option value="77">77</option>
+		                                                            <option value="78">78</option>
+		                                                            <option value="79">79</option>
+		                                                            <option value="80">80</option>
+		                                                            <option value="81">81</option>
+		                                                            <option value="82">82</option>
+		                                                            <option value="83">83</option>
+		                                                            <option value="84">84</option>
+		                                                            <option value="85">85</option>
+		                                                            <option value="86">86</option>
+		                                                            <option value="87">87</option>
+		                                                            <option value="88">88</option>
+		                                                            <option value="89">89</option>
+		                                                            <option value="90">90</option>
+		                                                            <option value="91">91</option>
+		                                                            <option value="91">92</option>
+		                                                            <option value="91">93</option>
+		                                                            <option value="91">94</option>
+		                                                            <option value="91">95</option>
+		                                                            <option value="91">96</option>
+		                                                            <option value="91">97</option>
+		                                                            <option value="91">98</option>
+		                                                            <option value="91">99</option>
+		                                                        </select>
+		                                                    </div>
+		                                                    <div class="col-sm-1 col-xs-1 all-space-auto">
+		                                                        month(s)
+		                                                    </div>
+		                                                </div>
+	                                                </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label" for=""></label>
+                                                    <div class="col-sm-9 inner-content-adjust">
+                                                    	<div class="row">
+	                                                        <div class="col-sm-12">
+	                                                            <label>
+	                                                                 <input type="radio" class="radio-button" name="is_MonthDay_Specific" value="1">
+	                                                                    <strong>The</strong>
+	                                                            </label>
+	                                                        </div>
+	                                                        <div class="col-sm-2 col-xs-2 width-adjust space_right_0">
+	                                                            <select name="the_first" id="the_first" required="" title=""  class="form-control " >
+	                                                                <option value="1" readonly="readonly"  >First</option>
+	                                                                <option value="2">Second</option>
+	                                                                <option value="3">Third</option>
+	                                                                <option value="4">Fourth</option>
+	                                                                <option value="5">Last</option>
+	                                                            </select>
+	                                                        </div>
+	                                                        <div class="col-sm-2 col-xs-2 width-adjust space_left_0">
+	                                                            <select name="the_days" id="the_days" required="" title=""  class="form-control " >
+	                                                                <option value="1" readonly="readonly">Monday</option>
+	                                                                <option value="2">Tuesday</option>
+	                                                                <option value="3">Wednesday</option>
+	                                                                <option value="4">Thursday</option>
+	                                                                <option value="5">Friday</option>
+	                                                                <option value="6">Saturday</option>
+	                                                                <option value="7">Sunday</option>
+	                                                            </select>
+	                                                        </div>
+	                                                        <div class="col-sm-1 col-xs-2 all-space-auto">
+	                                                            of every
+	                                                        </div>
+	                                                        <div class="col-sm-2 col-xs-2 width-adjust">
+	                                                            <select name="the_every_month" id="the_every_month" required="" title=""  class="form-control " >
+	                                                                 <option value="1" readonly="readonly" selected >1</option>
+		                                                            <option value="2">2</option>
+		                                                            <option value="3">3</option>
+		                                                            <option value="4">4</option>
+		                                                            <option value="5">5</option>
+		                                                            <option value="6">6</option>
+		                                                            <option value="7">7</option>
+		                                                            <option value="8">8</option>
+		                                                            <option value="9">9</option>
+		                                                            <option value="10">10</option>
+		                                                            <option value="11">11</option>
+		                                                            <option value="12">12</option>
+		                                                            <option value="13">13</option>
+		                                                            <option value="14">14</option>
+		                                                            <option value="15">15</option>
+		                                                            <option value="16">16</option>
+		                                                            <option value="17">17</option>
+		                                                            <option value="18">18</option>
+		                                                            <option value="19">19</option>
+		                                                            <option value="20">20</option>
+		                                                            <option value="21">21</option>
+		                                                            <option value="22">22</option>
+		                                                            <option value="23">23</option>
+		                                                            <option value="24">24</option>
+		                                                            <option value="25">25</option>
+		                                                            <option value="26">26</option>
+		                                                            <option value="27">27</option>
+		                                                            <option value="28">28</option>
+		                                                            <option value="29">29</option>
+		                                                            <option value="30">30</option>
+		                                                            <option value="31">31</option>
+		                                                            <option value="32">32</option>
+		                                                            <option value="33">33</option>
+		                                                            <option value="34">34</option>
+		                                                            <option value="35">35</option>
+		                                                            <option value="36">36</option>
+		                                                            <option value="37">37</option>
+		                                                            <option value="38">38</option>
+		                                                            <option value="39">39</option>
+		                                                            <option value="40">40</option>
+		                                                            <option value="41">41</option>
+		                                                            <option value="42">42</option>
+		                                                            <option value="43">43</option>
+		                                                            <option value="44">44</option>
+		                                                            <option value="45">45</option>
+		                                                            <option value="46">46</option>
+		                                                            <option value="47">47</option>
+		                                                            <option value="48">48</option>
+		                                                            <option value="49">49</option>
+		                                                            <option value="50">50</option>
+		                                                            <option value="51">51</option>
+		                                                            <option value="52">52</option>
+		                                                            <option value="53">53</option>
+		                                                            <option value="54">54</option>
+		                                                            <option value="55">55</option>
+		                                                            <option value="56">56</option>
+		                                                            <option value="57">57</option>
+		                                                            <option value="58">58</option>
+		                                                            <option value="59">59</option>
+		                                                            <option value="60">60</option>
+		                                                            <option value="61">61</option>
+		                                                            <option value="62">62</option>
+		                                                            <option value="63">63</option>
+		                                                            <option value="64">64</option>
+		                                                            <option value="65">65</option>
+		                                                            <option value="66">66</option>
+		                                                            <option value="67">67</option>
+		                                                            <option value="68">68</option>
+		                                                            <option value="69">69</option>
+		                                                            <option value="70">70</option>
+		                                                            <option value="71">71</option>
+		                                                            <option value="72">72</option>
+		                                                            <option value="73">73</option>
+		                                                            <option value="74">74</option>
+		                                                            <option value="75">75</option>
+		                                                            <option value="76">76</option>
+		                                                            <option value="77">77</option>
+		                                                            <option value="78">78</option>
+		                                                            <option value="79">79</option>
+		                                                            <option value="80">80</option>
+		                                                            <option value="81">81</option>
+		                                                            <option value="82">82</option>
+		                                                            <option value="83">83</option>
+		                                                            <option value="84">84</option>
+		                                                            <option value="85">85</option>
+		                                                            <option value="86">86</option>
+		                                                            <option value="87">87</option>
+		                                                            <option value="88">88</option>
+		                                                            <option value="89">89</option>
+		                                                            <option value="90">90</option>
+		                                                            <option value="91">91</option>
+		                                                            <option value="91">92</option>
+		                                                            <option value="91">93</option>
+		                                                            <option value="91">94</option>
+		                                                            <option value="91">95</option>
+		                                                            <option value="91">96</option>
+		                                                            <option value="91">97</option>
+		                                                            <option value="91">98</option>
+		                                                            <option value="91">99</option>
+	                                                            </select>
+	                                                        </div>
+	                                                        <div class="col-sm-1 col-xs-1 all-space-auto">
+	                                                         month(s)
+	                                                        </div>
+                                                   	 	</div>   
+                                                   	</div>     
+                                                </div>
+                                            
+                                            </div>
+                                            <div id="field_value_div2" style="display:None">
+                                            	<div class="form-group">
+	                                                <label class="col-md-3 col-sm-3 control-label">beginning:</label>
+	                                                <div class="col-sm-6 col-md-3">
+	                                                    <div class="input-group date" id="datePicker">
+	                                                        <input type="text" name="quartely_Beginning_Date" id="" data-plugin-datepicker class="form-control" />
+	                                                        <span class="input-group-addon">
+	                                                            <i class="fa fa-calendar"></i>
+	                                                        </span>
+	                                                    </div>
+	                                                </div>
+	                                                <div class="col-md-4 col-sm-3">
+	                                                	<small class="text-info align-text">mm-dd-yyyy</small>
+	                                                </div>
+	                                            </div>
+                                            </div>
+                                            <div id="field_value_div3" style="display:None">
+                                                <div class="form-group">
+                                                    <label class="col-sm-3 control-label" for="city_state_zip"></label>
+                                                    <div class="col-sm-9">
+                                                    	<div class="row">
+	                                                        <div class="col-sm-12">
+	                                                            <label>
+	                                                                <strong>On:</strong>
+	                                                            </label>
+	                                                        </div>
+	                                                        <div class="col-sm-6 col-md-4">
+	                                                            <div class="input-group date" id="datePickerBiannually_start_date">
+	                                                                <input type="text" name="biannually_start_date" id="" data-plugin-datepicker class="form-control" />
+	                                                                <span class="input-group-addon">
+	                                                                    <i class="fa fa-calendar"></i>
+	                                                                </span>
+	                                                            </div>
+	                                                        </div>
+	                                                        <div class="col-sm-12">
+	                                                            <label>
+	                                                                <strong>and:</strong>
+	                                                            </label>
+	                                                        </div>
+	                                                        <div class="col-sm-6 col-md-4">
+	                                                            <div class="input-group date" id="datePickerBiannually_end_date">
+	                                                                <input type="text" name="biannually_end_date" id="" data-plugin-datepicker class="form-control" />
+	                                                                <span class="input-group-addon">
+	                                                                    <i class="fa fa-calendar"></i>
+	                                                                </span>
+	                                                            </div>
+	                                                        </div>   
+	                                                    </div>
+                                                    </div>                                                           
+                                                </div>
+                                    
+                                            </div>
+                                            <div id="field_value_div4" style="display:None">
+                                            	<div class="form-group">
+                                            		<label class="col-sm-3 control-label"></label>
+                                                    <div class="col-sm-9">
+                                                    	<div class="row">
+		                                                	<label class="col-sm-12 control-label text-left"><strong>on:</strong></label>
+			                                                <div class="col-sm-6 col-md-4">
+			                                                    <div class="input-group date" id="datePickerAnnually_date">
+			                                                        <input type="text" name="annually_date" id="" data-plugin-datepicker class="form-control" />
+			                                                        <span class="input-group-addon">
+			                                                            <i class="fa fa-calendar"></i>
+			                                                        </span>
+			                                                    </div>
+			                                                </div>
+			                                                <div class="col-md-4 col-sm-3">
+			                                                	<small class="text-info align-text">mm-dd-yyyy</small>
+			                                                </div>
+			                                            </div>
+			                                        </div>
+	                                            </div>
+                                            </div>
+                                            <div id="field_value_div5" style="display:None">
+                                            	<div class="form-group">
+                                            		<label class="col-sm-3 control-label"></label>
+                                                    <div class="col-sm-9">
+                                                    	<div class="row">
+		                                                	<label class="col-sm-12 control-label text-left"><strong>on:</strong></label>
+			                                                <div class="col-sm-6 col-md-4">
+			                                                    <div class="input-group date" id="datePickerOnetime_date">
+			                                                        <input type="text" name="onetime_date" id="" data-plugin-datepicker class="form-control" />
+			                                                        <span class="input-group-addon">
+			                                                            <i class="fa fa-calendar"></i>
+			                                                        </span>
+			                                                    </div>
+                                                			</div>
+			                                                <div class="col-md-4 col-sm-3">
+			                                                	<small class="text-info align-text">mm-dd-yyyy</small>
+			                                                </div>
+			                                            </div>
+			                                        </div>
+			                                    </div>
+                                            </div>
+                                           <br>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">End Schedule:<span class="text-info align-text">Schedule to end on:</span></label>
+                                                <div class="col-sm-6 col-md-3">
+                                                    <div class="input-group date" id="datePickerEndSchedule">
+                                                        <input type="text" name="end_sch_date" id="end_sch_date" data-plugin-datepicker class="form-control" />
+                                                        <span class="input-group-addon">
+                                                            <i class="fa fa-calendar"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 col-sm-3">
+                                                	<small class="text-info align-text">mm-dd-yyyy</small>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Report Distribution:</label>
+                                                <div class="col-md-8">
+                                                 <p class="text-info align-text">The scheduled report creator will automatically be added to the report distribution list. Additional users can be added after saving the scheduled report.</p>
+                                                </div>
+                                            </div>
+                                          <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Notify on Error:</label>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <select name="notify_error" id="notify_error" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Caller", "allowClear": true }'>
+                                                        <option value=""> </option>
+                                                        {% if users %}
+                                                            {% for user in users %}
+                                                                <option value="{{ user.id }}">{{ user.display_name }}</option>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Comment: </label>
+                                                <div class="col-md-8">
+                                                    <textarea class="form-control" rows="3" name="comment" id="comment"  data-plugin-maxlength maxlength="7800"></textarea>
+                                                </div>
+                                            </div>
+                                         <br/>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-12">
+                                                    <button class="btn btn-primary saveButton">Save</button>
+                                                    <a class="btn btn-default resetBtn">Reset</a>
+                                                    <label class="required-lable"><span class="required">*</span> Required</label>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                    </section>
+                                </form>
+                            </div>
+                        </div>
+		<!-- end: page -->
+    </section>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        var globalArray = [];
+        var date = new Date();
+        var today = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+        var optComponent = {
+            format: 'mm-dd-yyyy',
+            container: '#datePicker',
+            orientation: 'auto top',
+            endDate :null,
+            todayHighlight: true,
+            autoclose: true
+        };
+
+
+        $(function(){
+            // COMPONENT
+            $( '#datePicker' ).datepicker( optComponent );
+            $( '#datePicker' ).datepicker( 'setDate', today );
+            $( '#datePickerEnd_sch_date' ).datepicker( optComponent );
+            $( '#datePickerEnd_sch_date' ).datepicker( 'setDate', today );
+            $( '#datePickerOnetime_date' ).datepicker( optComponent );
+            $( '#datePickerOnetime_date' ).datepicker( 'setDate', today );
+            $( '#datePickerAnnually_date' ).datepicker( optComponent );
+            $( '#datePickerAnnually_date' ).datepicker( 'setDate', today );
+            $( '#datePickerBiannually_end_date' ).datepicker( optComponent );
+            $( '#datePickerBiannually_end_date' ).datepicker( 'setDate', today );
+            $( '#datePickerBiannually_start_date' ).datepicker( optComponent );
+            $( '#datePickerBiannually_start_date' ).datepicker( 'setDate', today );
+            $( '#datePickerEndSchedule' ).datepicker( optComponent );
+             $('#week_days').multiselect({
+                    includeSelectAllOption: true,
+                    maxHeight: 250,
+                    selectAllText: 'Select All',
+                });
+
+            var rp_type = $('#rp_type option:selected').val();
+            if (rp_type != ''){                
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'getReportsByReportType' %}",
+                    data: {
+                        {% comment %} 'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(), {% endcomment %}
+                        rp_type: rp_type
+                    },
+                    dataType: 'json',
+                    beforeSend: function(jqXHR, settings) {
+                        //Do something before send...
+                    },
+                    success: function(data, textStatus, jqXHR) {
+                        if(data.response) {
+                            result = jQuery.parseJSON(data['response'])
+                             $('#rep_name').html('');
+                             $.each(result, function (index) {
+                                $('#rep_name').append('<option value="' + result[index].pk + '" selected>' + result[index].fields.search_title + '</option>')
+                            }); 
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    } 
+                }); 
+            }
+        });
+
+        $(document).on('change','#rp_type', function(){
+            var rp_type = $(this).val();
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'getReportsByReportType' %}",
+                data: {
+                    rp_type: rp_type
+                },
+                dataType: 'json',
+                beforeSend: function(jqXHR, settings) {
+                    //Do something before send...
+                },
+                success: function(data, textStatus, jqXHR) {
+                    if(data.response) {
+                        result = jQuery.parseJSON(data['response'])
+                        $('#rep_name').html('');
+                        $.each(result, function (index) {
+                            if(rp_type == '1'){
+                                $('#rep_name').append('<option value="' + result[index].pk + '"selected>' + result[index].fields.rb_report_name + '</option>')
+                            }else{
+                                $('#rep_name').append('<option value="' + result[index].pk + '"selected>' + result[index].fields.search_title + '</option>')
+                            }
+                        });
+                    }
+					debugger
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert(textStatus + '. ' + errorThrown);
+                } 
+            }); 
+        });
+
+
+         $('.resetBtn').on('click', function(e){
+                $("#sch_name").val("");
+                $("#rp_type").select2("val", "");
+                $("#rep_name").select2("val", "");
+                $("#out_type").select2("val", "");
+                $("#end_sch_date").val("");
+                $("#notify_error").select2("val", "");
+                $("#comment").val("");
+            });
+$(document).ready(function() {
+    var $weekly = $('#field_value_div').hide();
+    var $monthly = $('#field_value_div1').hide();
+    var $quartelyDiv = $('#field_value_div2').hide();
+    var $BiannuallyDiv = $('#field_value_div3').hide();
+    var $annuallyDiv = $('#field_value_div4').hide();
+    var $onetimeDiv = $('#field_value_div5').hide();
+
+    $('#schedule').change(function() {         
+        var selectedValue = $(this).val();
+        
+        if(selectedValue  === '2') {         //weekly
+            $monthly.hide();
+            $weekly.show();
+            $monthly.hide();
+            $BiannuallyDiv.hide();
+            $quartelyDiv.hide();
+            $annuallyDiv.hide();
+            $onetimeDiv.hide();
+        } else if (selectedValue === '3') {   // monthly
+            $weekly.hide();
+            $quartelyDiv.hide();
+            $BiannuallyDiv.hide();
+            $annuallyDiv.hide();
+            $onetimeDiv.hide();
+            $monthly.show();
+            
+        } else if (selectedValue === '4'){      //quartely
+            $monthly.hide();
+            $BiannuallyDiv.hide();
+            $weekly.hide();
+            $annuallyDiv.hide();
+            $onetimeDiv.hide();
+            $quartelyDiv.show();
+            
+        }
+         else if (selectedValue === '5'){       //Bianually
+             $quartelyDiv.hide();
+              $annuallyDiv.hide();
+              $weekly.hide();
+              $monthly.hide();
+              $onetimeDiv.hide();
+            $BiannuallyDiv.show();
+            
+        }
+        else if (selectedValue === '6'){        //annually
+            $BiannuallyDiv.hide();
+            $onetimeDiv.hide();
+            $weekly.hide();
+            $monthly.hide();
+            $quartelyDiv.hide();
+            $annuallyDiv.show();
+            
+        }
+        else if (selectedValue === '7'){        //onetime
+             $annuallyDiv.hide();
+            $onetimeDiv.show();
+           $weekly.hide();
+           $monthly.hide();
+           $quartelyDiv.hide();
+           $BiannuallyDiv.hide();
+        }
+         else {
+            $monthly.hide();
+            $weekly.hide();
+            $quartelyDiv.hide();
+            $BiannuallyDiv.hide();
+            $annuallyDiv.hide();
+            $onetimeDiv.hide();
+        }
+    });
+});    
+
+    var $radio = $('input[name="is_MonthDay_Specific"]');
+    var $durianSelect = $('#Day_value');
+    var $durianSelect2 = $('#Day_every_month');
+    var $starSelect = $("#the_first");
+    var $starSelect2 = $("#the_days");
+    var $starSelect3 = $("#the_every_month");
+    $starSelect.prop('disabled', true);
+    $starSelect2.prop('disabled', true);
+    $starSelect3.prop('disabled', true);
+        $radio.on('change', function(e) {
+             if ($(this).val() === '0') {
+                $starSelect.prop('disabled', true);
+                $starSelect2.prop('disabled', true);
+                $starSelect3.prop('disabled', true);
+                $durianSelect.prop('disabled', false)
+                $durianSelect2.prop('disabled', false)
+             }
+             else {
+                $starSelect.prop('disabled', false);
+                $starSelect2.prop('disabled', false);
+                $starSelect3.prop('disabled', false);
+                $durianSelect.prop('disabled', true);
+                $durianSelect2.prop('disabled', true);
+             }
+    })
+
+
+    </script>
+{%endblock%}

@@ -1,0 +1,116 @@
+   {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+        {% load tz %}
+  <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-gears" aria-hidden="true"></i> User ID Maintenance</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+{#                    <li><span>Email Notification</span></li>#}
+{#                    <li><span>Email Defaults</span></li>#}
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+
+
+        <!-- start: page -->
+        <div class="row">
+            <div class="col-md-12">
+                <section class="panel">
+                    <header class="panel-heading">
+                        <h2 class="panel-title">Change User's User ID</h2>
+                    </header>
+                    <div class="panel-body">
+                        <a onClick="javascript:history.go(-1);" class="back-text"><span class="fa fa-arrow-circle-left"> </span> Back</a>
+                        <h3>Select User ID to Change</h3>
+
+                        <p>Enter the current User ID as well as the new value for User ID. The new value should not already exist in your Users table. This process will update the user record as well as any other instance of the ID found throughout the system (issues, assets, audit history, etc.).</p>
+                        <br>
+                             <form id="summary-form" action="{% url 'userChangeIDupdate' %}" method="post" class="form-horizontal">
+                        {% csrf_token %}
+                        <div class="panel-body">
+                            {% for message in messages %}
+                                <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                {{ message }}
+                                </div>
+                            {% endfor %}
+                            <div class="validation-message">
+                                <ul></ul>
+                            </div>
+                            <br>
+                            <div class="form-group">
+                                <label class="col-lg-3 col-md-4 col-sm-5 control-label">Original User ID:</label>
+                                <div class="col-lg-4 col-sm-6">
+                                    <input type="email" title="Please enter a valid email address." name="orginal_user_id" id="orginal_user_id" class="form-control" title="Enter Original User ID" required >
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-lg-3 col-md-4 col-sm-5 control-label">New User ID:</label>
+                                <div class="col-lg-4 col-sm-6">
+                                    <input type="email" name="new_user_id" id="new_user_id" class="form-control" title="Please enter a valid new email address." required >
+                                </div>
+                                <div class="col-sm-4">
+                                    <span id="emailValid"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <footer class="panel-footer">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <button class="btn btn-primary saveButton">Submit</button>
+                                    <button type="reset" class="btn btn-default">Reset</button>
+{#                                     <label class="required-lable"><span class="required">*</span> Required</label>#}
+                                </div>
+                            </div>
+                        </footer>
+                    </form>
+                        <br>
+
+
+                    </div>
+                </section>
+            </div>
+        </div>
+    </section>
+    {% endblock %}
+    {% block script %}
+    <script>
+        $(document).on('keyup','#new_user_id', function(){
+          var fieldValue = $(this).val();
+          if (fieldValue != ''){
+              $.ajax({
+                type: 'POST',
+                url: "{% url 'validateAddUnique' %}",
+                data: {fieldValue: fieldValue, tbl_name: 'User', tbl_field: 'username'},
+                dataType: 'json',
+                beforeSend: function(jqXHR, settings) {
+                    //Do something before send...
+                },
+                success: function(data, textStatus, jqXHR) {
+                    if(data.response){
+                        $('#emailValid').html('<strong class="text-danger">UserID already exist. Try another one!</strong>');
+                        $('.saveButton').prop('disabled', true);
+                    }else{
+                        $('#emailValid').html('');
+                        $('.saveButton').prop('disabled', false);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert(textStatus + '. ' + errorThrown);
+                }
+              });
+          }
+        });
+    </script>
+    {% endblock %}

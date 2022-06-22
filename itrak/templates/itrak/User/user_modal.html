@@ -1,0 +1,134 @@
+
+ {% load templates_extras %}
+<div class="popup-modal-content">
+    <div id="modalUser" class="modal modal-block modal-block-primary modal-dialog custom-lg-modal">
+        <section class="panel">
+            <header class="panel-heading">
+                <h2 class="panel-title">Summary List</h2>
+            </header>
+            <div class="panel-body">
+                    <input type="hidden" value="{{summary_type}}" id="current_value" name="current_value" />
+                    {#<table class="table table-bordered table-task-modal">#}
+                        <table class="table table-bordered table-striped datatable">
+                        <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>ID#</th>
+                            <th>User Type</th>
+                            <th>Last</th>
+                            <th>First</th>
+                            <th>Department</th>
+                            <th>Email</th>
+                            <th>Phone No</th>
+                            <th>Last Login Date</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+            </div>
+            <footer class="panel-footer">
+                <div class="row">
+                    <div class="col-md-12 text-right">
+                    <button class="btn btn-default modal-dismiss" data-dismiss="modal">Close</button>
+                </div>
+                </div>
+            </footer>
+        </section>
+    </div>
+
+</div>
+{% block script %}
+<script>
+     {% if summary_type %}
+    var oTable = $('.datatable').dataTable({
+        // ...
+        columnDefs: [
+            {
+                name: 'action',
+                orderable: false,
+                searchable: false,
+                targets: [0]
+            },
+            {
+                name: 'username',
+                orderable: true,
+                searchable: true,
+                targets: [1]
+            },
+            {
+                name: 'user_type',
+                orderable: true,
+                searchable: true,
+                targets: [2]
+            },
+            {
+                name: 'last_name',
+                orderable: true,
+                searchable: true,
+                targets: [3]
+            },
+            {
+                name: 'first_name',
+                orderable: true,
+                searchable: true,
+                targets: [4]
+            },
+            {
+                name: 'user_dep.dep_name',
+                orderable: true,
+                searchable: true,
+                targets: [5]
+            },
+            {
+                name: 'email',
+                orderable: true,
+                searchable: true,
+                targets: [6]
+            },
+            {
+                name: 'phone_no',
+                orderable: true,
+                searchable: true,
+                targets: [7]
+            },
+            {
+                name: 'last_login',
+                orderable: true,
+                searchable: true,
+                targets: [8]
+            }
+        ],
+    "order": [[ 1, 'asc' ]],
+    "processing": true,
+    "serverSide": true,
+    "lengthMenu": [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "All"] ],
+    "stateSave": true,
+    "ajax": {
+             "url": "{% url 'user_summary_list_json' %}",
+             "type": "GET",
+             "data": function ( d ) {
+                 d.type = $('#current_value').val();
+                 d.csrfmiddlewaretoken = getCookie('csrftoken');
+             }
+         },
+});
+{% endif %}
+// ...
+function getCookie(name) {
+         var cookieValue = null;
+         if (document.cookie && document.cookie != '') {
+             var cookies = document.cookie.split(';');
+             for (var i = 0; i < cookies.length; i++) {
+                 var cookie = jQuery.trim(cookies[i]);
+                 // Does this cookie string begin with the name we want?
+                 if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                     break;
+                 }
+             }
+         }
+         return cookieValue;
+     }
+</script>
+{% endblock %}

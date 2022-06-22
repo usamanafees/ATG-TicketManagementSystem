@@ -1,0 +1,119 @@
+{% extends 'itrak/base.html' %}
+
+{% block body_block %}
+    {% load static %}
+
+    <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-gears" aria-hidden="true"></i> Tickets Default Distribution</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+                    <li><span>Email Notification</span></li>
+                    <li><span>Tickets Default Distribution</span></li>
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+
+        <!-- start: page -->
+        <div class="row">
+            <div class="col-md-12">
+                <section class="panel">
+                    <header class="panel-heading">
+                        <h2 class="panel-title">Ticket Default Email Notification List -- Distribution for Standard User Roles</h2>
+                    </header>
+                    <div class="panel-body">
+                        {% for message in messages %}
+                            <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            {{ message }}
+                            </div>
+                        {% endfor %}
+                        <p>Users listed below will receive email and/or SMS notification when the selected Ticket events occur.</p>
+                        <p>Use the 'default' record listed below to define default events for users added individually to other email distribution lists</p>
+                        <br>
+                        <div class="table-responsive">
+	                        <table class="table table-striped table-hover">
+	                            <thead>
+	                                <tr>
+	                                    <th></th>
+	                                    <th></th>
+	                                    {% for action in tickets_actions %}
+	                                        <th>{{ action.t_action_name }}</th>
+	                                    {% endfor %}
+	                                </tr>
+	                                <tr>
+	                                    <th></th>
+	                                    <th>Display Name</th>
+	                                    <th>Email</th>
+	                                    <th>Email</th>
+	                                    <th>Email</th>
+	                                    <th>Email</th>
+	                                    <th>Email</th>
+	                                    <th>Email</th>
+	                                </tr>
+	                            </thead>
+	                            <tbody>
+	                                {% for role in ticket_roles %}
+	                                    <tr>
+	                                        <td><a class="mb-xs mt-xs mr-xs modal-sizes" onclick="edit_modal({{ role.t_role_id }});" href="#modalLG" data-id="{{ role.t_name }}">Edit</a></td>
+	                                        <td>{{ role.t_name }}</td>
+	                                        <td>{% if role.t_role_id|stringformat:"s 1" in permis %}<i class="fa fa-check" style="color:green"></i>{% endif %}</td>
+	                                        <td>{% if role.t_role_id|stringformat:"s 2" in permis %}<i class="fa fa-check" style="color:green"></i>{% endif %}</td>
+	                                        <td>{% if role.t_role_id|stringformat:"s 3" in permis %}<i class="fa fa-check" style="color:green"></i>{% endif %}</td>
+	                                        <td>{% if role.t_role_id|stringformat:"s 4" in permis %}<i class="fa fa-check" style="color:green"></i>{% endif %}</td>
+	                                        <td>{% if role.t_role_id|stringformat:"s 5" in permis %}<i class="fa fa-check" style="color:green"></i>{% endif %}</td>
+	                                        <td>{% if role.t_role_id|stringformat:"s 6" in permis %}<i class="fa fa-check" style="color:green"></i>{% endif %}</td>
+	                                    </tr>
+	                                {% endfor %}
+	                            </tbody>
+	                        </table>
+	                    </div>
+                        <div id="modalLG" class="modal-block modal-block-lg mfp-hide">
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}
+{% block script %}
+    <script>
+        $(document).ready(function() {
+        });
+
+        function edit_modal(id){
+            //$('#modal_name').html(name);
+            //$('#role_name').val(name);
+            var role_id = id;
+            $.ajax({
+                url:"{% url 'getModalActionDetailById' %}",
+                type:'POST',
+                data:{
+                    'role_id':role_id,
+                },
+                success:function(data){
+                    $('#modalLG').html('');
+                    $('#modalLG').html(data);
+                    //$('#modalOrgDetail').modal("show");
+                    //{#cwindow.location = $(this).attr('href');#}
+                },
+                error:function(){
+                    console.log('error')
+                },
+            });
+        }
+
+        function modal_reset(id){
+            edit_modal(id);
+        }
+    </script>
+{% endblock %}

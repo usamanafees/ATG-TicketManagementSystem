@@ -1,0 +1,253 @@
+
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+    {% load static %}
+    {% load tz %} {# it will Load the Django TimeZone Library#}
+    {% load templates_extras %}
+
+        <section role="main" class="content-body">
+            <header class="page-header">
+               <h2><i class="fa fa-file" aria-hidden="true"></i> Report</h2>
+
+                <div class="right-wrapper pull-right">
+                    <ol class="breadcrumbs">
+                        <li>
+                            <a href="{% url 'home' %}">
+                                <i class="fa fa-home"></i>
+                            </a>
+                        </li>
+                        <li><span>Reports</span></li>
+                        <li><span>Select Date Range</span></li>
+                    </ol>
+
+                    <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+                </div>
+            </header>
+
+                
+            <!-- start: page -->
+                 <div class="row">
+                    <div class="col-md-12">
+                        {% for message in messages %}
+                            <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                        <form id="summary-form" action="{% url 'summaryReportResults' %}" method="post" class="form-horizontal">
+                            {% csrf_token %}
+                            <input type="hidden" name="report_id" id="report_id" value="{{ report_id }}" />
+                            <section class="panel">
+                                <header class="panel-heading">
+                                    <h2 class="panel-title">
+                                    {% if report_id == 'OrgContractTime' %}Contract Time Used by Organization - Select Date Range{%endif%}
+                                    {% if report_id == 'OrgContractExp' %}Contracts Expiring by Organization - Select Date Range{%endif%}
+                                    {% if report_id == 'OrgContractTimeOverage' %}Contract Overage Time by Organization - Select Date Range{%endif%}
+                                    {% if report_id == 'IssuesPriority' %}Tickets by Priority - Select Date Range{%endif%}
+                                    {% if report_id == 'IssuesPriorityByDay' %}Tickets by Priority (Day) - Select Date Range{%endif%}
+                                    {% if report_id == 'IssuesPriorityByMonth' %}Tickets by Priority (Month) - Select Date Range{%endif%}
+                                    {% if report_id == 'AssignedTo' %}Tickets by Assigned To - Select Date Range{%endif%}
+                                    {% if report_id == 'Inactive' %}Tickets by Inactive User - Results{%endif%}
+                                    {% if report_id == 'IssueSubTypes' %}Tickets by Ticket Subtype - Select Date Range{%endif%}
+                                    {% if report_id == 'IssueTypes' %}Tickets by Ticket Type - Select Date Range{%endif%}
+                                    {% if report_id == 'Locations' %}Tickets by Account - Select Date Range{%endif%}
+                                    {% if report_id == 'NextActionBy' %}Tickets by Next Action - Select Date Range{%endif%}
+                                    {% if report_id == 'Organizations' %}Tickets by Organization - Select Date Range{%endif%}
+                                    {% if report_id == 'SubmittedBy' %}Tickets by Submitter - Select Date Range{%endif%}
+                                    {% if report_id == 'DepartmentsSubmit' %}Tickets by Submitting Department - Select Date Range{%endif%}
+                                    {% if report_id == 'IncidentsByRep' %}Tickets by Rep - Select Date Range{%endif%}
+                                    {% if report_id == 'OrgTimes' %}Labor Hours by Organization - Select Date Range{%endif%}
+                                    {% if report_id == 'UserTimes' %}Labor Hours by User - Select Date Range{%endif%}
+                                    {% if report_id == 'OrgTimeOpen' %}Total Time Open by Organization - Select Date Range{%endif%}
+                                    {% if report_id == 'UserTimeOpen' %}Total Time Open by User - Select Date Range{%endif%}
+                                </h2>
+                                </header>
+                                <footer class="panel-footer">
+                                    <div class="row">
+                                        <div class="col-sm-9">
+                                            <button class="btn btn-primary saveButton">Show Report</button>
+                                            <button type="reset" class="btn btn-default">Reset</button>
+                                        </div>
+                                    </div>
+                                </footer>
+                                <div class="panel-body">
+                                    <div class="validation-message">
+                                        <ul></ul>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span> Date Range: </label>
+                                        <div class="col-md-6 col-sm-6">
+                                            <input type="text" id="date_range" name="date_range" title="Date range is required." placeholder="Select Date Range" class="form-control" required/>
+                                        </div>
+                                        <div class="col-md-3 col-sm-3">
+                                            <span class="text-primary text-bold">mm/dd/yyyy</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-sm-3 control-label">Sort By:</label>
+                                        <div class="col-md-6 col-sm-6">
+                                            <select name="sort_by" id="sort_by" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Sort By", "allowClear": true }'>
+                                                {% if report_id == 'OrgContractTime' %}
+                                                    <option value="ticket_org__org_name" selected>Organization</option>
+                                                {%endif%}
+                                                {% if report_id == 'IssuesPriority' %}
+                                                    <option value="1" selected>Priority</option>
+                                                    <option value="2" >Tickets open at Beginging of period</option>
+                                                    <option value="3" >Tickets open during period</option>
+                                                    <option value="4" >Tickets closed during period</option>
+                                                    <option value="5" >Tickets open at end of period</option>
+                                                {%endif%}
+                                                {%if report_id == 'OrgContractExp'  %}
+                                                <option value="ticket_org__org_name" selected>Organization</option>
+                                                {%endif%}
+                                                {% if report_id == 'IssuesPriorityByDay' or report_id == 'IssuesPriorityByMonth' %}
+                                                    <option value="1" selected>Priority</option>
+                                                {%endif%}
+                                                {% if report_id == 'AssignedTo' %}
+                                                    <option value="1" selected>Assigned To Name</option>
+                                                    <option value="2" >Tickets open at Beginging of period</option>
+                                                    <option value="3" >Tickets open during period</option>
+                                                    <option value="4" >Tickets closed during period</option>
+                                                    <option value="5" >Tickets open at end of period</option>
+                                                {%endif%}
+                                                {% if report_id == 'Inactive' %}
+                                                    <option value="1" selected>Inactive User Name</option>
+                                                    <option value="2" >Tickets open at Beginging of period</option>
+                                                    <option value="3" >Tickets open during period</option>
+                                                    <option value="4" >Tickets closed during period</option>
+                                                    <option value="5" >Tickets open at end of period</option>
+                                                {%endif%}
+                                                {% if report_id == 'IssueSubTypes' %}
+                                                    <option value="1" selected>Ticket Type / Ticket Subtype</option>
+                                                    <option value="2" >Tickets open at Beginging of period</option>
+                                                    <option value="3" >Tickets open during period</option>
+                                                    <option value="4" >Tickets closed during period</option>
+                                                    <option value="5" >Tickets open at end of period</option>
+                                                {%endif%}
+                                                {% if report_id == 'IssueTypes' %}
+                                                    <option value="1" selected>Ticket Type</option>
+                                                    <option value="2" >Tickets open at Beginging of period</option>
+                                                    <option value="3" >Tickets open during period</option>
+                                                    <option value="4" >Tickets closed during period</option>
+                                                    <option value="5" >Tickets open at end of period</option>
+                                                {%endif%}
+                                                {% if report_id == 'Locations' %}
+                                                    <option value="1" selected>Account</option>
+                                                    <option value="2" >Tickets open at Beginging of period</option>
+                                                    <option value="3" >Tickets open during period</option>
+                                                    <option value="4" >Tickets closed during period</option>
+                                                    <option value="5" >Tickets open at end of period</option>
+                                                {%endif%}
+                                                {% if report_id == 'NextActionBy' %}
+                                                    <option value="1" selected>Next Action Name</option>
+                                                    <option value="2" >Tickets open at Beginging of period</option>
+                                                    <option value="3" >Tickets open during period</option>
+                                                    <option value="4" >Tickets closed during period</option>
+                                                    <option value="5" >Tickets open at end of period</option>
+                                                {%endif%}
+                                                {% if report_id == 'Organizations' %}
+                                                    <option value="1" selected>Organization</option>
+                                                    <option value="2" >Tickets open at Beginging of period</option>
+                                                    <option value="3" >Tickets open during period</option>
+                                                    <option value="4" >Tickets closed during period</option>
+                                                    <option value="5" >Tickets open at end of period</option>
+                                                {%endif%}
+                                                {% if report_id == 'SubmittedBy' %}
+                                                    <option value="1" selected>Submitter Name</option>
+                                                    <option value="2" >Tickets open at Beginging of period</option>
+                                                    <option value="3" >Tickets open during period</option>
+                                                    <option value="4" >Tickets closed during period</option>
+                                                    <option value="5" >Tickets open at end of period</option>
+                                                {%endif%}
+                                                {% if report_id == 'DepartmentsSubmit' %}
+                                                    <option value="1" selected>Department</option>
+                                                    <option value="2" >Tickets open at Beginging of period</option>
+                                                    <option value="3" >Tickets open during period</option>
+                                                    <option value="4" >Tickets closed during period</option>
+                                                    <option value="5" >Tickets open at end of period</option>
+                                                {%endif%}
+                                                {% if report_id == 'IncidentsByRep' %}
+                                                    <option value="1" selected>Enterer Name</option>
+                                                {%endif%}
+                                                {% if report_id == 'OrgTimes' %}
+                                                    <option value="1" selected>Organization</option>
+                                                {%endif%}
+                                                {% if report_id == 'UserTimes' %}
+                                                    <option value="1" selected>Submitted By</option>
+                                                {%endif%}
+                                                {% if report_id == 'OrgTimeOpen' %}
+                                                    <option value="1" selected>Organization</option>
+                                                {%endif%}
+                                                {% if report_id == 'UserTimeOpen' %}
+                                                    <option value="1" selected>Submitted By</option>
+                                                {%endif%}
+                                            </select>
+                                    	</div>
+                                    </div>
+                                </div>
+                                
+                                <footer class="panel-footer">
+                                    <div class="row">
+                                        <div class="col-sm-9">
+                                            <button class="btn btn-primary saveButton">Show Report</button>
+                                            <button type="reset" class="btn btn-default">Reset</button>
+                                        </div>
+                                    </div>
+                                </footer>
+                            </section>
+                        </form>
+                    </div>
+                </div>
+            <!-- end: page -->
+                        </section>
+                </div>
+            </div>
+        <!-- end: page -->
+
+    {% endblock %}
+
+    {% block script %}
+        <script>
+
+            $(function() {
+
+                var start = moment().subtract(365, 'days');
+                var end = moment();
+
+                function cb_open(start, end) {
+                    $('#date_range').val(start.format('MM/DD/YYYY') + ' - ' + end.format('MM/DD/YYYY'));
+                }
+
+                $('#date_range').daterangepicker({
+                    startDate: start,
+                    endDate: end,
+                    autoUpdateInput: false,
+                    locale: {
+                      cancelLabel: 'Clear'
+                    },
+                    ranges: {
+                       'Today': [moment(), moment()],
+                       'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                       'This Week': [moment().startOf('week'), moment().endOf('week')],
+                       'Last Week': [moment().subtract(1, 'week').startOf('week'), moment().subtract(1, 'week').endOf('week')],
+                       'This Month': [moment().startOf('month'), moment().endOf('month')],
+                       'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+                       'This Year': [moment().startOf('year'), moment().endOf('year')],
+                       'Last Year': [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')]
+                    }
+                }, cb_open);
+                cb_open(start, end);
+                $('#date_range').val('');
+
+                $('#date_range').on('cancel.daterangepicker', function(ev, picker) {
+                  $(this).val('');
+                });
+
+            });
+
+            
+        </script>
+        
+    {% endblock %}
+

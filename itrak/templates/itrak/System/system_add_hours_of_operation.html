@@ -1,0 +1,646 @@
+{% extends 'itrak/base.html' %}
+
+{% block body_block %}
+    {% load static %}
+    {% load templates_extras %}
+    <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-cogs" aria-hidden="true"></i> System</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+                    <li><span>System</span></li>
+                    <li><span>Hours of Operation</span></li>
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+        {% for message in messages %}
+            <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                {{ message }}
+            </div>
+        {% endfor %}        
+        <!-- start: page -->
+            <form id="summary-form" action="" method="post" class="form-horizontal">
+                {% csrf_token %}
+            <section class="panel">
+                <header class="panel-heading">
+                    <h2 class="panel-title">Hours of Operation</h2>                               
+                </header>
+                <div class="panel-body">
+                    <div class="validation-message">
+                        <ul></ul>
+                    </div>
+                    <h4><strong>Define Business Hours</strong></h4>
+                    <p><strong>Note:</strong> Modifying any Hours of Operation setting will affect Time Open calculations for Tickets. By default, only Open Ticket values will be recalculated. To recalculate Open and Closed Tickets change the Recalculation option below.</p>                     
+                        <div class="row">
+                            <div class="col-md-10">
+                                    <div class="form-group">
+                                        <label for="" class="col-sm-3 control-label">Time Open Recalculation:</label>
+                                        <input type="radio" {% if data.open_tickets_only == "Open" %} checked {% endif %} name="inp_Recalculation" value="Open" id="inp_Recalculation1">
+                                        Open Tickets Only                                                
+                                    </div>
+                                    {% if data.open_tickets_only%}
+                                    <div class="form-group">
+                                        <label for="" class="col-sm-3 control-label"></label>
+                                        <input type="radio" name="inp_Recalculation" {% if data.open_tickets_only == "OpenClosed" %} checked {% endif %} value="OpenClosed" id="inp_Recalculation2">
+                                        Open and Closed Tickets
+                                    </div>
+                                    {% else %}
+                                    <div class="form-group">
+                                        <label for="" class="col-sm-3 control-label"></label>
+                                        <input type="radio" name="inp_Recalculation" checked value="OpenClosed" id="inp_Recalculation2">
+                                        Open and Closed Tickets
+                                    </div>
+                                    {% endif %}
+                               
+                                
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label">Work Day:</label>
+                                    <input type="checkbox" name="chkWorkday24" {% if data.work_day == "ON" %} checked {% endif %} value="ON" id="chkWorkday24">
+                                    24 hours
+                                </div>
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label">Begins:</label>
+                                        <div class="same-columns">
+                                            <select class="form-control input-tiny" value="{{data.start_hour}}" name="inp_starthour" id="inp_starthour">                        
+                                                <option {% if data.start_hour == "00" %} selected {% endif %} value="00">00</option>                                                
+                                                <option {% if data.start_hour == "01" %} selected {% endif %} value="01">01</option>                                                
+                                                <option {% if data.start_hour == "02" %} selected {% endif %} value="02">02</option>                                                
+                                                <option {% if data.start_hour == "03" %} selected {% endif %} value="03">03</option>                                                
+                                                <option {% if data.start_hour == "04" %} selected {% endif %} value="04">04</option>                                                
+                                                <option {% if data.start_hour == "05" %} selected {% endif %} value="05">05</option>                                                
+                                                <option {% if data.start_hour == "06" %} selected {% endif %} value="06">06</option>                                                
+                                                <option {% if data.start_hour == "07" %} selected {% endif %} value="07">07</option>                                                
+                                                <option {% if data.start_hour == "08" %} selected {% endif %} value="08">08</option>                                                
+                                                <option {% if data.start_hour == "09" %} selected {% endif %} value="09">09</option>                                                
+                                                <option {% if data.start_hour == "10" %} selected {% endif %} value="10">10</option>                                                
+                                                <option {% if data.start_hour == "11" %} selected {% endif %} value="11">11</option> 
+                                                {% if data.start_hour %}                                              
+                                                    <option {% if data.start_hour == "12" %} selected {% endif %} value="12">12</option>                                                  
+                                                {% else %}
+                                                    <option selected value="12">12</option>
+                                                {% endif %}                                                
+                                                                                                
+                                            </select>
+                                            <strong> : </strong>
+                                            <select class="form-control input-tiny" value="{{data.start_minutes}}" name="inp_startminutes" id="inp_startminutes">                                                    
+                                                {% if data.start_minutes %}                                              
+                                                    <option {% if data.start_minutes == "00" %} selected {% endif %} >00</option>                                                  
+                                                {% else %}
+                                                    <option selected value="00">00</option>
+                                                {% endif %}
+                                                <option {% if data.start_minutes == "30" %} selected {% endif %} >30</option>                                                    
+                                            </select>
+                                            <select class="form-control input-tiny" value="{{data.start_AM_PM}}" name="inp_startAMPM" id="inp_startAMPM">
+                                                {% if data.start_AM_PM %}                                              
+                                                    <option  {% if data.start_AM_PM == "AM" %} selected  {% endif %}>AM</option>
+                                                {% else %}
+                                                    <option selected value="AM">AM</option>
+                                                {% endif %}
+                                                <option {% if data.start_AM_PM == "PM" %} selected {% endif %} >PM</option>
+                                            </select>
+                                        </div>
+                                        <div class="same-columns">
+                                            <label for="" class="control-label">&nbsp; Ends: &nbsp;</label>
+                                            <select class="form-control input-tiny" value="{{data.end_hour}}" name="inp_endhour" id="inp_endhour">                                                                
+                                                <option {% if data.end_hour == "00" %} selected {% endif %} value="00">00</option>                                                    
+                                                <option {% if data.end_hour == "01" %} selected {% endif %} value="01">01</option>                                                    
+                                                <option {% if data.end_hour == "02" %} selected {% endif %} value="02">02</option>                                                    
+                                                <option {% if data.end_hour == "03" %} selected {% endif %} value="03">03</option>                                                    
+                                                <option {% if data.end_hour == "04" %} selected {% endif %} value="04">04</option>                                                    
+                                                <option {% if data.end_hour == "05" %} selected {% endif %} value="05">05</option>                                                    
+                                                <option {% if data.end_hour == "06" %} selected {% endif %} value="06">06</option>                                                    
+                                                <option {% if data.end_hour == "07" %} selected {% endif %} value="07">07</option>                                                    
+                                                <option {% if data.end_hour == "08" %} selected {% endif %} value="08">08</option>                                                    
+                                                <option {% if data.end_hour == "09" %} selected {% endif %} value="09">09</option>                                                    
+                                                <option {% if data.end_hour == "10" %} selected {% endif %} value="10">10</option>      
+                                                {% if data.end_hour %}                                              
+                                                    <option {% if data.end_hour == "11" %} selected {% endif %} value="11">11</option>                                                    
+                                                {% else %}
+                                                    <option selected value="11">11</option>
+                                                {% endif %}
+                                                <option {% if data.end_hour == "12" %} selected {% endif %} value="12">12</option>                                                    
+                                            </select>
+                                            <strong> : </strong>
+                                            <select class="form-control input-tiny" value="{{data.end_minutes}}" name="inp_endminutes" id="inp_endminutes">                                                    
+                                                <option {% if data.end_minutes == "00" %} selected {% endif %}>00</option>
+                                                {% if data.end_minutes %}                                              
+                                                    <option {% if data.end_minutes == "30" %} selected {% endif %}>30</option>                                                  
+                                                {% else %}
+                                                    <option selected value="30">30</option>
+                                                {% endif %}                                                                                                
+                                            </select>
+                                            <select class="form-control input-tiny" value="{{data.end_AM_PM}}" name="inp_endAMPM" id="inp_endAMPM">                        
+                                                <option {% if data.end_AM_PM == "AM" %} selected {% endif %}>AM</option>
+                                                {% if data.end_AM_PM %}                                              
+                                                    <option {% if data.end_AM_PM == "PM" %}  selected {% endif %}>PM</option>
+                                                {% else %}
+                                                    <option selected value="PM">PM</option>
+                                                {% endif %}
+                                                                                                    
+                                            </select>
+                                        </div>
+                                </div>    
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"> Non Work Days:</label>
+                                    <span class="col-sm-4">Select any days NOT worked</span>
+                                </div>
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <input type="checkbox" name="inp_Monday" {% if data.monday == "on" %} checked {% endif %} id="inp_Monday" class="">
+                                    Monday
+                                </div>
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <input type="checkbox" name="inp_Tuesday" {% if data.tuesday == "on" %} checked {% endif %} id="inp_Tuesday"  class="">
+                                    Tuesday
+                                </div>
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <input type="checkbox" name="inp_Wednesday" {% if data.wednesday == "on" %} checked {% endif %} id="inp_Wednesday"  class="">
+                                    Wednesday
+                                </div>
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <input type="checkbox" name="inp_Thursday" {% if data.thursday == "on" %} checked {% endif %} id="inp_Thursday"  class="">
+                                    Thursday
+                                </div>
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <input type="checkbox" name="inp_Friday" {% if data.friday == "on" %} checked {% endif %} id="inp_Friday"  class="">
+                                    Friday
+                                </div>
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <input type="checkbox" name="inp_Saturday" {% if data.saturday == "on" %} checked {% endif %} id="inp_Saturday"  class="">
+                                    Saturday
+                                </div>
+                                <div class="form-group">
+                                    <label for="" class="col-sm-3 control-label"></label>
+                                    <input type="checkbox" name="inp_Sunday" {% if data.sunday == "on" %} checked {% endif %} id="inp_Sunday" class="">
+                                    Sunday
+                                </div> <br> <br>                                            
+                            </div>                                    
+                            <div class="col-md-2">
+                                <a  class="mb-xs mt-xs mr-xs modal-sizes"  href="#modalLG1" >history</a>
+                            </div>
+                        </div>
+                    </div>
+                            <!-- Modal For History Start-->
+                            <div id="modalLG1" class="modal-block modal-block-lg mfp-hide">
+                                <section class="panel">
+                                    <header class="panel-heading">
+                                        <h2 class="panel-title">Hours of Operation Audit</h2>
+                                    </header>
+                                    <div class="panel-body">
+                                        {# data-url="{% static 'ajax/ajax-datatables-sample.json' %} "#}
+                                        <table class="table table-bordered table-striped datatable">
+                                            <thead>
+                                                <tr>
+                                                    <th width="15%">Type</th>
+                                                    <th width="10%">Previous Value</th>
+                                                    <th width="10%">Current Value</th>
+                                                    <th width="10%">Modified By</th>
+                                                    <th width="10%">Modified Date</th>
+                                                    <th width="10%">Time Open Recalculation</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            </tbody>
+                                        </table>
+                                        
+                                    </div>
+                                    <footer class="panel-footer">
+                                        <div class="row">
+                                            <div class="col-md-12 text-right">
+                                                <button class="btn btn-danger modal-dismiss">Cancel</button>
+                                            </div>
+                                        </div>
+                                    </footer>
+                                </section>
+                            </div>
+                            <!-- Modal For History End-->
+                    <footer class="panel-footer">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <input type="button" class="btn btn-primary" id="updatebtn" value="Update">
+                                <button type="reset" class="btn btn-default">Reset</button>
+                            </div>
+                        </div>
+                    </footer>
+            </section>
+            </form>
+            
+            <form id="summary-form" action="" method="post">
+                {% csrf_token %}
+            <section class="panel">
+                <header class="panel-heading">
+                    <h2 class="panel-title">Define Dates Closed</h2>                               
+                </header>
+                <div class="panel-body">
+                    <div class="validation-message">
+                        <ul></ul>
+                    </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <p>Enter holidays and other dates company is NOT open for business.</p>
+                                <hr>
+                                <table class="table table-bordered">
+                                    <thead>
+                                    <tr>
+                                        <th> Date Closed <span class="required">*</span></th>
+                                        <th> Comment</th>
+                                        {% if datesclosed %}
+                                        <th> Action</th>
+                                        {% endif %}
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        {% for date in datesclosed %}
+                                        <tr>
+                                            <td>{{date.date_closed}}</td>
+                                            <td>{{date.comment}}</td>
+                                            <!-- <td><a id="delete_dateclosed" data-id="{{ date.date_id }}">Delete</a></td> -->
+                                            <td><a href="#" data-href="{% url 'deleteDatesClosed' %}?date_id={{ date.date_id }}" data-hover="Delete Date Closed"  data-toggle="modal" data-target="#confirm-delete">Delete</a></td>
+                                        </tr>
+                                        {% endfor %}
+                                        <td class="col-md-5">
+                                            <div class="form-group">  
+                                                {% comment %} <div class="col-sm-6 col-md-3"> {% endcomment %}
+                                                    <div class="input-group date" id="datePicker1">
+                                                        <input type="text" name="date_closed" id="submit_date" data-plugin-datepicker="" required class="form-control data-datepicker">
+                                                        <span class="input-group-addon">
+                                                            <i class="fa fa-calendar"></i>
+                                                        </span>
+                                                    </div>
+                                                {% comment %} </div>                                               {% endcomment %}
+                                                    {% comment %} <div class="col-md-4 col-sm-3"> {% endcomment %}
+                                                        {% comment %} <small class="text-info align-text">mm-dd-yyyy</small> {% endcomment %}
+                                                    {% comment %} </div> {% endcomment %}
+                                                {% comment %} <input class="form-control" type="date" name="date_closed" title="Please enter Date Closed." id="date_closed" size="15" required> {% endcomment %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="form-group">
+                                                <input type="text" name="comment" id="comment" class="form-control">
+                                                {% comment %} <textarea class="form-control" name="comment" id="comment" rows="3"></textarea> {% endcomment %}
+                                            </div>
+                                        </td>
+                                        {% if datesclosed %}
+                                        <td></td>
+                                        {% endif %}
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>                                
+                    </div>
+                <footer class="panel-footer">
+                    <div class="row">
+                        <div class="col-sm-9">
+                            <input type="button" class="btn btn-primary" id="update_dateclosed" value="Update">                                                        
+                            <input type="reset" class="btn btn-default" value="Reset">
+                        </div>
+                    </div>
+                </footer>
+            </section>
+        </form>
+        <!-- end: page -->
+    </section>
+
+<!-- Modal -->
+  <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Modal Header</h4>
+        </div>
+        <div class="modal-body">
+          <p>Some text in the modal.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+ <!-- Modal Warning -->
+ {# Delete Modal Popup on Delete#}
+ <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+     <div class="modal-dialog">
+         <div class="modal-content">
+
+             <div class="modal-header">
+                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                 <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+             </div>
+
+             <div class="modal-body">
+                 <p>You are about to delete a record, this procedure is irreversible.</p>
+                 <strong>Do you want to proceed?</strong>
+             </div>
+
+             <div class="modal-footer">
+                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                 <a class="btn btn-danger btn-ok">Delete</a>
+             </div>
+         </div>
+     </div>
+ </div>
+{% endblock %}
+
+{% block script %}
+        <script>
+            var globalArray = [];
+            var date = new Date();
+            var today = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            var end = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            var row_counter=0; var row_edit=0; var task_order_start=1;var task_order_end=1; settimer = 1000;
+
+            var optComponent = {
+              format: 'mm-dd-yyyy',
+              container: '#datePicker1',
+              orientation: 'auto top',
+              todayHighlight: true,
+              autoclose: true,
+              startDate: -Infinity,
+              endDate: Infinity,
+            };
+            $(function(){
+                // COMPONENT
+                $( '#datePicker1' ).datepicker( optComponent );
+                $( '#datePicker1' ).datepicker( 'setDate', today );
+                $('#ticket_note').code('');
+                $('#description').code('');
+                $('#imgCancelled').hide();
+            });
+
+            if($('#chkWorkday24').is(':checked')){
+                $('#inp_starthour').prop('disabled', true);
+                $('#inp_startminutes').prop('disabled', true);
+                $('#inp_startAMPM').prop('disabled', true);
+                $('#inp_endhour').prop('disabled', true);
+                $('#inp_endminutes').prop('disabled', true);
+                $('#inp_endAMPM').prop('disabled', true);
+            }
+            $(document).on('click','#chkWorkday24', function(){                
+                if ($(this).is(':checked')){
+                    $('#inp_starthour').prop('disabled', true);
+                    $('#inp_startminutes').prop('disabled', true);
+                    $('#inp_startAMPM').prop('disabled', true);
+                    $('#inp_endhour').prop('disabled', true);
+                    $('#inp_endminutes').prop('disabled', true);
+                    $('#inp_endAMPM').prop('disabled', true);
+                }else{
+                    $('#inp_starthour').prop('disabled', false);
+                    $('#inp_startminutes').prop('disabled', false);
+                    $('#inp_startAMPM').prop('disabled', false);
+                    $('#inp_endhour').prop('disabled', false);
+                    $('#inp_endminutes').prop('disabled', false);
+                    $('#inp_endAMPM').prop('disabled', false);
+                }
+            });
+            $('#history').click( function(){
+                alert("Inside")
+                if(org_id == ''){
+                    alert('Something went wrong. Please try again.');
+                }else{
+                $.ajax({
+                    url:"/getModalOrgTicketsById/",
+                    type:'POST',
+                    data:{
+                        'org_id':org_id,
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    },
+                    success:function(data){
+                        debugger
+                        $('#popup-modal-content').html(data);
+                        $('#modalOrgTickets').modal("show");
+                    },
+                    error:function(){
+                        console.log('error')
+                    },
+                });
+                }
+            });
+        </script>
+             <script>
+                $(document).ready(function() {
+                        var oTable = $('.datatable').dataTable({
+                            // ...
+                            columnDefs: [
+                                {
+                                    name: 'hhop_type',
+                                    orderable: true,
+                                    searchable: false,
+                                    targets: [0]
+                                },
+                                {
+                                    name: 'hhop_previous_value',
+                                    orderable: true,
+                                    searchable: true,
+                                    targets: [1]
+                                },
+                                {
+                                    name: 'hhop_current_value',
+                                    orderable: true,
+                                    searchable: true,
+                                    targets: [2]
+                                },
+                                {
+                                    name: 'hhop_modified_by',
+                                    orderable: true,
+                                    searchable: false,
+                                    targets: [3]
+                                },
+                                {
+                                    name: 'hhop_modified_at',
+                                    orderable: true,
+                                    searchable: false,
+                                    targets: [4]
+                                },
+                                {
+                                    name: 'hhop_recalculation',
+                                    orderable: true,
+                                    searchable: false,
+                                    targets: [5]
+                                }
+                                
+                            ],
+                            "order": [[ 1, 'asc' ]],
+                            "processing": true,
+                            "serverSide": true,
+                            "lengthMenu": [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "All"] ],
+                            "stateSave": true,
+                            "ajax": "{% url 'hoursofoperation_list_json' %}"
+                        });
+                    // ...
+                });
+            </script>
+            <script>
+            $('#confirm-delete').on('show.bs.modal', function(e) {
+                $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+            });
+            </script>
+    <script>
+        $(document).on('click','.resetBtn' ,function(e){
+            $("#tgr_group").select2("val", "");
+            $("#tgr_org").select2("val", "");
+        });
+
+        $(document).on('click','#updatebtn',function (e) {
+        var time_recalculation = $('input[name=inp_Recalculation]:checked').val();
+        var workday = $('input[name=chkWorkday24]:checked').val();
+
+        var start_hours = $('#inp_starthour').val();
+        var start_mins = $('#inp_startminutes').val();
+        var start_AM_PM = $('#inp_startAMPM').val();
+        var time_begins = start_hours + ':' + start_mins + ' ' + start_AM_PM
+
+        var end_hours = $('#inp_endhour').val();
+        var end_mins = $('#inp_endminutes').val();
+        var end_AM_PM = $('#inp_endAMPM').val();
+        var time_ends = end_hours + ':' + end_mins + ' ' + end_AM_PM
+        
+        var day_monday = $('input[name=inp_Monday]:checked').val();
+        var day_tuesday = $('input[name=inp_Tuesday]:checked').val();
+        var day_wednesday = $('input[name=inp_Wednesday]:checked').val();
+        var day_thursday = $('input[name=inp_Thursday]:checked').val();
+        var day_friday = $('input[name=inp_Friday]:checked').val();
+        var day_saturday = $('input[name=inp_Saturday]:checked').val();
+        var day_sunday = $('input[name=inp_Sunday]:checked').val();
+
+            console.log(day_monday,day_tuesday,day_wednesday)
+        // e.preventDefault();
+        // setTimeout(function(){ 
+            $.ajax({
+            url:"{% url 'saveHoursOfOperation' %}",
+            type:'POST',
+            dataType: 'text',
+            data:{
+                'inp_Recalculation':time_recalculation,
+                'chkWorkday24':workday,
+                'inp_starthour':start_hours,
+                'inp_startminutes':start_mins,
+                'inp_startAMPM':start_AM_PM,
+                'inp_endhour':end_hours,
+                'inp_endminutes':end_mins,
+                'inp_endAMPM':end_AM_PM   ,
+                'time_begins': time_begins,
+                'time_ends':time_ends,
+                'inp_Monday':day_monday,
+                'inp_Tuesday':day_tuesday,
+                'inp_Wednesday':day_wednesday,
+                'inp_Thursday':day_thursday,
+                'inp_Friday':day_friday,
+                'inp_Saturday':day_saturday,
+                'inp_Sunday':day_sunday,
+                'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+            },
+            success:function(data){
+                console.log(data);
+            },
+            error:function(){
+                console.log('error')
+            },
+            complete:function(){
+                window.onbeforeunload = confirmBeforeClose();
+                window.location.reload();
+            }
+            });
+        // }, 2000);
+        });
+        function confirmBeforeClose(){}
+    </script>
+    <script>
+        // For Holiday Day Closed added
+        $(document).on('click','#update_dateclosed',function (e) {
+        var time_recalculation = $('input[name=inp_Recalculation]:checked').val();
+        var date_closed = $('#submit_date').val();
+        var comment = $('#comment').val();
+
+            $.ajax({
+            url:"{% url 'saveDatesClosed' %}",
+            type:'POST',
+            dataType: 'text',
+            data:{
+                'inp_Recalculation':time_recalculation,
+                'date_closed':date_closed,
+                'comment':comment,
+                'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+            },
+            success:function(data){
+                // console.log(data);
+            },
+            error:function(){
+                console.log('error')
+            },
+            complete:function(){
+                
+                window.onbeforeunload = confirmBeforeClose();
+                window.location.reload();
+            }
+            });
+        // }, 2000);
+        });
+        function confirmBeforeClose(){}
+    </script>
+    <script>
+        // For Holiday Day Closed delete
+        // $(document).on('click','.btn-ok',function (e) {
+        // var time_recalculation = $('input[name=inp_Recalculation]:checked').val();
+        // var date_id = $(this).attr('data-id');
+        // console.log('id',date_id);
+
+        //     $.ajax({
+        //     url:"{% url 'deleteDatesClosed' %}?date_id="+date_id,
+        //     type:'POST',
+        //     dataType: 'text',
+        //     data:{
+        //         'date_id':date_id,
+        //         'inp_Recalculation':time_recalculation,
+        //         'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+        //     },
+        //     success:function(data){
+        //         // console.log(data);
+        //     },
+        //     error:function(){
+        //         console.log('error')
+        //     },
+        //     complete:function(){
+                
+        //             // window.onbeforeunload = confirmBeforeClose();
+        //             // window.location.reload();
+        //     }
+        //     });
+        // // }, 2000);
+        // });
+        $(document).on('click','.btn-ok',function (e) {
+            window.onbeforeunload = confirmBeforeClose();
+            window.location.reload();
+        });
+        function confirmBeforeClose(){}
+        $('#confirm-delete').on('show.bs.modal', function(e) {
+            $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+        });
+        
+    </script>
+    
+                
+
+{% endblock %}

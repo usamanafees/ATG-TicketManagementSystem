@@ -1,0 +1,106 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+        {% load tz %} {# it will Load the Django TimeZone Library#}
+        {% load templates_extras %}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-ticket" aria-hidden="true"></i> Ticket</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Ticket</span></li>
+								<li><span>Summary Report Results</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+						<section class="panel">
+							<header class="panel-heading">
+
+                                <h3 class="text-primary text-bold">Total Time Open by Organization - Results</h3>
+                                
+							</header>
+							<div class="panel-body">
+								<a onClick="javascript:history.go(-1);" class="back-text text-bold"><span class="fa fa-arrow-circle-left"> </span> Back</a>
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12">
+                                        <h5 class="text-primary"><b>Total Time Open by Organization </b></h5>
+                                    </div>
+
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12">
+                                        <h5 class="text-primary">Recorded From {{ start_date }} To {{ end_date }} </h5>
+                                    </div>
+                                </div>
+ 								<table class="table table-bordered table-striped table-condensed mb-none" id="datatable-default">
+									<thead>
+										<tr>
+                                            <th>Organization</th>
+                                            <th>Total Time Open</th>
+                                            <th>Time Open (Days)</th>
+                                            <th>Adj Time Open</th>
+                                            <th>Adj Time Open (Days)</th>
+										</tr>
+									</thead>
+									<tbody>
+                                        {% if tot_hours %}
+                                            {% for key, tot_hour in tot_hours.items %}
+                                                <tr class="gradeA">
+                                                    <td>{% get_org_name_by_id key %}</td>
+                                                    <td>
+                                                        <a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ key }}&columnId=TimeOpen">{% getTotalTimeOpenFormat tot_hour %}</a>
+                                                    </td>
+                                                    <td>
+                                                        <a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ key }}&columnId=TimeOpen">{% getTimeOpenDaysFormat tot_hour %}</a>
+                                                    </td>
+                                                    <td>
+                                                        <a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ key }}&columnId=TimeOpen">{% getTotalTimeOpenFormat tot_hour %}</a>
+                                                    </td>
+                                                    <td>
+                                                        <a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ key }}&columnId=TimeOpen">{% getTimeOpenDaysFormat tot_hour %}</a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                            <tr>
+                                                <td colspan="2"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><b>Total Time Open</b></td>
+                                                <td><b>{% getTotalTimeOpenFormat g_total_hours %}</b></td>
+                                                <td><b>{% getTimeOpenDaysFormat g_total_hours %}</b></td>
+                                                <td><b>{% getTotalTimeOpenFormat g_total_hours %}</b></td>
+                                                <td><b>{% getTimeOpenDaysFormat g_total_hours  %}</b></td>
+                                            </tr>
+                                        {% endif %}
+
+									</tbody>
+								</table>
+							</div>
+						</section>
+					<!-- end: page -->
+				</section>
+			</div>
+
+    {% endblock %}
+
+    {% block script %}
+        <script>
+
+        </script>
+
+    {% endblock %}
+
+

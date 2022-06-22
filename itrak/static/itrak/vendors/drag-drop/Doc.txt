@@ -1,0 +1,52 @@
+
+********************
+[documentation]
+
+Files: Drap_Drop.htm or Drag_Drop.aspx, DDStyle.css, DDScript.js
+
+Below documentation refers the DDScript.js file and tries to explain its code.
+********************
+
+
+pageload() - This function is called first passing json object by the caller page.
+
+line #8 - source listbox (div container) is emptied and added the json objects as items.
+		These items are added by calling a custom function - addItems()
+			
+line #10+ - source and destination listboxes are made connectable and properties, events are registered.
+		Events - beforeStop, change, stop, start - are used and implemented inline.
+			
+beforeStop - it will remove background, foreground colors for the item on the fly before it get
+		added to the (one of the )listbox and click event is unregistered for it.
+			 
+change - This event handles the item position change within the listboxes.
+		 had to use to fix a placeHolder jumping into the on-the-fly multiple items selected.		 
+		 placeHolder item is added dynamically by jquery-ui when we move on-the-fly item up/down.
+		 
+start - Event raised when sorting begins. I used it to handle the multiple items selection for drag-drop.
+		Takes the current active item,	checks for childs of parent(listbox) 
+		which are too selected excluding the placeHolder. If childs found, 
+		excluding itself, all other child items are added into the active item (as its childs)
+		and gap/spaces are removed between the items (by style), required this while on-the-fly.
+		
+stop - 	Event raised after the moving/sorting items is completed. You cant get "ui.helper" object here
+	instead use "ui.item". I used to handle the multiple items which dropped. It checks if dropped
+	Active item has any childs, if it does it removes them from it and adds to the destination
+ 	listbox as its childs and removes the background-color and style (adds padding, margin spaces).
+
+disableSelection() - disallows selecting the text in listboxes (default behavior through mouse).		
+
+line #61 - registers the click event on items from both source and destination listboxes.
+	   if no multi-select (ctrl key not pressed), it removes background-color for all items
+	   in that listbox and applies background-color only to the clicked item (indicating selected).
+			
+CreateJson() - Creates JSON format data-string by iterating over destination listbox items.
+		and stores it into a hidden field. Get invoked by the button click.
+			
+> You can use UpdatePanel or AJAX when button is clicked for Async-postback and not disturbing the dropped
+   items in destination listbox.
+> Asp.Net sample shows, how you can Bind serverside data to the source-listbox (as JSON data)
+  and parse again the returned JSON from clientside during postback.
+  
+>For further information refer: 
+http://jqueryui.com/demos/sortable/#connect-lists		 

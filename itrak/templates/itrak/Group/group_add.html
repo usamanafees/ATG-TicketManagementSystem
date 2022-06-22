@@ -1,0 +1,413 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-users" aria-hidden="true"></i> Group</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Group</span></li>
+								<li><span>Add Group</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+                         <div class="row">
+                            <div class="col-md-12">
+                                {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                                <form id="summary-form" action="{% url 'saveGroup' %}" method="post" class="form-horizontal">
+                                    {% csrf_token %}
+                                    <section class="panel">
+                                        <header class="panel-heading">
+{#                                            <div class="panel-actions">#}
+{#                                                <a href="#" class="fa fa-caret-down"></a>#}
+{#                                                <a href="#" class="fa fa-times"></a>#}
+{#                                            </div>#}
+
+                                            <h2 class="panel-title">Add Group</h2>
+                                        </header>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary saveButton">Save</button>
+                                                    <button type="reset" class="btn btn-default">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                        <div class="panel-body">
+                                            <div class="validation-message">
+                                                <ul></ul>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-4 control-label">Membership Type</label>
+                                                <div class="col-md-4 col-sm-5">
+                                                    <select name="membership_type" id="membership_type" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Membership Type", "allowClear": true }'>
+                                                        <option value="0" >Agents Only</option>
+                                                        <option value="1" selected>Any</option>
+
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-4 control-label"><span class="required">*</span>Group ID: </label>
+                                                <div class="col-md-4 col-sm-5">
+                                                    <input type="text" name="group_cus_id" id="group_cus_id" class="form-control" title="Please enter Group ID." placeholder="eg.: 123" required/>
+                                                </div>
+                                                <div class="col-sm-3">
+                                                    <span id="groupidValid"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-4 control-label"><span class="required">*</span>Display Name: </label>
+                                                <div class="col-md-4 col-sm-5">
+                                                    <input type="text" name="display_name" id="display_name" class="form-control" title="Please enter Display Name." placeholder="eg.: ABC" required/>
+                                                </div>
+                                                <div class="col-sm-3">
+                                                    <span id="groupnameValid"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-4 control-label">Phone:</label>
+                                                <div class="col-md-4 col-sm-5">
+                                                    <input name="phone" id="phone" data-plugin-masked-input data-input-mask="(999) 999-9999" placeholder="(123) 123-1234" class="form-control">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-4 control-label">Email:</label>
+                                                <div class="col-md-4 col-sm-5">
+                                                    <input type="email" name="email" class="form-control" title="Please enter a valid email address." placeholder="eg.: example@xyz.com" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-4 control-label">Mobile/SMS Email:</label>
+                                                <div class="col-md-4 col-sm-5">
+                                                    <input type="email" name="mob_sms_email" class="form-control" title="Please enter a valid email address." placeholder="eg.: example@xyz.com" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                 <label class="col-md-3 col-sm-4 control-label" for="inputSuccess"></label>
+                                                 <div class="col-sm-6">
+                                                     <div class="checkbox">
+                                                         <label>
+                                                            <input type="checkbox" name="suppress_all_emails" value="1" >
+                                                             <i>Suppress All Email </i>
+                                                         </label>
+                                                     </div>
+                                                </div>
+                                             </div>
+                                             {% if user_id == 3108 %}
+                                             <div class="form-group">
+                                                 <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span>Organization </label>
+                                                 <div class="col-md-4 col-sm-4">
+                                                     <select name="org_id" id="org_id" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Organization", "allowClear": true }' title="Please enter Organization." required>
+                                                         <option value="" readonly="readonly" >Select an Organization </option>
+                                                         {% if organizations %}
+                                                             {% for org in organizations %}
+                                                                 <option value="{{ org.org_id }}">{{ org.org_name }}</option>
+                                                             {% endfor %}
+                                                         {% endif %}
+                                                     </select>
+                                                 </div>
+                                             </div>
+                                             {% else %}
+                                             <div class="form-group">
+                                                 <div class="col-sm-4">
+                                                     <input type="hidden" class="form-control" value="{{organizations}}" name="org_id" id="org_id">
+                                                 </div>
+                                             </div>
+                                             {% endif %}
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-md-3 col-sm-4 control-label">Department </label>
+                                                <div class="col-md-4 col-sm-5">
+                                                    <select name="dep_id" id="dep_id" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Organization", "allowClear": true }'>
+                                                        <option value="" readonly="readonly" >Select an Department <small class="text-primary">(None Selected)</small></option>
+                                                        {% if departments %}
+                                                            {% for dept in departments %}
+                                                                <option value="{{ dept.dep_id }}">{{ dept.dep_name }}</option>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            {# Permission Start Here#}
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-4 control-label" for="country">Group Permission:</label>
+                                                <div class="col-md-4 col-sm-5">
+                                                    <span class="fa fa-question-circle"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-4 control-label" for=""></label>
+                                                <div class="col-md-4 col-sm-5">
+                                                    <strong class="text-primary"> Menu Options/Pages Allowed</strong>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                 <label class="col-md-3 col-sm-4 control-label" for="inputSuccess"></label>
+                                                 <div class="col-sm-6">
+                                                     {% for submenu in sidebar.sub_menus %}
+                                                        {% if submenu.submenu_permit_active == 1 %}
+                                                        <div class="checkbox checkbox-space-auto">
+                                                             <label>
+                                                                <input type="checkbox" name="submenus" id="{{ submenu.submenu_id }}" value="{{ submenu.submenu_id }}" >
+                                                                 <p>{{ submenu.submenu_name }} </p>
+                                                             </label>
+                                                         </div>
+                                                        {% endif %}
+                                                     {% endfor %}
+                                                     {% for menu in sidebar.menus %}
+                                                        {% if menu.menu_permit_active == 1 %}
+                                                        <div class="checkbox checkbox-space-auto">
+                                                             <label>
+                                                                <input type="checkbox" name="menus" id="{{ menu.menu_id }}" value="{{ menu.menu_id }}">
+                                                                 <p>{{ menu.menu_name }} </p>
+                                                             </label>
+                                                         </div>
+                                                        {% endif %}
+                                                     {% endfor %}
+                                                </div>
+
+                                            </div>
+                                            {# Permission Ends Here#}
+
+                                            {% for permission in permissions %}
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label" id="section_{{permission.perm_sect_id}}">{{permission}}</label>
+                                                <label class="col-sm-9 control-label" for="inputSuccess"></label>
+                                                <div class="col-sm-9 col-sm-offset-3">
+                                                {% for parent in permission.permission_action.all %}
+                                                {%if parent.is_active == 1%}
+                                                    <div class="checkbox">
+                                                        <label>
+                                                        <input type="checkbox" name="permission_action" id="action_{{ parent.perm_act_id }}" {% if parent.perm_act_id in disabled_actions %}disabled{% endif %} value="{{ parent.perm_act_id }}" {% if parent.perm_act_id in actions_list  %}checked{% endif %}>
+                                                            <p {% if parent.perm_act_id in disabled_actions %}class="not-available is_ava"{% endif %}>{{ parent }} </p>
+                                                        </label>
+                                                    </div>
+                                                    {% endif %}
+                                                    {% for child in parent.permission_sub_action.all %}
+                                                    {%if child.is_active == 1%}
+                                                        <label for="" class="control-label"></label>
+                                                        <div class="col-sm-12">
+                                                            <div class="checkbox">
+                                                                <label>
+                                                                <input type="checkbox" name="permission_sub_action" id="sub_action_{{ child.sub_act_id }}" {% if child.sub_act_id in disabled_sub_action %}disabled{% endif %} value="{{ child.sub_act_id }}" {% if child.sub_act_id in sub_actions_list  %}checked{% endif %}>
+                                                                    <p {% if child.sub_act_id in disabled_sub_action %}class="not-available is_ava"{% endif %}>{{ child }} </p>
+                                                                </label>
+                                                            </div>
+                                                        </div>  
+                                                    {% endif %}  
+                                                    {% endfor %} 
+                                                {% endfor %}
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary saveButton">Save</button>
+                                                    <button type="reset" class="btn btn-default">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                    </section>
+                                </form>
+                            </div>
+                        </div>
+					<!-- end: page -->
+				</section>
+			</div>
+
+    {% endblock %}
+
+    {% block script %}
+        <script>
+            $(document).on('keyup','#group_cus_id', function(){
+              var fieldValue = $(this).val();
+              if (fieldValue != ''){
+                  $.ajax({
+                    type: 'POST',
+                    url: "{% url 'validateAddUnique' %}",
+                    data: {fieldValue: fieldValue, tbl_name: 'Group', tbl_field: 'group_cus_id', tbl_dlt_field: 'gp_is_delete'},
+                    dataType: 'json',
+                    beforeSend: function(jqXHR, settings) {
+                        //Do something before send...
+                    },
+                    success: function(data, textStatus, jqXHR) {
+                        if(data.response){
+                            $('#groupidValid').html('<strong class="text-danger">Group ID already exist. Try another one!</strong>');
+                            $('.saveButton').prop('disabled', true);
+                        }else{
+                            $('#groupidValid').html('');
+                            $('.saveButton').prop('disabled', false);
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    }
+                  });
+              }
+            });
+            $(document).on('keyup','#display_name', function(){
+              var fieldValue = $(this).val();
+              if (fieldValue != ''){
+                  $.ajax({
+                    type: 'POST',
+                    url: "{% url 'validateAddUnique' %}",
+                    data: {fieldValue: fieldValue, tbl_name: 'Group', tbl_field: 'group_display_name', tbl_dlt_field: 'gp_is_delete'},
+                    dataType: 'json',
+                    beforeSend: function(jqXHR, settings) {
+                        //Do something before send...
+                    },
+                    success: function(data, textStatus, jqXHR) {
+                        if(data.response){
+                            $('#groupnameValid').html('<strong class="text-danger">Group Name already exist. Try another one!</strong>');
+                            $('.saveButton').prop('disabled', true);
+                        }else{
+                            $('#groupnameValid').html('');
+                            $('.saveButton').prop('disabled', false);
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    }
+                  });
+              }
+            });
+
+            $(document).on('change','#membership_type', function(){
+                value = $(this).val()
+                let clear_values = [1,2,3,4,5,6,7,11,40]
+                    clear_values.forEach(function(entry) {
+                        $("#action_"+entry).prop('disabled', false)
+                        $("#action_"+entry).parent().find('p').removeClass("not-available")
+                    });
+                if(value == 1){
+                    let values = [1,2,3,4,5,6,7,11,40]
+                    values.forEach(function(entry) {
+                        $("#action_"+entry).prop('disabled', true);
+                        $("#action_"+entry).parent().find('p').addClass("not-available");
+                        $("#section_1").addClass("not-available");
+                    });
+                }else{
+                    let values = [5,6,7,11,40]
+                    values.forEach(function(entry) {
+                        $("#action_"+entry).prop('disabled', true)
+                        $("#action_"+entry).parent().find('p').addClass("not-available")
+                        $("#section_1").removeClass("not-available");
+                    });
+                }
+            });
+
+            $(document).on('click','#action_29',function(){
+                if($('#action_29').is(':checked')){
+                    $('#sub_action_2').prop('disabled', false)
+                    $("#sub_action_2").parent().find('p').removeClass("not-available")
+                }else{
+                    $('#sub_action_2').prop('disabled', true)
+                    $("#sub_action_2").parent().find('p').addClass("not-available")
+                }
+            });
+            $(document).on('click','#action_2',function(){
+                if($('#action_2').is(':checked')){
+                    $('#sub_action_1').prop('disabled', false)
+                    $("#sub_action_1").parent().find('p').removeClass("not-available")
+                }else{
+                    $('#sub_action_1').prop('disabled', true)
+                    $("#sub_action_1").parent().find('p').addClass("not-available")
+                }
+            });
+
+            $(function(){
+                $(document).on('change','#membership_type', function(){
+                    value = $(this).val()
+                    let clear_values = [1,2,3,4,5,6,7,11,40]
+                        clear_values.forEach(function(entry) {
+                            $("#action_"+entry).prop('disabled', false)
+                            $("#action_"+entry).parent().find('p').removeClass("not-available")
+                        });
+                    if(value == 1){
+                        let values = [1,2,3,4,5,6,7,11,40]
+                        values.forEach(function(entry) {
+                            $("#action_"+entry).prop('disabled', true);
+                            $("#action_"+entry).parent().find('p').addClass("not-available");
+                        });
+                        $("#section_1").addClass("not-available");
+                        $('#sub_action_1,#sub_action_2').prop('disabled', true)
+                        $("#sub_action_1,#sub_action_2").parent().find('p').addClass("not-available")
+                        if($('#action_29').is(':checked')){
+                            $('#sub_action_2').prop('disabled', false)
+                            $("#sub_action_2").parent().find('p').removeClass("not-available")
+                        } 
+                    }else{
+                        let values = [5,6,7,11,40]
+                        values.forEach(function(entry) {
+                            $("#action_"+entry).prop('disabled', true)
+                            $("#action_"+entry).parent().find('p').addClass("not-available")
+                        });
+                        $("#section_1").removeClass("not-available");
+                        //$('#sub_action_1,#sub_action_2').prop('disabled', true)
+                        //$("#sub_action_1,#sub_action_2").parent().find('p').addClass("not-available")
+                        if($('#action_2').is(':checked')){
+                            $('#sub_action_1').prop('disabled', false)
+                            $("#sub_action_1").parent().find('p').removeClass("not-available")
+                        }
+                    }
+                });
+
+                $(document).on('click','#action_29',function(){
+                    if($('#action_29').is(':checked')){
+                        $('#sub_action_2').prop('disabled', false)
+                        $("#sub_action_2").parent().find('p').removeClass("not-available")
+                    }else{
+                        $('#sub_action_2').prop('disabled', true)
+                        $("#sub_action_2").parent().find('p').addClass("not-available")
+                    }                    
+                });
+                $(document).on('click','#action_2',function(){
+                    if($('#action_2').is(':checked')){
+                        $('#sub_action_1').prop('disabled', false)
+                        $("#sub_action_1").parent().find('p').removeClass("not-available")
+                    }else{
+                        $('#sub_action_1').prop('disabled', true)
+                        $("#sub_action_1").parent().find('p').addClass("not-available")
+                    }                    
+                });
+                if($('#action_2').is(':checked')){
+                    $('#sub_action_1').prop('disabled', false)
+                    $("#sub_action_1").parent().find('p').removeClass("not-available")
+                }
+                if($('#action_29').is(':checked')){
+                    $('#sub_action_2').prop('disabled', false)
+                    $("#sub_action_2").parent().find('p').removeClass("not-available")
+                }  
+            });
+            // $(document).on('change','#membership_type', function(){
+            //   value=$("#membership_type").val();
+            //   if (value == 0)
+            //   {
+            //     $('input[name="permission_action"]').removeAttr("disabled");
+            //     $('input[name="permission_sub_action"]').removeAttr("disabled");
+            //     $('p[class="is_ava"]').removeClass('not-available');
+            //   }
+                
+            // });
+        </script>
+{% endblock %}
+

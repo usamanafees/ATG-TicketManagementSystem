@@ -1,0 +1,115 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+        {% load tz %} {# it will Load the Django TimeZone Library#}
+        {% load templates_extras %}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-ticket" aria-hidden="true"></i> Ticket</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Ticket</span></li>
+								<li><span>Summary Report Results</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+						<section class="panel">
+							<header class="panel-heading">
+
+                                <h3 class="text-primary text-bold">Labor Hours by Organization - Results</h3>
+                                
+							</header>
+							<div class="panel-body">
+								<a onClick="javascript:history.go(-1);" class="back-text text-bold"><span class="fa fa-arrow-circle-left"> </span> Back</a>
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12">
+                                        <h5 class="text-primary"><b>Labor Hours by Organization </b></h5>
+                                    </div>
+
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12">
+                                        <h5 class="text-primary">Recorded From {{ start_date }} To {{ end_date }} </h5>
+                                    </div>
+                                </div>
+ 								<table class="table table-bordered table-striped table-condensed mb-none" id="datatable-default">
+									<thead>
+										<tr>
+                                            <th>Organization</th>
+                                            <th>Labor Hours</th>
+										</tr>
+									</thead>
+									<tbody>
+                                        {% if org_labour_hours %}
+                                            {% for org_labour_hour in org_labour_hours %}
+                                                <tr class="gradeA">
+                                                    <td>{{ org_labour_hour.note_ticket__ticket_org__org_name }}</td>
+                                                    <td>
+                                                        <a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ org_labour_hour.note_ticket__ticket_org_id }}&columnId=HOUR">
+                                                            {% if org_labour_hour.thours and org_labour_hour.thours != 0 %}
+                                                                {{ org_labour_hour.thours|stringformat:".02d" }}
+                                                            {% else %}
+                                                                00
+                                                            {% endif %}
+                                                            :
+                                                            {% if org_labour_hour.tminutes  and org_labour_hour.tminutes != 0 %}
+                                                                {{ org_labour_hour.tminutes|stringformat:".02d" }}
+                                                            {% else %}
+                                                                00
+                                                            {% endif %}
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                            <tr>
+                                                <td colspan="2"></td>
+                                            </tr>
+                                            <tr>
+                                                <td><b>Labor Hours</b></td>
+                                                <td><b>
+                                                    {% if total_hours and total_hours != '0' %}
+                                                        {{ total_hours|stringformat:".02d" }}
+                                                    {% else %}
+                                                        00
+                                                    {% endif %}
+                                                    :
+                                                    {% if total_minutes and total_minutes != '0' %}
+                                                        {{ total_minutes|stringformat:".02d" }}
+                                                    {% else %}
+                                                        00
+                                                    {% endif %}
+                                                </b></td>
+                                            </tr>
+                                        {% endif %}
+
+									</tbody>
+								</table>
+							</div>
+						</section>
+					<!-- end: page -->
+				</section>
+			</div>
+
+    {% endblock %}
+
+    {% block script %}
+        <script>
+
+        </script>
+
+    {% endblock %}
+
+

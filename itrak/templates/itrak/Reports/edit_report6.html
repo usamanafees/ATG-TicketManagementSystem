@@ -1,0 +1,190 @@
+{% extends 'itrak/base.html' %}
+{% block body_block %}
+    {% load static %}
+    {% load tz %} {# it will Load the Django TimeZone Library#}
+    {% load templates_extras %}
+
+    <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-file" aria-hidden="true"></i> Edit Report</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+                    <li><span>Reports</span></li>
+                    <li><span>Edit Report</span></li>
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+
+        <div class="row">
+            <div class="col-md-12">
+                {% for message in messages %}
+                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+
+                <section class="panel">
+                    <header class="panel-heading">
+                        <h2 class="panel-title">Edit Report</h2>
+                    </header>
+
+                    <div class="panel-body">
+                        <center><h3>Build Report: Step 6 of 6 - Update Report</h3></center>
+                        <form id="newReportForm" action="{% url 'updateFinalReport' %}" method="post" class="form-horizontal">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                    <a id="btn-cancel" class="btn btn-primary">Cancel </a>
+                                    <a id="btn-back" class="btn btn-primary">< Back</a>
+                                    <a id="btn-finish" class="btn btn-primary">Finish</a>
+                                    <a id="btn-save-run" class="btn btn-primary">Update & Run</a>
+                                </div>
+                            </div>
+                            <br>
+                            <center><p class="font-italic">How do you want to update the report?</p></center>
+                            <br>
+                            <input type="hidden" name="report_id" value="{{ reportObj.rb_report_id }}" />
+                            <div class="form-group">
+                                <label class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label"><span class="required">*</span> Report Name:</label>
+                                <div class="col-sm-5">
+                                    <input type="text" class="form-control" id="report_name" name="report_name" value="{{ reportObj.rb_report_name }}" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label"> Report Title:</label>
+                                <div class="col-sm-5">
+                                    <input type="text" class="form-control" id="report_title" name="report_title" value="{% if reportObj.rb_report_title %}{{ reportObj.rb_report_title }}{% endif %}">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-lg-2 col-md-2 col-sm-3 col-xs-3 share-tootltip control-label">
+                                	<div class="display-inline task-complete">
+                                		<span>Share</span>:
+	                                	<div class="custom-tooltip">
+	                                    	<div class="tooltip-header">
+	                                    		Share Checkbox
+	                                    	</div>
+	                                    	<div class="tooltip-body">
+	                                    		<p>By default queries are only available to the users who create them and System Administrators.  Selecting this 'Share' option will make the query available to everyone who can manage reports and view  Issues for your organization.</p>
+	                                    	</div>
+	                                    </div>
+	                                </div>
+                                </label>
+                                <div class="col-sm-5">
+                                    <input type="checkbox" name="share" id="share" value="1" {% if reportObj.rb_report_is_share == 1 %}checked{% endif %}>
+                                </div>
+                            </div>
+                            <div class="form-group full-width-inner" id="share_div" style="display:none">
+                                <label class="col-lg-2 col-md-2 col-sm-3 share-tootltip control-label">
+                               	 	<div class="display-inline task-complete">
+                                		<span>Share With</span>:
+	                                	<div class="custom-tooltip">
+	                                    	<div class="tooltip-header">
+	                                    		Share With Functionality
+	                                    	</div>
+	                                    	<div class="tooltip-body">
+	                                    		<p>Use the magnifying glass icon to select specific users and/or groups to have access to the query.</p>
+	                                    	</div>
+	                                    </div>
+	                                </div>
+                               </label>
+                                <div class="col-sm-5">
+                                    <select id="share_with" name="share_with" class="form-control" multiple>
+
+                                            {% for user in users%}
+                                                <option value="{{ user.id }}" {% if user.id in share_lists %}selected{% endif %}>{{ user.last_name }} {{ user.first_name }}</option>
+                                            {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">Description:</label>
+                                <div class="col-sm-5">
+                                    <textarea rows="4" cols="50" name="description" id="description" class="form-control">{{ reportObj.rb_report_description }}</textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+{% endblock %}
+
+{% block script %}
+<script>
+
+    {% if reportObj.rb_report_is_share == 1 %}
+        $("#share_div").show();
+    {% endif %}
+
+
+$(function() {
+
+    $('#share_with').multiselect({
+        includeSelectAllOption: true,
+        selectAllText: 'Everyone',
+         maxHeight: 250
+    });
+
+    $("#share_with").multiselect('selectAll', false);
+    $("#share_with").multiselect('updateButtonText');
+
+});
+
+
+    $("#share").change(function() {
+        if(this.checked) {
+            $("#share_div").show();
+        }else{
+            $("#share_div").hide();
+        }
+    });
+
+
+    $("#btn-cancel").click(function(){
+        window.location.href = "{% url 'reportWriterReports' %}";
+    });
+
+    $("#btn-back").click(function(){
+        window.location.href = "{% url 'editReportStep5' %}?rbReport="+{{ report_id }};
+    });
+
+    $("#btn-finish").click(function(){
+        if($('#report_name').val() == ''){
+            alert('Report Name cannot be Empty!');
+        }
+        else{
+            $('#newReportForm').submit();
+        }
+
+    });
+
+    $("#btn-save-run").click(function(){
+        if($('#report_name').val() == ''){
+            alert('Report Name cannot be Empty!');
+        }
+        else{
+            $('#newReportForm').attr('action',"{% url 'updateFinalReport' %}?IsRun=True");
+            $('#newReportForm').submit();
+        }
+
+    });
+
+</script>
+
+{% endblock %}

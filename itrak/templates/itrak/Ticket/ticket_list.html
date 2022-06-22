@@ -1,0 +1,811 @@
+{% extends 'itrak/base.html' %}
+
+{% block body_block %}
+    {% load static %}
+    {% load check_permissions %}
+
+            <section role="main" class="content-body">
+                <header class="page-header">
+                   <h2><i class="fa fa-ticket" aria-hidden="true"></i> Ticket</h2>
+
+                    <div class="right-wrapper pull-right">
+                        <ol class="breadcrumbs">
+                            <li>
+                                <a href="{% url 'home' %}">
+                                    <i class="fa fa-home"></i>
+                                </a>
+                            </li>
+                            <li><span>Ticket</span></li>
+                            <li><span>My Tickets</span></li>
+                        </ol>
+
+                        <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+                    </div>
+                </header>
+
+                <!-- start: page -->
+                    <section class="panel">
+                        <header class="panel-heading">
+                            <h2 class="panel-title">My Tickets</h2>
+                        </header>
+                        <div class="panel-body">
+                             {% for message in messages %}
+                                <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+{#                                data-url="{% static 'ajax/ajax-datatables-sample.json' %} "#}
+{#                                <a id="refreshBtn" style="color: #000"><i class="fa fa-refresh"></i></a><b> <span id="time"></span></b>#}
+                            <!-- states -->
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="tabs tabs-primary">
+                                        <ul class="nav nav-tabs">
+                                            <li>
+                                                {% if userTypes == 'superadmin' or userTypes == 'agent' or userTypes == 'manager' %}
+                                                <a href="#open_tickets" data-toggle="tab">Open Tickets ({{ open_ticket.count }})</a>
+                                                {% endif %}
+                                            </li>
+                                            <li class="active" id="summary">
+                                                <a href="#summary" data-toggle="tab">Summary ({{ summary.count }})</a>
+                                            </li>
+                                            <li id="submitter">
+                                                <a href="#submitter" data-toggle="tab">As Submitter ({{ submitter.count }})</a>
+                                            </li>
+                                            {% if user.user_type == '0' %}
+                                            <li>
+                                                <a href="#enterer" data-toggle="tab">As Enterer ({{ enterer.count }})</a>
+                                            </li>
+                                            {% endif %}
+                                            {% if user.user_type == '0' %}
+                                            <li id="assignee">
+                                                <a href="#assignee" data-toggle="tab">As Assignee ({{ assignee.count }})</a>
+                                            </li>
+                                            {% endif %}
+                                            {% if user.user_type == '0' %}
+                                            <li>
+                                                <a href="#assignee_next" data-toggle="tab">As Assignee - Next Action ({{ assignee_next.count }})</a>
+                                            </li>
+                                            {% endif %}
+                                            <li id="next_action">
+                                                <a href="#next_action" data-toggle="tab">As Next Action ({{ next_action.count }})</a>
+                                            </li>
+                                            {% if user.user_type == '0' %}
+                                            <li>
+                                                <a href="#unassign" data-toggle="tab">Unassigned ({{ unassign.count }})</a>
+                                            </li>
+                                            {% endif %}
+                                            <li>
+                                                <a href="#task_assignee" data-toggle="tab">As Task Assignee ({{ task_assignee.count }})</a>
+                                            </li>
+                                            <li>
+                                                <a href="#task_available" data-toggle="tab">As Task Available ({{ task_available.count }})</a>
+                                            </li>
+                                            
+                                            <li>
+                                                <a href="#reports" data-toggle="tab">Reports</a>
+                                            </li>
+                                        </ul>
+{#                                            <div class="tab-content">#}
+{#                                                <div id="summary" class="tab-pane active">#}
+{#                                                   <h3>Ticket Summary</h3>#}
+{#                                                </div>#}
+{#                                                <div id="submitter" class="tab-pane fade">#}
+{#                                                   <h3>Ticket Submitter</h3>#}
+{#                                                </div>#}
+{#                                                <div id="enterer" class="tab-pane fade">#}
+{#                                                   <h3>Ticket Enterer</h3>#}
+{#                                                </div>#}
+{#                                                <div id="assignee" class="tab-pane fade">#}
+{#                                                   <h3>Ticket Assignee</h3>#}
+{#                                                </div>#}
+{#                                                <div id="assignee_next" class="tab-pane fade">#}
+{#                                                   <h3>Ticket Assignee - Next Action</h3>#}
+{#                                                </div>#}
+{#                                                <div id="next_action" class="tab-pane fade">#}
+{#                                                   <h3>Ticket Next Action</h3>#}
+{#                                                </div>#}
+{#                                                <div id="unassign" class="tab-pane fade">#}
+{#                                                   <h3>Ticket Unassign</h3>#}
+{#                                                </div>#}
+{#                                                <div id="task_assignee" class="tab-pane fade">#}
+{#                                                   <h3>Ticket Assignee</h3>#}
+{#                                                </div>#}
+{#                                                <div id="task_available" class="tab-pane fade">#}
+{#                                                   <h3>Task Available</h3>#}
+{#                                                </div>#}
+{#                                            </div>#}
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="ticket-list-datatable" class="table-responsive">
+                                <table class="table table-bordered table-striped datatable">
+                                    <thead>
+                                        <tr>
+                                            {% if tickets_epanded == 1 %}
+                                                <th width="8%"></th>
+                                                <th width="10%">Ticket#</th>
+                                                <th width="5%">Status</th>
+                                                <th width="10%">Opened</th>
+                                                <th width="5%">Submitted By</th>
+                                                <th width="10%">Organization</th>
+                                                <th width="5%">Assigned To</th>
+                                                <th width="10%">Next Actioned</th>
+                                                <th width="5%">Subject</th>
+                                                <th width="10%">Priority</th>
+                                                <th width="10%">Ticket Type</th>
+                                                <th width="10%">Last Activity</th>
+                                            {% elif tickets_epanded == 0 %}
+                                                <th width="8%"></th>
+                                                <th width="5%">Ticket#</th>
+                                                <th width="10%">Opened</th>
+                                                <th width="15%">Submitted By</th>
+                                                <th width="15%">Assigned To</th>
+                                                <th width="20%">Subject</th>
+                                                <th width="5%">Priority</th>
+                                                <th width="10%">Last Activity</th>
+                                                <th width="15%">Substatus</th>
+                                            {% endif %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <input type="hidden" value="" id="current_tab" name="current_tab" />
+                            <div id="reports" class="tab-pane fade">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <section class="panel">
+                                            <header class="panel-heading">
+                                                <h2 class="panel-title">My Reports</h2>
+                                                <a href="javascript:void(0);" name="showhide_notes" id="showhide_notes"><span class="show-link hide-link">Show Shared Reports</span><span class="show-link">Hide Shared Reports</span></a>
+                                            </header>
+                                            <div class="panel-body">
+                                                <div class="all-notes1">
+                                                <select class="custom-select" id="save_search" name="save_search"size="20" style="width: 100%;height:200px">
+                                                    {% if savedSearches %}
+                                                   {% for search in savedSearches %}
+                                                      <option  value="{{ search.saved_search_id }}" data-attr="saveSearch">{{ search.search_title }}&nbsp;(S)
+                                                      {% if search.is_share == 1 %}*{% endif %} </option>
+                                                   {% endfor %}
+                                               {% endif %}
+                                               {% for report in rb_reports %}
+                                                        <option  value="{{ report.rb_report_id }}" data-attr="reportWriting">{{ report.rb_report_name }}
+                                                        {% if report.rb_report_is_share == 1 %}*{% endif %}</option>
+
+                                                      {% endfor %}
+                                                </select>
+                                                </div>
+                                                <div class="all-notes">
+                                                <select class="custom-select" id="save_search" name="save_search" size="20" style="width: 100%;height: 100%">
+                                                       {% if savedSearches %}
+                                                   {% for search in savedSearches %}
+                                                    {%if search.is_share == 0%}
+                                                      <option  value="{{ search.saved_search_id }}" data-attr="saveSearch">{{ search.search_title }}&nbsp;(S)</option>
+                                                    {%endif%}
+                                                   {% endfor %}
+                                               {% endif %}
+                                               {% for report in rb_reports %}
+                                                        {% if report.rb_report_is_share == 0%}
+                                                        <option  value="{{ report.rb_report_id }}" data-attr="reportWriting">{{ report.rb_report_title }}</option>
+                                                         {%endif%}
+                                                      {% endfor %}
+                                                </select>
+                                                </div>
+                                                <div class="btn-group btn-group-justified">
+                                                    <a class="" role="" style="text-decoration: none;">(S) Saved Search</a>
+                                                    <label class="required-lable mt_0 text-blue"><span class="required">*</span> Shared</label>
+                                                </div>
+                                            </div>
+                                            <div class="panel-footer">
+                                                <button onclick="runSearchReport(event)" type="button" class="mb-xs mt-xs mr-xs btn btn-primary">Run Report</button>
+                                                <button onclick="editSearchReport(event)" type="button" class="mb-xs mt-xs mr-xs btn btn-primary">Edit Report</button>
+                                                <button  type="button" class="mb-xs mt-xs mr-xs btn btn-primary qry-btn-delete">Delete Report</button>
+                                            </div>
+                                        </section>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <br/>
+                                    </div>
+                                </div>
+                            </div>
+                            <br>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Symbol</th>
+                                            <th>Legend</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><font color="red">E</font></td>
+                                            <td>Escalated Ticket</td>
+                                        </tr>
+                                        <tr>
+                                            <td><i class="fa fa-paperclip"></i></td>
+                                            <td>Ticket has Attachments	</td>
+                                        </tr>
+                                        <tr>
+                                            <td><i style="color:green; font-size:10px;">a/b</i></td>
+                                            <td>Tasks Progress (completed tasks / total tasks)	</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+                <!-- end: page -->
+            </section>
+        </div>
+
+       <!-- Modal Warning -->
+    {# Delete Modal Popup on Delete#}
+    <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                </div>
+
+                <div class="modal-body">
+                    <p>You are about to delete a record, this procedure is irreversible.</p>
+                    <strong>Do you want to proceed?</strong>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <a class="btn btn-danger btn-ok" onclick="deleteSearchReport(event)">Delete</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+<script>
+        $(function(){
+            $('#reports').css('display','none');
+            $('.qry-btn-delete').attr('data-toggle','modal');
+            $('.qry-btn-delete').attr('data-target','#confirm-delete');
+        });
+        $(document).ready(function () {
+            var url = window.location.href;
+            url = url.split('#');
+            if(url[1]!=undefined){
+                $('#summary').removeClass('active');
+                $('#'+url[1]+'').addClass("active");
+                $('#current_tab').val(url[1]);
+            }
+           intialize();
+           $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+              var currentTab = e.target.hash; // get current tab
+              if(currentTab == '#reports')
+              {
+                $('#ticket-list-datatable').hide()
+
+              }
+              else{
+                 $('#ticket-list-datatable').show()
+
+              }
+              switch (currentTab)   {
+                 case '#summary' :   //do nothing
+                    $('#current_tab').val('summary');
+                    $(".datatable").dataTable().destroy();
+                    $('#reports').css('display','none');
+                    intialize()
+                    break ;
+                 case '#submitter' :
+                    $('#current_tab').val('submitter');
+                    $(".datatable").dataTable().destroy();
+                    $('#reports').css('display','none');
+                    intialize()
+                    // debugger;
+                    break ;
+                 case '#enterer' :
+                    $('#current_tab').val('enterer');
+                    $(".datatable").dataTable().destroy();
+                    $('#reports').css('display','none');
+                    intialize()
+                    break ;
+                 case '#assignee' :
+                    $('#current_tab').val('assignee');
+                    $(".datatable").dataTable().destroy();
+                    $('#reports').css('display','none');
+                    intialize()
+                    // debugger;
+                    break ;
+                 case '#assignee_next' :
+                    $('#current_tab').val('assignee_next');
+                    $(".datatable").dataTable().destroy();
+                    $('#reports').css('display','none');
+                    intialize()
+                    break ;
+                 case '#next_action' :
+                    $('#current_tab').val('next_action');
+                    $(".datatable").dataTable().destroy();
+                    $('#reports').css('display','none');
+                    intialize()
+                    break ;
+                case '#open_tickets' :
+                $('#current_tab').val('open_tickets');
+                $(".datatable").dataTable().destroy();
+                $('#reports').css('display','none');
+                intialize()
+                break ;
+                 case '#unassign' :
+                    $('#current_tab').val('unassign');
+                    $(".datatable").dataTable().destroy();
+                    $('#reports').css('display','none');
+                    intialize()
+                    break ;
+                 case '#task_assignee' :
+                    $('#current_tab').val('task_assignee');
+                    $(".datatable").dataTable().destroy();
+                    $('#reports').css('display','none');
+                    intialize()
+                    break ;
+                 case '#task_available' :
+                    $('#current_tab').val('task_available');
+                    $(".datatable").dataTable().destroy();
+                    $('#reports').css('display','none');
+                    intialize()
+                    break ;
+                  case '#reports' :
+                    $('#current_tab').val('reports');
+                      $('#reports').css('display','show');
+                    break ;
+                 default: //do nothing
+                    $('#current_tab').val('summary');
+                    $(".datatable").dataTable().destroy();
+                    intialize()
+              };
+           });
+        });
+
+        function intialize(){
+            var oTable = $('.datatable').dataTable({
+                "destroy": true,
+                // ...
+                columnDefs: [
+                    {% if tickets_epanded == 1 %}
+                        {
+                            name: 'symbol',
+                            orderable: false,
+                            searchable: false,
+                            targets: [0]
+                        },
+                        {
+                            name: 'ticket_id',
+                            orderable: true,
+                            searchable: true,
+                            targets: [1]
+                        },
+                        {
+                            name: 'ticket_status',
+                            orderable: true,
+                            searchable: true,
+                            targets: [2]
+                        },
+                        {
+                            name: 'submitted_at',
+                            orderable: true,
+                            searchable: true,
+                            targets: [3]
+                        },
+                        {
+                            name: 'ticket_created_by.display_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [4]
+                        },
+                        {
+                            name: 'ticket_org.org_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [5]
+                        },
+                        {
+                            name: 'ticket_assign_to.display_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [6],
+                            //Action Permission check
+                            {% if "da_Can_view_Assigned_To_information_in_Tickets_and_email_notifications"|check_action_permission:user.id %}
+                            visible: true,
+                            {%else%}
+                            visible:false,
+                            {% endif %}
+                        },
+                        {
+                            name: 'ticket_next_action.display_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [7]
+                        },
+                        {
+                            name: 'subject',
+                            orderable: true,
+                            searchable: true,
+                            targets: [8]
+                        },
+                        {
+                            name: 'priority.priority_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [9]
+                        },
+                        {
+                            name: 'ticket_type.ttype_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [10]
+                        },
+                        {
+                            name: 'ticket_modified_at',
+                            orderable: true,
+                            searchable: true,
+                            targets: [11]
+                        },
+                    {% elif tickets_epanded == 0 %}
+                        {
+                            name: 'symbol',
+                            orderable: false,
+                            searchable: false,
+                            targets: [0]
+                        },
+                        {
+                            name: 'ticket_id',
+                            orderable: true,
+                            searchable: true,
+                            targets: [1]
+                        },
+                        {
+                            name: 'submitted_at',
+                            orderable: true,
+                            searchable: true,
+                            targets: [2]
+                        },
+                        {
+                            name: 'ticket_created_by.display_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [3]
+                        },
+                        {
+                            name: 'ticket_assign_to.display_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [4],
+                            //Action Permission check
+                            {% if "da_Can_view_Assigned_To_information_in_Tickets_and_email_notifications"|check_action_permission:user.id %}
+                            visible: true,
+                            {%else%}
+                            visible:false,
+                            {% endif %}
+                        },
+                        {
+                            name: 'subject',
+                            orderable: true,
+                            searchable: true,
+                            targets: [5]
+                        },
+                        {
+                            name: 'priority.priority_name',
+                            orderable: true,
+                            searchable: true,
+                            targets: [6]
+                        },
+                        {
+                            name: 'ticket_modified_at',
+                            orderable: true,
+                            searchable: true,
+                            targets: [7]
+                        },
+                        {
+                            name: 'ticket_sub_status.sub_status_text',
+                            orderable: true,
+                            searchable: true,
+                            targets: [8]
+                        }
+                    {% endif %}
+                ],
+                "order": [[ 1, 'desc' ]],
+                "processing": true,
+                "serverSide": true,
+                "lengthMenu": [ [10, 25, 50, 100, -1], [10, 25, 50, 100, "All"] ],
+                "stateSave": true,
+                "ajax": {
+                    "url": "{% url 'myticket_list_json' %}",
+                    "type": "GET",
+                    "data": function ( d ) {
+                         d.tab_name = $('#current_tab').val();
+                         d.csrfmiddlewaretoken = getCookie('csrftoken');
+                    }
+                },
+            });
+            // ...
+        }
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+</script>
+ <script>
+    $('#confirm-delete').on('show.bs.modal', function(e) {
+        $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+    });
+
+    $('#refreshBtn').click(function(){
+        location.reload();
+    });
+    //add +1 just for modulus
+    var time = (4 * 60)+1
+
+    setInterval( function() {
+
+        time--;
+
+        if(time <= 60)
+        {
+            $('#time').html('Refresh in '+ time + ' seconds');
+        }
+        else
+        {
+            t2 = time % 60;
+
+            if(t2 == 0)
+            {
+                t2 = time / 60;
+                $('#time').html('Refresh in '+ t2 + ' minutes');
+            }
+        }
+
+        if (time === 0) {
+            location.reload()
+        }
+
+
+    }, 1000);
+</script>
+<script type="text/javascript">
+        $( "#showhide_notes" ).click(function() {
+          $( ".all-notes" ).slideToggle( function() {
+
+            // Animation complete.
+          });
+          $(".all-notes1").slideToggle(function(){});
+        });
+</script>
+<script type="text/javascript">
+        $(document).ready(function(){
+            $(".show-link").click(function(){
+                $(".panel-body").toggleClass("show-data");
+            });
+        });
+</script>
+<script>
+ //Run the My Report Search
+   function runSearchReport(event) {
+            var myVar = $(".all-notes").find('.custom-select').val();
+            var myVar1 = $(".all-notes1").find('.custom-select').val();
+            if (myVar)
+            {
+                save_id = $('#save_search').val();
+                    //save_id1 = $('#save_search1').val();
+                    //alert(save_id1)
+                    if(myVar == null){
+                        alert('No Reports Selected')
+                    }
+                    // else if(save_id.length > 1){
+                    //     alert('Multiple reports cannot be Selected. Please Select one')
+                    // }
+                    else{
+                        optionSelected = $('#save_search').find('option:selected');
+                        if(optionSelected.attr('data-attr') == 'saveSearch')
+                            {
+                                 window.location.href = "{% url 'saveSearchProcess' %}?savedSearch="+myVar;
+                            }
+                        else{
+                               window.location.href = "{% url 'rbReportProcess' %}?rbReport="+myVar;
+                        }
+                        {% comment %} window.location.href = "{% url 'saveSearchProcess' %}?savedSearch="+save_id; {% endcomment %}
+                    }
+            }
+            else
+                {
+                    save_id = $('#save_search').val();
+                    //save_id1 = $('#save_search1').val();
+                    //alert(save_id1)
+                    if(save_id == null){
+                        alert('No Reports Selected')
+                    }
+                    // else if(save_id.length > 1){
+                    //     alert('Multiple reports cannot be Selected. Please Select one')
+                    // }
+                    else{
+                        optionSelected = $('#save_search').find('option:selected');
+                        if(optionSelected.attr('data-attr') == 'saveSearch')
+                            {
+                                 window.location.href = "{% url 'saveSearchProcess' %}?savedSearch="+save_id;
+                            }
+                        else{
+                               window.location.href = "{% url 'rbReportProcess' %}?rbReport="+save_id;
+                        }
+                        {% comment %} window.location.href = "{% url 'saveSearchProcess' %}?savedSearch="+save_id; {% endcomment %}
+                    }
+                }
+
+        }
+ //Edit My Search Report
+   function editSearchReport(event) {
+       var myVar = $(".all-notes").find('.custom-select').val();
+       var myVar1 = $(".all-notes1").find('.custom-select').val();
+       if(myVar)
+        {
+            save_id = $('#save_search').val();
+            if(myVar == null){
+                alert('No Reports Selected')
+            }
+            // else if(save_id.length > 1){
+            //     alert('Multiple reports cannot be Selected. Please Select one')
+            // }
+            else{
+                optionSelected = $('#save_search').find('option:selected');
+                if(optionSelected.attr('data-attr') == 'saveSearch')
+                    {
+                         window.location.href = "{% url 'searchTicket' %}?reportNbr="+myVar;
+                    }
+                else{
+                      window.location.href = "{% url 'editReportStep1' %}?rbReport="+myVar;
+                }
+                {% comment %} window.location.href = "{% url 'saveSearchProcess' %}?savedSearch="+save_id; {% endcomment %}
+            }
+        }
+       else
+        {
+            save_id = $('#save_search').val();
+            if(save_id == null){
+                alert('No Reports Selected')
+            }
+            // else if(save_id.length > 1){
+            //     alert('Multiple reports cannot be Selected. Please Select one')
+            // }
+            else{
+                optionSelected = $('#save_search').find('option:selected');
+                if(optionSelected.attr('data-attr') == 'saveSearch')
+                    {
+                         window.location.href = "{% url 'searchTicket' %}?reportNbr="+save_id;
+                    }
+                else{
+                      window.location.href = "{% url 'editReportStep1' %}?rbReport="+save_id;
+                }
+                {% comment %} window.location.href = "{% url 'saveSearchProcess' %}?savedSearch="+save_id; {% endcomment %}
+            }
+        }
+
+        }
+//delete My Search Report
+    function deleteSearchReport(event) {
+        var myVar = $(".all-notes").find('.custom-select').val();
+        var myVar1 = $(".all-notes1").find('.custom-select').val();
+        if(myVar)
+        {
+            save_id = $('#save_search').val();
+            if(myVar == null){
+                alert('No Reports Selected')
+            }
+            // else if(save_id.length > 1){
+            //     alert('Multiple reports cannot be Selected. Please Select one')
+            // }
+            else{
+                optionSelected = $('#save_search').find('option:selected');
+                if(optionSelected.attr('data-attr') == 'saveSearch')
+                    {
+                        $.ajax({
+                                type: 'POST',
+                                url: "{% url 'savedSearchRemove' %}",
+                                data: {save_id: myVar},
+                                dataType: 'json',
+                                beforeSend: function(jqXHR, settings) {
+                                    //Do something before send...
+                                },
+                                success: function(data, textStatus, jqXHR) {
+                                    location.reload();
+                                },
+                                error: function(jqXHR, textStatus, errorThrown) {
+                                    alert(textStatus + '. ' + errorThrown);
+                                }
+                            });
+                    }
+                else{
+                      $.ajax({
+                                type: 'POST',
+                                url: "{% url 'savedSearchRemove2' %}",
+                                data: {save_id: myVar},
+                                dataType: 'json',
+                                beforeSend: function(jqXHR, settings) {
+                                    //Do something before send...
+                                },
+                                success: function(data, textStatus, jqXHR) {
+                                    location.reload();
+                                },
+                                error: function(jqXHR, textStatus, errorThrown) {
+                                    alert(textStatus + '. ' + errorThrown);
+                                }
+                            });
+                }
+                {% comment %} window.location.href = "{% url 'saveSearchProcess' %}?savedSearch="+save_id; {% endcomment %}
+            }
+        }
+        else
+        {
+            save_id = $('#save_search').val();
+            if(save_id == null){
+                alert('No Reports Selected')
+            }
+            // else if(save_id.length > 1){
+            //     alert('Multiple reports cannot be Selected. Please Select one')
+            // }
+            else{
+                optionSelected = $('#save_search').find('option:selected');
+                if(optionSelected.attr('data-attr') == 'saveSearch')
+                    {
+                        $.ajax({
+                                type: 'POST',
+                                url: "{% url 'savedSearchRemove' %}",
+                                data: {save_id: save_id},
+                                dataType: 'json',
+                                beforeSend: function(jqXHR, settings) {
+                                    //Do something before send...
+                                },
+                                success: function(data, textStatus, jqXHR) {
+                                    location.reload();
+                                },
+                                error: function(jqXHR, textStatus, errorThrown) {
+                                    alert(textStatus + '. ' + errorThrown);
+                                }
+                            });
+                    }
+                else{
+                      $.ajax({
+                                type: 'POST',
+                                url: "{% url 'savedSearchRemove2' %}",
+                                data: {save_id: save_id},
+                                dataType: 'json',
+                                beforeSend: function(jqXHR, settings) {
+                                    //Do something before send...
+                                },
+                                success: function(data, textStatus, jqXHR) {
+                                    location.reload();
+                                },
+                                error: function(jqXHR, textStatus, errorThrown) {
+                                    alert(textStatus + '. ' + errorThrown);
+                                }
+                            });
+                }
+                {% comment %} window.location.href = "{% url 'saveSearchProcess' %}?savedSearch="+save_id; {% endcomment %}
+            }
+        }
+
+        }
+</script>
+{% endblock %}

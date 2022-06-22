@@ -1,0 +1,183 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+        {% load tz %} {# it will Load the Django TimeZone Library#}
+        {% load templates_extras %}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-ticket" aria-hidden="true"></i> Ticket</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Ticket</span></li>
+								<li><span>Summary Report Results</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+						<section class="panel">
+							<header class="panel-heading">
+
+                                <h3 class="text-primary text-bold">Tickets by Next Action - Results</h3>
+                                
+							</header>
+							<div class="panel-body">
+                                <a onClick="javascript:history.go(-1);" class="back-text text-bold"><span class="fa fa-arrow-circle-left"> </span> Back</a>
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12">
+                                        <h5 class="text-primary"><b>Tickets by Next Action </b></h5>
+                                    </div>
+
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12">
+                                        <h5 class="text-primary">Recorded From {{ start_date }} To {{ end_date }} </h5>
+                                    </div>
+                                </div>
+ 								<table class="table table-bordered table-striped table-condensed mb-none" id="datatable-default">
+									<thead>
+										<tr>
+                                            <th>Next Action User</th>
+                                            <th>Opened Before</th>
+                                            <th>Opened</th>
+                                            <th>Close</th>
+                                            <th>Left Open on</th>
+										</tr>
+									</thead>
+                                    <thead>
+										<tr>
+                                            <th></th>
+                                            <th>{{ start_date}}</th>
+                                            <th>In Period</th>
+                                            <th>In Period</th>
+                                            <th>{{ end_date }}</th>
+										</tr>
+									</thead>
+									<tbody>
+                                        {% if tickets and sort_by == '1' %}
+                                            {% for ticket in tickets %}
+                                                <tr class="gradeA">
+                                                    <td>{{ ticket.ticket_next_action__display_name }}</td>
+                                                    {% if tickets_open_before %}{% if ticket.ticket_next_action_id in tickets_open_before_list %}{% for OB in tickets_open_before %}{% if OB.ticket_next_action_id == ticket.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ticket.ticket_next_action_id }}&columnId=OB">{{ OB.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_open_in %}{% if ticket.ticket_next_action_id in tickets_open_in_list %}{% for OI in tickets_open_in %}{% if OI.ticket_next_action_id == ticket.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ticket.ticket_next_action_id }}&columnId=OI">{{ OI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_closed %}{% if ticket.ticket_next_action_id in tickets_closed_list %}{% for CI in tickets_closed %}{% if CI.ticket_next_action_id == ticket.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ticket.ticket_next_action_id }}&columnId=CI">{{ CI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_left_opened %}{% if ticket.ticket_next_action_id in tickets_left_opened_list %}{% for LO in tickets_left_opened %}{% if LO.ticket_next_action_id == ticket.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ticket.ticket_next_action_id }}&columnId=LO">{{ LO.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                </tr>
+                                            {% endfor %}
+                                        {% endif %}
+                                        {% if sort_by == '2' %}
+                                            {% for tickets_ob in tickets_open_before %}
+                                                <tr class="gradeA">
+                                                    <td>{{ tickets_ob.ticket_next_action__display_name }}</td>
+                                                    <td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ tickets_ob.ticket_next_action_id }}&columnId=OB">{{ tickets_ob.tcount }}</a></td>
+                                                    {% if tickets_open_in %}{% if tickets_ob.ticket_next_action_id in tickets_open_in_list %}{% for OI in tickets_open_in %}{% if OI.ticket_next_action_id == tickets_ob.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ tickets_ob.ticket_next_action_id }}&columnId=OI">{{ OI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_closed %}{% if tickets_ob.ticket_next_action_id in tickets_closed_list %}{% for CI in tickets_closed %}{% if CI.ticket_next_action_id == tickets_ob.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ tickets_ob.ticket_next_action_id }}&columnId=CI">{{ CI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_left_opened %}{% if tickets_ob.ticket_next_action_id in tickets_left_opened_list %}{% for LO in tickets_left_opened %}{% if LO.ticket_next_action_id == tickets_ob.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ tickets_ob.ticket_next_action_id }}&columnId=LO">{{ LO.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                </tr>
+                                            {% endfor %}
+                                            {% for ticket in tickets %}
+                                                {% if ticket.ticket_next_action_id not in tickets_open_before_list %}
+                                                    <tr class="gradeA">
+                                                        <td>{{ ticket.ticket_next_action__display_name }}</td>
+                                                        <td>0</td>
+                                                        {% if tickets_open_in %}{% if ticket.ticket_next_action_id in tickets_open_in_list %}{% for OI in tickets_open_in %}{% if OI.ticket_next_action_id == ticket.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ticket.ticket_next_action_id }}&columnId=OI">{{ OI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                        {% if tickets_closed %}{% if ticket.ticket_next_action_id in tickets_closed_list %}{% for CI in tickets_closed %}{% if CI.ticket_next_action_id == ticket.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ticket.ticket_next_action_id }}&columnId=CI">{{ CI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                        {% if tickets_left_opened %}{% if ticket.ticket_next_action_id in tickets_left_opened_list %}{% for LO in tickets_left_opened %}{% if LO.ticket_next_action_id == ticket.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ticket.ticket_next_action_id }}&columnId=LO">{{ LO.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                        {% if sort_by == '3' %}
+                                            {% for tickets_oi in tickets_open_in %}
+                                                <tr class="gradeA">
+                                                    <td>{{ tickets_oi.ticket_next_action__display_name }}</td>
+                                                    {% if tickets_open_before %}{% if tickets_oi.ticket_next_action_id in tickets_open_before_list %}{% for OB in tickets_open_before %}{% if OB.ticket_next_action_id == tickets_oi.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ tickets_oi.ticket_next_action_id }}&columnId=OB">{{ OB.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    <td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ tickets_oi.ticket_next_action_id }}&columnId=OI">{{ tickets_oi.tcount }}</a></td>
+                                                    {% if tickets_closed %}{% if tickets_oi.ticket_next_action_id in tickets_closed_list %}{% for CI in tickets_closed %}{% if CI.ticket_next_action_id == tickets_oi.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ tickets_oi.ticket_next_action_id }}&columnId=CI">{{ CI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_left_opened %}{% if tickets_oi.ticket_next_action_id in tickets_left_opened_list %}{% for LO in tickets_left_opened %}{% if LO.ticket_next_action_id == tickets_oi.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ tickets_oi.ticket_next_action_id }}&columnId=LO">{{ LO.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                </tr>
+                                            {% endfor %}
+                                            {% for ticket in tickets %}
+                                                {% if ticket.ticket_next_action_id not in tickets_open_in_list %}
+                                                    <tr class="gradeA">
+                                                        <td>{{ ticket.ticket_next_action__display_name }}</td>
+                                                        {% if tickets_open_before %}{% if ticket.ticket_next_action_id in tickets_open_before_list %}{% for OB in tickets_open_before %}{% if OB.ticket_next_action_id == ticket.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ticket.ticket_next_action_id }}&columnId=OB">{{ OB.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                        {% if tickets_open_in %}{% if ticket.ticket_next_action_id in tickets_open_in_list %}{% for OI in tickets_open_in %}{% if OI.ticket_next_action_id == ticket.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ticket.ticket_next_action_id }}&columnId=OI">{{ OI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                        {% if tickets_closed %}{% if ticket.ticket_next_action_id in tickets_closed_list %}{% for CI in tickets_closed %}{% if CI.ticket_next_action_id == ticket.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ticket.ticket_next_action_id }}&columnId=CI">{{ CI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                        {% if tickets_left_opened %}{% if ticket.ticket_next_action_id in tickets_left_opened_list %}{% for LO in tickets_left_opened %}{% if LO.ticket_next_action_id == ticket.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ticket.ticket_next_action_id }}&columnId=LO">{{ LO.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                        {% if sort_by == '4' %}
+                                            {% for tickets_ci in tickets_closed %}
+                                                <tr class="gradeA">
+                                                    <td>{{ tickets_ci.ticket_next_action__display_name }}</td>
+                                                    {% if tickets_open_before %}{% if tickets_ci.ticket_next_action_id in tickets_open_before_list %}{% for OB in tickets_open_before %}{% if OB.ticket_next_action_id == tickets_ci.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ tickets_ci.ticket_next_action_id }}&columnId=OB">{{ OB.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_open_in %}{% if tickets_ci.ticket_next_action_id in tickets_open_in_list %}{% for OI in tickets_open_in %}{% if OI.ticket_next_action_id == tickets_ci.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ tickets_ci.ticket_next_action_id }}&columnId=OI">{{ OI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    <td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ tickets_ci.ticket_next_action_id }}&columnId=CI">{{ tickets_ci.tcount }}</a></td>
+                                                    {% if tickets_left_opened %}{% if tickets_ci.ticket_next_action_id in tickets_left_opened_list %}{% for LO in tickets_left_opened %}{% if LO.ticket_next_action_id == tickets_ci.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ tickets_ci.ticket_next_action_id }}&columnId=LO">{{ LO.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                </tr>
+                                            {% endfor %}
+                                            {% for ticket in tickets %}
+                                                {% if ticket.ticket_next_action_id not in tickets_closed_list %}
+                                                    <tr class="gradeA">
+                                                        <td>{{ ticket.ticket_next_action__display_name }}</td>
+                                                        {% if tickets_open_before %}{% if ticket.ticket_next_action_id in tickets_open_before_list %}{% for OB in tickets_open_before %}{% if OB.ticket_next_action_id == ticket.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ticket.ticket_next_action_id }}&columnId=OB">{{ OB.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                        {% if tickets_open_in %}{% if ticket.ticket_next_action_id in tickets_open_in_list %}{% for OI in tickets_open_in %}{% if OI.ticket_next_action_id == ticket.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ticket.ticket_next_action_id }}&columnId=OI">{{ OI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                        {% if tickets_closed %}{% if ticket.ticket_next_action_id in tickets_closed_list %}{% for CI in tickets_closed %}{% if CI.ticket_next_action_id == ticket.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ticket.ticket_next_action_id }}&columnId=CI">{{ CI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                        {% if tickets_left_opened %}{% if ticket.ticket_next_action_id in tickets_left_opened_list %}{% for LO in tickets_left_opened %}{% if LO.ticket_next_action_id == ticket.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ticket.ticket_next_action_id }}&columnId=LO">{{ LO.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                        {% if sort_by == '5' %}
+                                            {% for tickets_lo in tickets_left_opened %}
+                                                <tr class="gradeA">
+                                                    <td>{{ tickets_lo.ticket_next_action__display_name }}</td>
+                                                    {% if tickets_open_before %}{% if tickets_lo.ticket_next_action_id in tickets_open_before_list %}{% for OB in tickets_open_before %}{% if OB.ticket_next_action_id == tickets_lo.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ tickets_lo.ticket_next_action_id }}&columnId=OB">{{ OB.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_open_in %}{% if tickets_lo.ticket_next_action_id in tickets_open_in_list %}{% for OI in tickets_open_in %}{% if OI.ticket_next_action_id == tickets_lo.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ tickets_lo.ticket_next_action_id }}&columnId=OI">{{ OI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    {% if tickets_closed %}{% if tickets_lo.ticket_next_action_id in tickets_closed_list %}{% for CI in tickets_closed %}{% if CI.ticket_next_action_id == tickets_lo.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ tickets_lo.ticket_next_action_id }}&columnId=CI">{{ CI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    <td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ tickets_lo.ticket_next_action_id }}&columnId=LO">{{ tickets_lo.tcount }}</a></td>
+                                                </tr>
+                                            {% endfor %}
+                                            {% for ticket in tickets %}
+                                                {% if ticket.ticket_next_action_id not in tickets_left_opened_list %}
+                                                    <tr class="gradeA">
+                                                        <td>{{ ticket.ticket_next_action__display_name }}</td>
+                                                        {% if tickets_open_before %}{% if ticket.ticket_next_action_id in tickets_open_before_list %}{% for OB in tickets_open_before %}{% if OB.ticket_next_action_id == ticket.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ticket.ticket_next_action_id }}&columnId=OB">{{ OB.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                        {% if tickets_open_in %}{% if ticket.ticket_next_action_id in tickets_open_in_list %}{% for OI in tickets_open_in %}{% if OI.ticket_next_action_id == ticket.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ticket.ticket_next_action_id }}&columnId=OI">{{ OI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                        {% if tickets_closed %}{% if ticket.ticket_next_action_id in tickets_closed_list %}{% for CI in tickets_closed %}{% if CI.ticket_next_action_id == ticket.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ticket.ticket_next_action_id }}&columnId=CI">{{ CI.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                        {% if tickets_left_opened %}{% if ticket.ticket_next_action_id in tickets_left_opened_list %}{% for LO in tickets_left_opened %}{% if LO.ticket_next_action_id == ticket.ticket_next_action_id %}<td><a href="{% url 'getSummaryReportTicketList' %}?reportId={{ report_id }}&startDate={{ start_date }}&endDate={{ end_date }}&rowId={{ ticket.ticket_next_action_id }}&columnId=LO">{{ LO.tcount }}</a></td>{% endif %}{% endfor %}{% else %}<td>0</td>{% endif %}{% else %}<td>0</td>{% endif %}
+                                                    </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+
+									</tbody>
+								</table>
+							</div>
+						</section>
+					<!-- end: page -->
+				</section>
+			</div>
+
+    {% endblock %}
+
+    {% block script %}
+        <script>
+        </script>
+    {% endblock %}
+
+

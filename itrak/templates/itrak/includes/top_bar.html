@@ -1,0 +1,76 @@
+{% load static %}
+{% load templates_extras %}
+    <section class="body">
+        <!-- start: header -->
+        <header class="header">
+
+            <div class="logo-container">
+                {% getSiteAppearanceLeftLogoURL request.user.user_org_id request.user.id  as urlresponse %}
+                {% if urlresponse %}
+                    <a href="{{ request.user.user_org_id| getSiteAppearanceLeftLogoURL:request.user.id }}" class="logo">
+                {% else %}
+                    <a href="{% url 'home' %}" class="logo"> 
+                {% endif %}    
+                {% getSiteAppearanceLeftLogoFile request.user.user_org_id request.user.id as fileresponse %}
+                {% if fileresponse %}
+                    <img src="{{ request.user.user_org_id | getSiteAppearanceLeftLogoFile:request.user.id }}" height="35" alt="JSOFT Admin" />
+                {% else %}
+                    <img src="{% static 'itrak/images/logoNew.png' %} " height="35" alt="JSOFT Admin" /> 
+                {% endif %}
+                </a>
+                <div class="visible-xs toggle-sidebar-left" data-toggle-class="sidebar-left-opened" data-target="html" data-fire-event="sidebar-left-opened">
+                    <i class="fa fa-bars" aria-label="Toggle sidebar"></i>
+                </div>
+            </div>
+            <!-- &emsp;&emsp;
+            <div class="header-left">
+                <input type="text">
+            </div> -->
+            <!-- start: search & user box -->
+            <div class="header-right">
+                <form action="{% url 'ticketLookUp' %}" method="post" class="search nav-form">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="input-group input-search" style="margin-left: -80px;width: 285px;">
+                            <input type="text" class="form-control" name="ticket_number" id="ticket_number" placeholder="Search Ticket # or Subject">
+                            <span class="input-group-btn">
+                                <button class="btn btn-default" type="submit"><i class="fa fa-search"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </form>
+                <span class="separator"></span>
+                <div id="userbox" class="userbox">
+                    {% getSiteAppearanceRightLogoURL request.user.user_org_id request.user.id as urlresponse %}
+                    {% if urlresponse %}
+                        <a href="{{request.user.user_org_id| getSiteAppearanceRightLogoURL:request.user.id }}" class="logo">
+                    {% else %}
+                        <a href="{% url 'home' %}" class="logo"> 
+                    {% endif %}   
+                    {% getSiteAppearanceRightLogoFile request.user.user_org_id request.user.id as fileresponse %}
+                    {% if fileresponse %}
+                        <img src="{{ request.user.user_org_id| getSiteAppearanceRightLogoFile:request.user.id }}" height="35" alt="JSOFT Admin" />
+                    {% else %}
+                        
+                    {% endif %}
+                        </a>
+                        <div class="profile-info" data-lock-name="John Doe" data-lock-email="johndoe@JSOFT.com">
+                            <span class="name"><strong>Welcome</strong>,&nbsp{{request.user.display_name}}</span>
+                        </div>
+                </div>
+                <span class="separator"></span>
+                <div id="userbox" class="userbox">
+                    <a href="#" data-toggle="dropdown">
+                        <div class="profile-info" data-lock-name="John Doe" data-lock-email="johndoe@JSOFT.com">
+                            <span class="name"><a role="menuitem" tabindex="-1" href="{% url 'signout' %}"><i class="fa fa-power-off"></i><strong> Log&nbsp;Out</strong></a></span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <!-- end: search & user box -->
+            <div class="header-left cus_header_left" style="margin-top: 17px;padding-left: 325px;">
+               <h4>{{ request.user.user_org_id| getSiteAppearanceSiteTitle:request.user.id }}</h4>
+            </div>
+        </header>
+          
+        <!-- end: header -->

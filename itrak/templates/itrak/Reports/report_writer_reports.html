@@ -1,0 +1,224 @@
+{% extends 'itrak/base.html' %}
+{% block body_block %}
+    {% load static %}
+    {% load tz %} {# it will Load the Django TimeZone Library#}
+    {% load templates_extras %}
+    {% load check_permissions %}
+
+    <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-file" aria-hidden="true"></i> Report Writer</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+                    <li><span>Reports</span></li>
+                    <li><span>Report Writer</span></li>
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+
+        <div class="row">
+            <div class="col-md-12">
+                {% for message in messages %}
+                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+
+                <section class="panel">
+                    <header class="panel-heading">
+                        <h2 class="panel-title">Select Report</h2>
+                    </header>
+                    
+                    <div class="panel-body">
+                        {% if "Rep_perm_Can_add_edit_and_run_report_writer_queries_and_reports"|check_action_permission:user.id %}
+                        
+                        {% endif %}
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                <a href="{% url 'newReport' %}" class="btn btn-primary">New</a>
+                                <a href="#" onclick="editRBReport(event)" data-hover="Edit Report" class="mb-xs mt-xs mr-xs btn btn-primary">Edit</a>
+                                <a href="#" onclick="cloneRBReport(event)" data-hover="Clone Query" class="mb-xs mt-xs mr-xs btn btn-primary">Clone</a>
+                                <a href="#" onclick="deleteRBReport(event)" data-hover="Delete Query" class="mb-xs mt-xs mr-xs btn btn-danger qry-btn-delete">Delete</a>
+                                <a href="#" onclick="runRBReport(event)" data-hover="Run Report" class="mb-xs mt-xs mr-xs btn btn-primary">Run</a>
+                            </div>
+                        </div>
+                        <br><br>
+                        <div class="form-group">
+                            <label class="col-lg-2 col-md-2 col-sm-3 control-label">Reports:</label>
+                            <div class="col-lg-9 col-md-9 col-sm-9">
+                                <a class="view-defination-btn" id="view_query_def" href="#modalQueryDef">View Report Definition</a>
+                                <select class="form-control" size="20" name="rb_reports" id="rb_reports">
+                                    {% for report in rb_reports %}
+
+                                        <option value="{{ report.rb_report_id }}">
+                                            {{ report.rb_report_name }}
+                                            {% if report.rb_report_is_share == 1 %}*{% endif %}
+                                        </option>
+
+                                    {% endfor %}
+                                </select>
+                                <div class="full-wdith">
+                                    <label class="required-lable"><span class="required">*</span> Shared</label>
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="form-group">
+                            <label class="col-lg-2 col-md-2 col-sm-3 control-label">Description:</label>
+                            <div class="col-lg-9 col-md-9 col-sm-9">
+                                <textarea rows="4" cols="50" class="form-control" disabled id="ReportDesc"></textarea>
+                            </div>
+                            <div class="row-full">
+                                <label class="col-lg-2 col-md-2 col-sm-3 control-label"></label>
+                                <div class="col-lg-9 col-md-9 col-sm-9"><span class=""><i><strong>NOTE:</strong> Description will display when a report is highlighted</i></span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- <footer class="panel-footer">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <label class="required-lable"><span class="required">*</span> Required</label>
+                            </div>
+                        </div>
+                    </footer> -->
+                </section>
+
+            </div>
+             <div id="popup-modal-content"></div>
+        </div>
+
+    </section>
+
+    {# Delete Modal Popup on Delete#}
+    <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <p>You are about to delete a record, this procedure is irreversible.</p>
+                        <strong>Do you want to proceed?</strong>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <a class="btn btn-danger btn-ok">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+{% endblock %}
+
+{% block script %}
+
+<script>
+
+    //Run the Report Builder Report
+    function runRBReport(event) {
+        report_id = $('#rb_reports').val();
+        if(report_id == null){
+            alert('No Report Selected!')
+        }else{
+            window.location.href = "{% url 'rbReportProcess' %}?rbReport="+report_id;
+        }
+    }
+
+    //Edit the Report Builder Report
+    function editRBReport(event) {
+        report_id = $('#rb_reports').val();
+        if(report_id == null){
+            alert('No Report Selected!')
+        }else{
+            window.location.href = "{% url 'editReportStep1' %}?rbReport="+report_id;
+        }
+    }
+
+    //Clone the Report Builder Report
+    function cloneRBReport(event) {
+        report_id = $('#rb_reports').val();
+        if(report_id == null){
+            alert('No Query Selected!')
+        }else{
+            window.location.href = "{% url 'cloneRBQuery' %}?rbReport="+report_id;
+        }
+    }
+
+    //Delete the Report Builder Report
+    function deleteRBReport(event) {
+        report_id = $('#rb_reports').val();
+        if(report_id == null){
+            alert('No Query Selected!')
+        }else{
+            $('.qry-btn-delete').attr('data-toggle','modal');
+            $('.qry-btn-delete').attr('data-target','#confirm-delete');
+            qry_delete_href = "{% url 'deleteRBQuery' %}?rbQuery="+report_id;
+            $('.qry-btn-delete').attr('data-href',qry_delete_href);
+        }
+    }
+
+    $('#confirm-delete').on('show.bs.modal', function(e) {
+        $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+    });
+
+    $("#rb_reports").change(function(){
+        var selectedOption = $(this).children("option:selected").val();
+        $.ajax({
+            url:"{% url 'getReportDescriptionById' %}",
+            type:'POST',
+            dataType: 'text',
+            data:{
+                'reportID':selectedOption,
+                'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+            },
+            success:function(data){
+                $('#ReportDesc').val(data);
+            },
+            error:function(){
+                console.log('error')
+            },
+        });
+    });
+
+      $('#view_query_def').on('click', function (e) {
+        e.preventDefault();
+        reportID = $('#rb_reports').val();
+        if(reportID == null)
+        {
+            alert('No Report Selected');
+        }
+        else
+        {
+            $.ajax({
+            url:"{% url 'getModalReportDef' %}",
+            type:'POST',
+            data:{
+                'reportID': reportID,
+                'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+            },
+            success:function(data){
+                $('#popup-modal-content').html(data);
+                $('#modalQueryDef').modal("show");
+            },
+            error:function(){
+                console.log('error')
+            },
+        });
+        }
+    });
+
+</script>
+
+{% endblock %}

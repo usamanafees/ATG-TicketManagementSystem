@@ -1,0 +1,422 @@
+{% extends 'itrak/base.html' %}
+{% block body_block %}
+     {% load static %}
+        {% load tz %} {# it will Load the Django TimeZone Library#}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-ticket" aria-hidden="true"></i> User </h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Ticket</span></li>
+								<li><span>Search Users</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+                         <div class="row">
+                            <div class="col-md-12">
+                                {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                                <form id="summary-form" action="{% url 'userSearchResults' %}" method="post" class="form-horizontal">
+                                    {% csrf_token %}
+                                    <section class="panel">
+                                        <header class="panel-heading">
+{#                                            <div class="panel-actions">#}
+{#                                                <a href="#" class="fa fa-caret-down"></a>#}
+{#                                                <a href="#" class="fa fa-times"></a>#}
+{#                                            </div>#}
+
+                                            <h2 class="panel-title">Search Users</h2>
+                                        </header>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary saveButton">Search</button>
+                                                    <button type="reset" class="btn btn-default resetBtn">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                        <div class="panel-body search-ticket">
+                                            <div class="validation-message">
+                                                <ul></ul>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label" for=""></label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-12 col-sm-12">
+                                                    	<h4 class="text-primary text-bold"> Search Criteria</h4>
+                                                	</div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Record Type:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="record_type" id="record_type" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Status", "allowClear": true }'>
+                                                            <!-- <option value="" > </option> -->
+                                                            <option value="0" >User</option>
+{#                                                            <option value="1" >Template</option>#}
+{#                                                            <option value="2" >Groups</option>#}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                             <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">User Type:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="user_type" id="user_type" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Status", "allowClear": true }'>
+                                                            <!-- <option value="" > </option> -->
+                                                            <option value="0" >Agent</option>
+                                                            <option value="1" >End User</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- <div class="form-group">
+                                                <label class="col-sm-3 control-label">User ID: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                       <input type="text" name="username" id="username" class="form-control" placeholder="" />
+                                                    </div>
+                                                </div>
+                                            </div> -->
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">First Name: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                       <input type="text" name="first_name" id="first_name" class="form-control" placeholder="" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Last Name: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                       <input type="text" name="last_name" id="last_name" class="form-control" placeholder="" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Display Name: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                       <input type="text" name="display_name" id="display_name" class="form-control" placeholder="" />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Phone Number: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                       <input type="text" name="phone" id="phone" class="form-control" placeholder="" />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Email Address: </label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                       <input type="text" name="email" id="email" class="form-control" placeholder="" />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+{#                                            <div class="form-group">#}
+{#                                                <label class="col-md-3 col-sm-3 control-label">Permission:</label>#}
+{#                                                <div class="col-md-9 col-sm-9">#}
+{#                                                    <div class="col-md-3 col-sm-3">#}
+{#                                                        <select name="permission" id="permission" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Status", "allowClear": true }'>#}
+{#                                                            <option value="" > </option>#}
+{#                                                            <option value="0" >Opened</option>#}
+{#                                                            <option value="1" >Closed</option>#}
+{#                                                        </select>#}
+{#                                                    </div>#}
+{#                                                </div>#}
+{#                                            </div>#}
+
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Permission:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                        <select name="perm_id" id="perm_id" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Organization", "allowClear": true }'>
+                                                        <option value="" readonly="readonly">Select Permission</option>
+                                                        {% if permissions %}
+                                                            {% for permission in permissions %}
+                                                                <option value="{{ permission.perm_act_id }}">{{ permission.description }}</option>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Department:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                         <select name="dep_id" id="dep_id" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Organization", "allowClear": true }'>
+                                                        <option value="" readonly="readonly">Select Department</option>
+                                                        {% if departments %}
+                                                            {% for dept in departments %}
+                                                                <option value="{{ dept.dep_id }}">{{ dept.dep_name }}</option>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Client ID:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                          <select name="client_id" id="client_id" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Client", "allowClear": true }'>
+                                                        <option value="" readonly="readonly" >Select Client</option>
+                                                        {% if clients %}
+                                                            {% for client in clients %}
+                                                                <option value="{{ client.client_id }}">{{ client.client_name }}</option>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Organization:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                       <select name="org_id" id="org_id" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Organization", "allowClear": true }'>
+                                                        <option value="" readonly="readonly" >Select Organization </option>
+                                                        {% if organizations %}
+                                                            {% for org in organizations %}
+                                                                <option value="{{ org.org_id }}">{{ org.org_name }}</option>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label"></label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-6">
+                                                        <div class="checkbox">
+                                                         <label>
+                                                            <input type="checkbox" name="is_active" id="is_active_rec" value="1" checked>
+                                                             <strong>Active Records Only </strong>
+                                                         </label>
+                                                     </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label"></label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-6">
+                                                         <div class="checkbox">
+                                                         <label>
+                                                            <input type="checkbox" name="is_active" id="is_inactive_rec" value="0">
+                                                             <strong>Inactive Records Only </strong>
+                                                         </label>
+                                                     </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                               <label class="col-md-3 col-sm-3 control-label"></label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-6">
+                                                        <div class="checkbox">
+                                                         <label>
+                                                            <input type="checkbox" name="log_permit" id="log_permit" value="1">
+                                                             <strong>Users with Log In Permission Only</strong>
+                                                         </label>
+                                                     </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                              <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Output Options:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-3">
+                                                        <select name="output_view" id="output_view" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Status", "allowClear": true }'>
+                                                            <!-- <option value="" > </option> -->
+                                                            <option value="BriefList" selected >Breif List</option>
+                                                            <option value="CountOnly" >Count Only</option>
+                                                            <option value="DetailExcel" >Detail Excel</option>
+{#                                                            <option value="EmToUsr" >Email to User List</option>#}
+{#                                                            <option value="EmToUsrSurvey" >Email Survey Invitation User List</option>#}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-md-3 col-sm-3 control-label">Sort Order:</label>
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-3">
+                                                        <select name="sort_column1" id="sort_column1" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Status", "allowClear": true }'>
+                                                            <!-- <option value="" > </option> -->
+                                                            <option value="last_name" >Last Name</option>
+                                                            <option value="first_name" >First Name</option>
+                                                            <option value="display_name" >Display Name</option>
+                                                            <option value="username" >User Id</option>
+                                                            <option value="user_dep_id" >Department</option>
+{#                                                            <option value="5" >Location</option>#}
+                                                            <option value="user_type" >User Type</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-6 col-sm-3">
+                                                        <select name="sort_order1" id="sort_order1" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Sub Status", "allowClear": true }'>
+                                                            <option value="0" >Asc</option>
+                                                            <option value="1" >Desc</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary saveButton">Search</button>
+                                                    <button type="reset" class="btn btn-default resetBtn">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                    </section>
+                                </form>
+                            </div>
+                        </div>
+					<!-- end: page -->
+				</section>
+			</div>
+{% endblock %}
+{% block script %}
+   <script>
+    //Get value from Local Storage
+    $(document).ready(function () {
+        var record_type = localStorage.getItem("record_type");
+        if (record_type==undefined || record_type==null)
+            {
+                $("#record_type").select2("val", '0');
+            }
+        else
+            {
+                $("#record_type").select2("val", record_type);
+            }    
+        var user_type = localStorage.getItem("user_type");
+        if (user_type==undefined || user_type==null)
+            {
+                $("#user_type").select2("val", '0');
+            }
+        else
+            {
+                $("#user_type").select2("val", user_type);
+            }  
+        
+        var perm_val = localStorage.getItem("perm_id");
+        $("#perm_id").select2("val", perm_val);
+        var dept_val = localStorage.getItem("dep_id");
+        $("#dep_id").select2("val", dept_val);
+        var client_val = localStorage.getItem("client_id");
+        $("#client_id").select2("val", client_val);
+        var org_val = localStorage.getItem("org_id");
+        $("#org_id").select2("val", org_val);
+        var output_view = localStorage.getItem("output_view");
+        if (output_view==undefined || output_view==null)
+            {
+                $("#output_view").select2("val", 'BriefList');
+            }
+        else
+            {
+                $("#output_view").select2("val", output_view);
+            }
+        var sort_column1 = localStorage.getItem("sort_column1");
+        if (sort_column1==undefined || sort_column1==null)
+            {
+                $("#sort_column1").select2("val", 'last_name');
+            }
+        else
+            {
+                $("#sort_column1").select2("val", sort_column1);
+            }        
+        var sort_order1 = localStorage.getItem("sort_order1");
+        if (sort_order1==undefined || sort_order1==null)
+            {
+                $("#sort_order1").select2("val", '0');
+            }
+        else
+            {
+                $("#sort_order1").select2("val", sort_order1);
+            }       
+            
+    });
+    //Save value in Local Storage
+    $('.saveButton').on('click', function(e){
+        var record_type = $( "#record_type option:selected" ).val();
+        localStorage.setItem("record_type", record_type);
+        var user_type = $( "#user_type option:selected" ).val();
+        localStorage.setItem("user_type", user_type);
+        var perm = $( "#perm_id option:selected" ).val();
+        localStorage.setItem("perm_id", perm);
+        var department = $( "#dep_id option:selected" ).val();
+        localStorage.setItem("dep_id", department);
+        var client = $( "#client_id option:selected" ).val();
+        localStorage.setItem("client_id", client);
+        var org = $( "#org_id option:selected" ).val();
+        localStorage.setItem("org_id", org);
+        var output_view = $( "#output_view option:selected" ).val();
+        localStorage.setItem("output_view", output_view);
+        var sort_column1 = $( "#sort_column1 option:selected" ).val();
+        localStorage.setItem("sort_column1", sort_column1);
+        var sort_order1 = $( "#sort_order1 option:selected" ).val();
+        localStorage.setItem("sort_order1", sort_order1);
+        
+        
+    });
+
+    function radioSwitch(opposite) {
+        document.getElementById(opposite).checked = false;
+    }
+
+    document.getElementById("is_active_rec").addEventListener("click",
+    function() { radioSwitch("is_inactive_rec"); });
+    document.getElementById("is_inactive_rec").addEventListener("click",
+    function() { radioSwitch("is_active_rec"); });
+
+
+    $('.resetBtn').on('click', function(e){
+        $("#record_type").select2("val", "0");
+        $("#user_type").select2("val", "0");
+        $("#username").val("");
+        $("#first_name").val("");
+        $("#last_name").val("");
+        $("#display_name").val("");
+        $("#phone").val("");
+        $("#email").val("");
+        $("#perm_id").select2("val", "");
+        $("#dep_id").select2("val", "");
+        $("#client_id").select2("val", "");
+        $("#org_id").select2("val", "");
+        $("#output_view").select2("val", "BriefList");
+        $("#sort_column1").select2("val", "last_name");
+        $("#sort_order1").select2("val", "0");
+    });
+    </script>
+{% endblock %}

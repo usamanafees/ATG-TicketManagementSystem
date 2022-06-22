@@ -1,0 +1,266 @@
+{% extends 'itrak/base.html' %}
+
+{% block body_block %}
+    {% load static %}
+    {% load templates_extras %}
+    {% load tz %} {# it will Load the Django TimeZone Library#}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+
+            <section role="main" class="content-body">
+                <header class="page-header">
+                    <h2><i class="fa fa-users" aria-hidden="true"></i> Group</h2>
+
+                     <div class="right-wrapper pull-right">
+                         <ol class="breadcrumbs">
+                             <li>
+                                 <a href="{% url 'home' %}">
+                                     <i class="fa fa-home"></i>
+                                 </a>
+                             </li>
+                             <li><span>Group</span></li>
+                             <li><span>View Group</span></li>
+                         </ol>
+
+                         <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+                     </div>
+                 </header>
+
+            	<!-- start: page -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <form id="summary-form" action="" method="post" class="form-horizontal">
+                            {% csrf_token %}
+                            <section class="panel">
+                                <header class="panel-heading">
+{#                                            <div class="panel-actions">#}
+{#                                                <a href="#" class="fa fa-caret-down"></a>#}
+{#                                                <a href="#" class="fa fa-times"></a>#}
+{#                                            </div>#}
+
+                                    <h2 class="panel-title">View Group </h2>
+                                </header>
+                                <footer class="panel-footer">
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <a href="{% url 'editGroup' %}?GrpID={% get_encrypted_id data.group_id %}" data-hover="Edit Group" class="mb-xs mt-xs mr-xs btn btn-primary">Edit</a>
+                                            <a href="#" data-href="{% url 'deleteGroup' %}?GrpID={% get_encrypted_id data.group_id %}" data-hover="Delete Group" class="mb-xs mt-xs mr-xs btn btn-danger" data-toggle="modal" data-target="#confirm-delete">Delete</a>
+                                        </div>
+                                    </div>
+                                </footer>
+                                <div class="panel-body">
+                                    <div class="validation-message">
+                                        <ul></ul>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-sm-4 control-label">Membership Type:</label>
+                                        <div class="col-md-4 col-sm-5">
+                                            {% if data.membership_type == 1 %}
+                                                    <label >Any</label>
+                                            {% elif data.membership_type == 0 %}
+                                                    <label >Agent Only</label>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-sm-4 control-label">Group ID: </label>
+                                        <div class="col-md-4 col-sm-5">
+                                            <label>{{ data.group_cus_id }}</label>
+                                            <input type="hidden" name="group_id" value="{{ data.group_id}}" id="group_id"/>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <span id="groupidValid"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-sm-4 control-label">Display Name: </label>
+                                        <div class="col-md-4 col-sm-5">
+                                            <label>{{ data.group_display_name }}</label>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <span id="groupnameValid"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                         <label class="col-md-3 col-sm-4 control-label" for="inputSuccess"></label>
+                                         <div class="col-sm-6">
+                                             <div class="checkbox">
+                                                 <label>
+                                                    <input type="checkbox" disabled="disabled" name="is_active" {% if data.gp_is_active == True %}checked{% endif %} />
+                                                       <i>Active</i>
+                                                 </label>
+                                             </div>
+                                        </div>
+                                      </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-sm-4 control-label">Phone:</label>
+                                        <div class="col-md-4 col-sm-5">
+                                            <label>{{ data.group_phone}}</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-sm-4 control-label">Email:</label>
+                                        <div class="col-md-4 col-sm-5">
+                                            <label>{{ data.group_email}}</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-sm-4 control-label">Mobile/SMS Email:</label>
+                                        <div class="col-md-4 col-sm-5">
+                                            <label>{{ data.group_mobile_sms_email}}</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                         <label class="col-md-3 col-sm-4 control-label" for="inputSuccess"></label>
+                                         <div class="col-sm-6">
+                                             <div class="checkbox">
+                                                 <label>
+                                                    <input type="checkbox" disabled="disabled" name="suppress_all_emails" {% if data.group_suppress_all_email == True %}checked{% endif %} />
+                                                       <i>Suppress All Email</i>
+                                                 </label>
+                                             </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-md-3 col-sm-4 control-label">Organization:</label>
+                                        <div class="col-md-4 col-sm-5">
+                                            {% if data.organizations %}
+                                                    {% for org in data.organizations %}
+                                                        {% if org.org_id == data.group_org_id %}
+                                                            <label>{{ org.org_name }}</label>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-md-3 col-sm-4 control-label">Department:</label>
+                                        <div class="col-md-4 col-sm-5">
+                                                {% if data.departments %}
+                                                    {% for dep in data.departments %}
+                                                        {% if dep.dep_id == data.group_dep_id %}
+                                                            <label>{{ dep.dep_name }}</label>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% endif %}
+                                        </div>
+                                    </div>
+                                     {# Permission Start Here#}
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-sm-4 control-label" for="country">Group Permission:</label>
+                                        <div class="col-md-4 col-sm-5">
+                                            <span class="fa fa-question-circle"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-md-3 col-sm-4 control-label" for=""></label>
+                                        <div class="col-md-4 col-sm-5">
+                                            <strong class="text-primary"> Menu Options/Pages Allowed</strong>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                         <label class="col-md-3 col-sm-4 control-label" for="inputSuccess"></label>
+                                         <div class="col-sm-6">
+                                             {% for submenu in sidebar.sub_menus %}
+                                                {% if submenu.submenu_permit_active == 1 %}
+                                                    <div class="checkbox">
+                                                         <label>
+                                                            <input  disabled="disabled"  type="checkbox" name="submenus" id="{{ submenu.submenu_id }}" value="{{ submenu.submenu_id }}" {% if submenu.submenu_id in submenus_allowed  %}checked{% endif %}>
+                                                             <p>{{ submenu.submenu_name }} </p>
+                                                         </label>
+                                                     </div>
+                                                {% endif %}
+                                             {% endfor %}
+                                             {% for menu in sidebar.menus %}
+                                                {% if menu.menu_permit_active == 1 %}
+                                                        <div class="checkbox">
+                                                             <label>
+                                                                <input  disabled="disabled"  type="checkbox" name="menus" id="{{ menu.menu_id }}" value="{{ menu.menu_id }}" {% if menu.menu_id in menus_allowed  %}checked{% endif %}>
+                                                                 <p>{{ menu.menu_name }} </p>
+                                                             </label>
+                                                        </div>
+                                                {% endif %}
+                                             {% endfor %}
+                                        </div>
+
+                                    </div>
+
+                                    {# Permission Ends Here#}
+
+                                    {% for permission in permissions %}
+                                    <div class="form-group">
+                                        <label id="section_{{permission.perm_sect_id}}" class="col-sm-3 control-label {% if data.user_type == "1" and "Agent Permissions:" == permission.permission %}not-available{% endif %}">{{permission}}</label>
+                                        <label class="col-sm-9 control-label" for="inputSuccess"></label>
+                                        <div class="col-sm-9 col-sm-offset-3">
+                                        {% for parent in permission.permission_action.all %}
+                                        {%if parent.is_active == 1%}
+                                            <div class="checkbox">
+                                                <label>
+                                                <input disabled="disabled" type="checkbox" name="permission_action" id="action_{{ parent.perm_act_id }}" {% if parent.perm_act_id in disabled_actions %}disabled{% endif %} value="{{ parent.perm_act_id }}" {% if parent.perm_act_id in actions_list  %}checked{% endif %}>
+                                                    <p {% if parent.perm_act_id in disabled_actions %}class="not-available"{% endif %}> {{ parent }} </p>
+                                                </label>
+                                            </div>
+                                            {% endif %}
+                                            {% for child in parent.permission_sub_action.all %}
+                                            {%if child.is_active == 1%}
+                                                <label for="" class="control-label"></label>
+                                                <div class="col-sm-12">
+                                                    <div class="checkbox">
+                                                        <label>
+                                                        <input disabled="disabled" type="checkbox" name="permission_sub_action" id="sub_action_{{ child.sub_act_id }}" {% if child.sub_act_id in disabled_sub_action %}disabled{% endif %} value="{{ child.sub_act_id }}" {% if child.sub_act_id in sub_actions_list  %}checked{% endif %}>
+                                                            <p {% if child.sub_act_id in disabled_sub_action %}class="not-available"{% endif %}>{{ child }} </p>
+                                                        </label>
+                                                    </div>
+                                                </div>    
+                                            {% endif %}
+                                            {% endfor %} 
+                                        {% endfor %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <footer class="panel-footer">
+                                    <div class="row">
+                                        <div class="col-sm-9">  
+                                        </div>
+                                    </div>
+                                </footer>
+                            </section>
+                        </form>
+                    </div>
+                </div>
+            <!-- end: page -->
+        </section>
+    </div>
+    <!-- Confirm Delete Modal Start -->
+    <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                </div>
+
+                <div class="modal-body">
+                    <p>You are about to delete a record, this procedure is irreversible.</p>
+                    <strong>Do you want to proceed?</strong>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <a class="btn btn-danger btn-ok">Delete</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Confirm Delete Modal End -->
+
+{% endblock %}
+
+{% block script %}
+<script>
+$('#confirm-delete').on('show.bs.modal', function(e) {
+    $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+});
+</script>
+{% endblock %}

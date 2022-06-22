@@ -1,0 +1,21 @@
+
+    {% load static %}
+    {% load tz %} {# it will Load the Django TimeZone Library#}
+    {% load templates_extras %}
+
+    {% for record in records %}
+        {%if record.org_contract_is_delete == 0%}
+        <tr id="tbl_row{{ record.org_contract_id }}">
+            <td>{{ record.org_contract_name }}</td>
+            <td>{{ record.org_contract_begin_date |date:"m/d/Y"}}</td>
+            <td>{{ record.org_contract_end_date |date:"m/d/Y" }}</td>
+            <td>{{ record.org_contract_hours_purchased }}</td>
+            <td>00:00</td>
+            <td>{{ record.org_contract_hours_purchased }}:00</td>
+            <td><a href="" onClick="editServiceContractTask(event, {{ record.org_contract_id }});">edit</a> | <a href="" class="delete_record" data-toggle="modal" data-target="#confirm-tsk-delete" data-href="javascript:deleteTMTask({{ record.org_contract_id }});" >del</a></td>
+        </tr>
+        
+        {%endif%}
+    {% endfor %}
+
+                                                               

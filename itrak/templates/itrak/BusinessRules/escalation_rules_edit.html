@@ -1,0 +1,107 @@
+{% extends 'itrak/base.html' %}
+
+{% block body_block %}
+    {% load static %}
+
+            <section role="main" class="content-body">
+                <header class="page-header">
+                   <h2><i class="fa fa-tasks" aria-hidden="true"></i> Escalation Rules</h2>
+
+                    <div class="right-wrapper pull-right">
+                        <ol class="breadcrumbs">
+                            <li>
+                                <a href="{% url 'home' %}">
+                                    <i class="fa fa-home"></i>
+                                </a>
+                            </li>
+                            <li><span>Escalation Rules</span></li>
+                            <li><span>Edit Escalation Rules</span></li>
+                        </ol>
+
+                        <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+                    </div>
+                </header>
+
+                <!-- start: page -->
+                     <div class="row">
+                        <div class="col-md-12">
+                            {% for message in messages %}
+                                <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                            <form id="summary-form" action="{% url 'updateEscalationRules' %}" method="post" class="form-horizontal business-add-form">
+                                {% csrf_token %}
+                                <section class="panel">
+                                    <header class="panel-heading">
+{#                                            <div class="panel-actions">#}
+{#                                                <a href="#" class="fa fa-caret-down"></a>#}
+{#                                                <a href="#" class="fa fa-times"></a>#}
+{#                                            </div>#}
+
+                                        <h2 class="panel-title">Edit Escalation Rules</h2>
+                                    </header>
+
+                                    <div class="panel-body">
+                                        <div class="validation-message">
+                                            <ul></ul>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span>When Ticket Type Equals: </label>
+                                            <div class="col-md-9 col-sm-9">
+                                                <div class="col-md-6 col-sm-7">
+                                                    <select name="ttype_id" id="ttype_id" required="required" title="Select Ticket Type" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Ticket Type", "allowClear": true }'>
+                                                        <option value="" readonly="readonly">Select Ticket Type </option>
+                                                        {% if ticketTypes %}
+                                                            {% for ticketType in ticketTypes %}
+                                                                <option value="{{ ticketType.ttype_id }}" {% if ticketType.ttype_id == data.er_ttype_id %}selected{% endif %}>{{ ticketType.ttype_name }}</option>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span>Set Status to: </label>
+                                            <div class="col-md-9 col-sm-9">
+                                                <div class="col-md-6 col-sm-7">
+                                                    <select name="status_id" id="status_id" required="required"  title="Select Status" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select Status", "allowClear": true }'>
+                                                        <option value="" readonly="readonly">Select Status </option>
+                                                        <option value="0" {% if data.er_status_id == 0 %}selected{% endif %}>Open</option>
+                                                        <option value="1" {% if data.er_status_id == 1 %}selected{% endif %}>Close</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <footer class="panel-footer">
+                                        <div class="row">
+                                            <div class="col-sm-9">
+                                                <input type="hidden" name="ERID" value="{{data.er_id}}">
+                                                <button class="btn btn-primary saveButton">Update</button>
+                                                <button type="reset" class="btn btn-default resetBtn">Reset</button>
+                                            </div>
+                                        </div>
+                                    </footer>
+                                </section>
+                            </form>
+                        </div>
+                    </div>
+                <!-- end: page -->
+            </section>
+        </div>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        $('.resetBtn').on('click', function(e){
+            $("#status_id").select2("val", "");
+            $("#ttype_id").select2("val", "");
+        });
+    </script>
+{% endblock %}
+
+

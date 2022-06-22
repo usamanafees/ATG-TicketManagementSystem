@@ -1,0 +1,504 @@
+{% extends 'itrak/base.html' %}
+{% load templates_extras %}
+
+{% block body_block %}
+    {% load static %}
+    <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-cogs" aria-hidden="true"></i> System</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+                    <li><span>System</span></li>
+                    <li><span>Site Appearance</span></li>
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+        {% for message in messages %}
+            <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                {{ message }}
+            </div>
+        {% endfor %}        
+        <!-- start: page -->
+            <form id="summary-form" action="{% url 'saveSiteAppearance' %}" method="post" enctype="multipart/form-data" class="form-horizontal">
+                {% csrf_token %}
+            <section class="panel">
+                <header class="panel-heading">
+                    <h2 class="panel-title">Site Appearance</h2>                               
+                </header>
+                <footer class="panel-footer">
+                    <div class="row">
+                        <div class="col-sm-9">
+                            <button class="btn btn-primary saveButton">Update</button>
+                            <button type="reset" class="btn btn-default">Reset</button>
+                        </div>
+                    </div>
+                </footer>
+                <div class="panel-body">
+                    <div class="validation-message">
+                        <ul></ul>
+                    </div>
+                    <h4><strong>On Screen Text</strong></h4> <hr>
+                    <div class="row">
+                        {% comment %} <div class="col-md-10"> {% endcomment %}
+                            <div class="form-group">
+                                <label for="" class="col-sm-3 control-label">Site Title:</label>
+                                <div class="col-sm-8 col-md-5 col-lg-4">
+                                    <input type="text" class="form-control" name="site_title" value="{{data.site_title}}" maxlength="500" id="site_title">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="" class="col-sm-3 control-label">Home Screen:</label>
+                                <div class="col-sm-8">
+                                        <textarea class="form-control" name="home_screen" id="home_screen" maxlength="500" rows="3">{{data.home_screen}}</textarea>
+                                    {% comment %} <input type="text" class="form-control" {% if data.open_tickets_only == "Open" %} checked {% endif %} name="site_title" value="" id="site_title"> {% endcomment %}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="" class="col-sm-3 control-label">Home Agent:</label>
+                                <div class="col-sm-8">
+                                        <textarea class="form-control" name="home_agent" id="home_agent" maxlength="500" rows="3">{{data.home_agent}}</textarea>
+                                    {% comment %} <input type="text" class="form-control" {% if data.open_tickets_only == "Open" %} checked {% endif %} name="site_title" value="" id="site_title"> {% endcomment %}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="" class="col-sm-3 control-label">Login Screen:</label>
+                                <div class="col-sm-8">
+                                        <textarea class="form-control" name="login_screen" id="login_screen" maxlength="500" rows="3">{{data.login_screen}}</textarea>
+                                    {% comment %} <input type="text" class="form-control" {% if data.open_tickets_only == "Open" %} checked {% endif %} name="site_title" value="" id="site_title"> {% endcomment %}
+                                </div>
+                            </div>
+                            
+                            <br> <br>                                            
+                        {% comment %} </div>                                    
+                        <div class="col-md-2">
+                            <a href="javascript:void(0)" data-toggle="modal" data-target="#myModal">history</a>
+                        </div> {% endcomment %}
+                    </div>
+                    <h4><strong>Default Logo Settings</strong></h4> <hr>
+                    <div class="row">
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 control-label">Favicon File:</label>
+                            <div class="col-sm-8">
+                                <a href="javascript:void(0)" data-toggle="modal" data-target="#myModal1" class="mr-10" id="DisplayFaviconLink">{{data.upload_favicon}}</a>
+                                {% comment %} <input name="upload_icon" id="upload_icon" class="btn btn-link" type="file" accept="image/x-png,image/x-png,image/jpeg,image/jpg" value="UPLOAD New"> {% endcomment %}
+                                <a href="javascript:void(0)" data-toggle="modal" data-target="#myModal" class="mr-10" id="upload_icon">UPLOAD New</a>
+                                <a href="{% url 'removeFaviconSiteAppearance' %}" id="favicon_icon">REMOVE</a>
+                            </div>
+                        </div><br>
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 control-label">Left Logo File:</label>
+                            <div class="col-sm-8">
+                                <a href="javascript:void(0)"  data-toggle="modal" data-target="#myModal2" class="mr-10" id="DisplayLeftLogoLink">{{data.upload_left_logo}}</a>
+                                <a href="javascript:void(0)" data-toggle="modal" data-target="#leftLogoModal" class="mr-10" id="upload_icon">UPLOAD New</a>
+                                <a href="{% url 'removeLeftLogoSiteAppearance' %}" id="left_logo_icon">REMOVE</a>
+                            </div>
+                        </div><br> 
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 control-label">Left Logo URL:</label>
+                            <div class="col-sm-8 col-md-5 col-lg-4">
+                                <input type="text" class="form-control" name="left_logo_url" value="{{data.left_logo_url}}" id="left_logo_url">
+                            </div>
+                        </div><br>
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 control-label">Right Logo File:</label>
+                            <div class="col-sm-8 col-md-5 col-lg-4">
+                                <a href="javascript:void(0)"  data-toggle="modal" data-target="#myModal3" class="mr-10" id="DisplayRightLogoLink">{{data.upload_right_logo}}</a>
+                                <a href="javascript:void(0);" data-toggle="modal" data-target="#rightLogoModal" class="mr-10" id="upload_icon">UPLOAD New</a>
+                                <a href="{% url 'removeRightLogoSiteAppearance' %}" id="right_logo_remove_icon">REMOVE</a>
+                            </div>
+                        </div><br>
+                        <div class="form-group">
+                            <label for="" class="col-sm-3 control-label">Right Logo URL:</label>
+                            <div class="col-sm-8 col-md-5 col-lg-4">
+                                <input type="text" class="form-control" name="right_logo_url" value="{{data.right_logo_url}}" id="left_logo_url">
+                            </div>
+                        </div><br><br>
+                    </div>
+                </div>
+                <footer class="panel-footer">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <button class="btn btn-primary saveButton">Update</button>
+                            <button type="reset" class="btn btn-default">Reset</button>
+                        </div>
+                    </div>
+                </footer>
+            </section>
+            </form>
+            
+        <!-- end: page -->
+    </section>
+
+<!-- Modal -->
+  <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Upload New Favicon</h4>
+        </div>
+        <div class="modal-body">
+            <p>Use the browse button to locate the favicon graphic file to upload.
+            Then, click the "Upload File" button to save the file.</p>
+            <p><strong>NOTE:</strong>The original graphic file size is 16 x 16 pixels.</p>
+                <form method="post" action="{% url 'saveSiteAppearanceFiles' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for=""><strong>Favicon File Name:</strong></label>
+                        <br>
+                        <input type="file" accept="image/x-png,image/x-png,image/jpeg,image/jpg"
+                            class="" name="upload_favicon" id="upload_favicon_file">
+                            <br>
+                        <button style="margin-top: 5px;" type="submit" class="btn btn-primary fav-icon">Upload</button>
+              {% comment %} <small id="helpId" class="form-text text-muted">Help text</small> {% endcomment %}
+                    </div>
+                    <div class="col-md-10 col-sm-3" style="padding-left: 0px;">
+                        <small id="upload_fav_logo_file_validation" class="text-danger align-text"></small>
+                    </div> 
+                </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Favicon File Modal -->
+  <div class="modal fade" id="myModal1" role="dialog">
+    <div class="modal-dialog">    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Favicon Preview</h4>
+        </div>
+        <div class="modal-body">
+            <img src="{{ request.user.user_org_id| getSiteAppearanceFavicon:request.user.id }} "  height="16" width="16" alt="JSOFT Admin" />  
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+   <!-- LeftLogo File Modal -->
+   <div class="modal fade" id="myModal2" role="dialog">
+    <div class="modal-dialog">    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Left Logo Preview</h4>
+        </div>
+        <div class="modal-body">
+            <img src="{{ request.user.user_org_id | getSiteAppearanceLeftLogoFile:request.user.id }} "  height="35" width="180" alt="JSOFT Admin" />  
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- LeftLogo File Modal -->
+  <div class="modal fade" id="myModal3" role="dialog">
+    <div class="modal-dialog">    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Right Logo Preview</h4>
+        </div>
+        <div class="modal-body">
+            <img src="{{ request.user.user_org_id| getSiteAppearanceRightLogoFile:request.user.id}} "  height="50" width="50" alt="JSOFT Admin" />  
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <div class="modal fade" id="leftLogoModal" role="dialog">
+    <div class="modal-dialog">    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Upload New Logo1</h4>
+        </div>
+        <div class="modal-body">
+            <p>Use the browse button to locate the favicon logo file to upload.
+            Then, click the "Upload File" button to save the file.</p>
+            <p><strong>NOTE:</strong>The original graphic file size is 35 x 183 pixels.</p>
+            <div class="form-group">
+              <form method="post" action="{% url 'saveSiteAppearanceFiles' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for=""><strong>Left Logo Name:</strong></label>    
+                        <br>
+                        <input type="file" accept="image/x-png, image/png, image/jpeg, image/jpg"
+                            class="" name="upload_left_logo" id="upload_left_logo_file">
+                            <br>
+                        <button type="submit" class="btn btn-primary upload-left">Upload</button>
+                    </div>
+                    <div class="col-md-10 col-sm-3" style="padding-left: 0px;">
+                        <small id="upload_left_logo_file_validation" class="text-danger align-text"></small>
+                    </div>   
+                </form>
+            </div>
+            
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <div class="modal fade" id="rightLogoModal" role="dialog">
+    <div class="modal-dialog">    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Upload New Logo2</h4>
+        </div>
+        <div class="modal-body">
+            <p>Use the browse button to locate the favicon logo file to upload.
+            Then, click the "Upload File" button to save the file.</p>
+            <p><strong>NOTE:</strong>The original graphic file size is 50 x 50 pixels.</p>
+            <div class="form-group">
+              <form method="post" action="{% url 'saveSiteAppearanceFiles' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for=""><strong>Right Logo Name:</strong></label>
+                        <br>
+                        <input type="file" accept="image/x-png,image/x-png,image/jpeg,image/jpg"
+                            class="" name="upload_right_logo" id="upload_right_logo_file">
+                            <br>
+                        <button type="submit" class="btn btn-primary upload-right">Upload</button>
+                    </div>
+                    <div class="col-md-10 col-sm-3" style="padding-left: 0px;">
+                        <small id="upload_right_logo_file_validation" class="text-danger align-text"></small>
+                    </div>  
+                </form>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+        <script>
+            if($('#chkWorkday24').is(':checked')){
+                $('#inp_starthour').prop('disabled', true);
+                $('#inp_startminutes').prop('disabled', true);
+                $('#inp_startAMPM').prop('disabled', true);
+                $('#inp_endhour').prop('disabled', true);
+                $('#inp_endminutes').prop('disabled', true);
+                $('#inp_endAMPM').prop('disabled', true);
+            }
+            $(document).on('click','#chkWorkday24', function(){                
+                if ($(this).is(':checked')){
+                    $('#inp_starthour').prop('disabled', true);
+                    $('#inp_startminutes').prop('disabled', true);
+                    $('#inp_startAMPM').prop('disabled', true);
+                    $('#inp_endhour').prop('disabled', true);
+                    $('#inp_endminutes').prop('disabled', true);
+                    $('#inp_endAMPM').prop('disabled', true);
+                }else{
+                    $('#inp_starthour').prop('disabled', false);
+                    $('#inp_startminutes').prop('disabled', false);
+                    $('#inp_startAMPM').prop('disabled', false);
+                    $('#inp_endhour').prop('disabled', false);
+                    $('#inp_endminutes').prop('disabled', false);
+                    $('#inp_endAMPM').prop('disabled', false);
+                }
+            });
+            $('#history').click( function(){
+                alert("Inside")
+                if(org_id == ''){
+                    alert('Something went wrong. Please try again.');
+                }else{
+                $.ajax({
+                    url:"/getModalOrgTicketsById/",
+                    type:'POST',
+                    data:{
+                        'org_id':org_id,
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    },
+                    success:function(data){
+                        $('#popup-modal-content').html(data);
+                        $('#modalOrgTickets').modal("show");
+                    },
+                    error:function(){
+                        console.log('error')
+                    },
+                });
+                }
+            });
+            $('.fav-icon').click( function(){
+                $("form").submit( function( e ) {
+                    debugger
+                    var form = this;
+                    e.preventDefault(); //Stop the submit for now
+                                                //Replace with your selector to find the file input in your form
+                    var fileInput = $(this).find("input[type=file]")[0],
+                        file = fileInput.files && fileInput.files[0];
+
+                    if( file ) {
+                        var img = new Image();
+
+                        img.src = window.URL.createObjectURL( file );
+                        debugger
+                        img.onload = function() {
+                            var width = img.naturalWidth,
+                                height = img.naturalHeight;
+                            debugger
+                            window.URL.revokeObjectURL( img.src );
+
+                            if( width == 16 && height == 16 ) {
+                                debugger
+                                form.submit();
+                                
+                            }
+                            else {
+                                $("#upload_fav_logo_file_validation").html("Image resolution should be 16x16");
+                                debugger
+                                //fail
+                            }
+                        };
+                    }
+                    else { //No file was input or browser doesn't support client side reading
+                        
+                    $("#upload_fav_logo_file_validation").html("No Image Selected");
+                    }
+                });
+            });
+            $('.upload-left').click( function(){
+                $("form").submit( function( e ) {
+                    debugger
+                    var form = this;
+                    e.preventDefault(); //Stop the submit for now
+                                                //Replace with your selector to find the file input in your form
+                    var fileInput = $(this).find("input[type=file]")[0],
+                        file = fileInput.files && fileInput.files[0];
+
+                    if( file ) {
+                        var img = new Image();
+
+                        img.src = window.URL.createObjectURL( file );
+                        debugger
+                        img.onload = function() {
+                            var width = img.naturalWidth,
+                                height = img.naturalHeight;
+                            debugger
+                            window.URL.revokeObjectURL( img.src );
+
+                            if( width == 183 && height == 35 ) {
+                                debugger
+                                form.submit();
+                                
+                            }
+                            else {
+                                $("#upload_left_logo_file_validation").html("Image should be of 35 X 183");
+                                debugger
+                                //fail
+                            }
+                        };
+                    }
+                    else { //No file was input or browser doesn't support client side reading
+                    e.preventDefault();
+                    alert('No Icon selected');
+                    }
+                });
+                var fileName = document.getElementById("upload_left_logo_file").value
+                if (fileName == "") {
+                    $("#upload_left_logo_file_validation").html("Browse to upload a valid File with png or jpg extension.");
+                    return false;
+                }
+                else if (fileName.split(".")[1].toUpperCase() == "PNG" || fileName.split(".")[1].toUpperCase() == "JPG" || fileName.split(".")[1].toUpperCase() == "JPEG")
+                    return true;
+                else {
+                    $("#upload_left_logo_file_validation").html("File with " + fileName.split(".")[1] + " is invalid. Upload a valid file with png or jpg extensions.");
+                    return false;
+                }
+                return true;
+                });
+
+                $('.upload-right').click( function(){
+                    $("form").submit( function( e ) {
+                    debugger
+                    var form = this;
+                    e.preventDefault(); //Stop the submit for now
+                                                //Replace with your selector to find the file input in your form
+                    var fileInput = $(this).find("input[type=file]")[0],
+                        file = fileInput.files && fileInput.files[0];
+
+                    if( file ) {
+                        var img = new Image();
+
+                        img.src = window.URL.createObjectURL( file );
+                        debugger
+                        img.onload = function() {
+                            var width = img.naturalWidth,
+                                height = img.naturalHeight;
+                            debugger
+                            window.URL.revokeObjectURL( img.src );
+
+                            if( width == 50 && height == 50 ) {
+                                debugger
+                                form.submit();
+                                
+                            }
+                            else {
+                                $("#upload_right_logo_file_validation").html("Image should be of 50 X 50");
+                                debugger
+                                //fail
+                            }
+                        };
+                    }
+                    else { //No file was input or browser doesn't support client side reading
+                    e.preventDefault();
+                    alert('No Icon selected');
+                    }
+                });
+                var fileName1 = document.getElementById("upload_right_logo_file").value
+                if (fileName1 == "") {
+                    $("#upload_right_logo_file_validation").html("Browse to upload a valid File with png or jpg extension.");
+                    return false;
+                }
+                else if (fileName1.split(".")[1].toUpperCase() == "PNG" || fileName1.split(".")[1].toUpperCase() == "JPG" || fileName1.split(".")[1].toUpperCase() == "JPEG" )
+                    return true;
+                else {
+                    $("#upload_right_logo_file_validation").html("File with " + fileName.split(".")[1] + " is invalid. Upload a valid file with png or jpg extensions.");
+                    return false;
+                }
+                return true;
+                });
+        </script>
+{% endblock %}

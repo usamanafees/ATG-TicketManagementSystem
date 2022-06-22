@@ -1,0 +1,1574 @@
+    {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+        {% load tz %} {# it will Load the Django TimeZone Library#}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-tasks" aria-hidden="true"></i> Tasks</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Tasks</span></li>
+								<li><span>Edit Task Group</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+                         <div class="row">
+                            <div class="col-md-12">
+                                {% for message in messages %}
+                                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                                <form id="summary-form" action="{% url 'updateTaskGroup' %}" method="post" class="form-horizontal">
+                                    {% csrf_token %}
+                                    <section class="panel">
+                                        <header class="panel-heading">
+{#                                            <div class="panel-actions">#}
+{#                                                <a href="#" class="fa fa-caret-down"></a>#}
+{#                                                <a href="#" class="fa fa-times"></a>#}
+{#                                            </div>#}
+
+                                            <h2 class="panel-title">Edit Task Group </h2>
+                                        </header>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary">Update</button>
+                                                    <button type="reset" class="btn btn-default">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                        <div class="panel-body">
+                                            <div class="validation-message">
+                                                <ul></ul>
+                                            </div>
+                                            <input type="hidden" id ="taskgroup_id" name="taskgroup_id" value="{{ data.taskgroup_id }}"/>
+
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label"><span class="required">*</span>Task Group: </label>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <input type="text" name="taskgroup_description" id="taskgroup_description" value="{{ data.taskgroup_description}}" class="form-control" title="Plase enter Task." placeholder="eg.: ABC" required/>
+                                                </div>
+                                                <div class="col-sm-3">
+                                                    <span id="statusValid"></span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">Display Order: </label>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <input type="text" name="display_order" class="form-control" value="{{ data.taskgroup_display_order }}" title="Plase enter Display Order." placeholder="eg.: 1" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                 <label class="col-sm-3 control-label" for="inputSuccess"></label>
+                                                 <div class="col-sm-6">
+                                                     <div class="checkbox">
+                                                         <label>
+                                                            <input type="checkbox" name="is_active" {% if data.taskgroup_is_active == True %}checked{% endif %} />
+                                                               <i>Active</i>
+                                                         </label>
+                                                     </div>
+                                                </div>
+                                              </div>
+                                              <!-- Restrict To -->
+                                              <div class="form-group">
+                                                <label class="col-sm-3 control-label">Restrict To: </label>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <a class="mb-xs mt-xs mr-xs modal-sizes"  href="#modalLG1" data-id="">ADD</a>
+                                                </div>
+                                            </div>
+                                             <!-- Modal For Restrict To Start-->
+                                             <div id="modalLG1" class="modal-block modal-block-lg mfp-hide">
+                                                <section class="panel">
+                                                    <header class="panel-heading">
+                                                        <h2 class="panel-title">Select Groups and/or Organizations</h2>
+                                                    </header>
+                                                    <div class="panel-body">
+                                                        <form>&nbsp;</form>
+                                                        <form id="modalForm1" action="{% url 'saveRestrictTaskGroup' %}" method="post" class="form-horizontal"> 
+                                                        {% csrf_token %}
+                                                        <section class="panel">                                
+                                                            <div class="panel-body">
+                                                                <div class="validation-message">
+                                                                    <ul></ul>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <input  type="hidden" name="task_group_id" value="{{task_group_id}}" id="task_group_id"/>
+                                                                    <label class="col-md-3 col-sm-3 control-label">Available Groups: </label>
+                                                                    <div class="col-md-9 col-sm-9">
+                                                                        <div class="col-md-6 col-sm-7">
+                                                                            <select class="form-control" multiple="multiple" data-plugin-multiselect data-plugin-options='{ "includeSelectAllOption": true }' name="tgr_group" id="tgr_group">
+                                                                                {% if groups %}
+                                                                                        {% for group in groups %}
+                                                                                            <option value="{{ group.group_id }}">{{ group.group_display_name }}</option>
+                                                                                        {% endfor %}   
+                                                                                {% endif %}
+                                                                            </select>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label class="col-md-3 col-sm-3 control-label">Available Organizations: </label>
+                                                                    <div class="col-md-9 col-sm-9">
+                                                                        <div class="col-md-6 col-sm-7">
+                                                                            <select class="form-control" multiple="multiple" data-plugin-multiselect data-plugin-options='{ "includeSelectAllOption": true }' name="tgr_org" id="tgr_org">
+                                                                                {% if organizations %}
+                                                                                    {% for organization in organizations %}
+                                                                                        <option value="{{ organization.org_id }}">{{ organization.org_name }}</option>
+                                                                                    {% endfor %}
+                                                                                {% endif %}
+                                                                            </select>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row">
+                                                                    <div class="col-sm-9">
+                                                                        <button type="submit" class="btn btn-primary saveButton ">Update</button>
+                                                                        <button type="reset" class="btn btn-primary resetBtn1">Clear All</button>
+                                                                    </div>
+                                                                </div></br>
+                                                            </div>
+                                                        </section>
+                                                    </form>
+                                                    </div>
+                                                    <footer class="panel-footer">
+                                                        <div class="row">
+                                                            <div class="col-md-12 text-right">
+                                                                <button class="btn btn-danger modal-dismiss">Cancel</button>
+                                                                <!-- <a href="javascript:void(0)"  onclick="closePopUp();"class="close-popup modal-dismiss">&times;</a> -->
+                                                            </div>
+                                                        </div>
+                                                    </footer>
+                                                </section>
+                                            </div>
+                                            <!-- Modal For Restrict To End-->
+
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label"> </label>
+                                                <div class="col-md-4 col-sm-6">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-striped table-hover">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Group or Organization Name</th>
+                                                                    <th>Type</th>
+                                                                    <th>Action</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                            {% if taskgrouprestricts %}   
+                                                            {% for tgr_id, tgr_group_or_org_name, tgr_type_is_group, tgr_type_is_org in taskgrouprestricts %}      
+                                                                {% if tgr_type_is_org == 1 %}    
+                                                                    <tr>
+                                                                        <td>{{ tgr_group_or_org_name}}</td>
+                                                                        <td>Organization</td>
+                                                                        <td><a style="cursor: pointer;" onclick="DeleteRestrictTaskGroup({{ tgr_id }});" data-id="{{ tgr_id }}">Remove</a></td>
+                                                                    </tr> 
+                                                                {% elif tgr_type_is_group == 1 %}
+                                                                    <tr>
+                                                                        <td>{{ tgr_group_or_org_name}}</td>
+                                                                        <td>Group</td>
+                                                                        <td><a style="cursor: pointer;" onclick="DeleteRestrictTaskGroup({{ tgr_id }});" data-id="{{ tgr_id }}">Remove</a></td>
+                                                                    </tr>
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                            {% endif %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                                
+
+                                            <div class="form-group">
+                                                <label class="col-sm-3 control-label">
+                                                    <a class="mb-xs mt-xs mr-xs modal-sizes btn btn-primary" href="#modalLG">Task Manager</a>
+                                                </label>
+                                                <!-- Modal Form For Task Manager Start-->
+                                                <div id="modalLG" class="modal-block modal-block-lg mfp-hide">
+                                                    <section class="panel">
+                                                        <header class="panel-heading">
+                                                            <h2 class="panel-title">Task Manager</h2>
+                                                            <a href="javascript:void(0)"  onclick="closePopUp();" class="close-popup modal-dismiss">&times;</a>
+                                                        </header>
+                                                        <div class="panel-body">
+                                                        	<form>&nbsp;</form>
+                                                        	  <form id="modalForm" action="{% url 'updateTaskGroup' %}" method="post" class="form-horizontal">
+                                                                <div class="table-responsive">
+                                                                  <table class="table table-bordered table-task-modal">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th></th>
+                                                                            <th colspan="2">Task</th>
+                                                                            <th>Assigned To</th>
+                                                                            <th>Due Date</th>
+                                                                            <th>Depend Order</th>
+                                                                            <th>Type</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+
+                                                                    </tbody>
+
+
+                                                                </table>
+                                                                </div>
+                                                                <div class="modal-buton">
+                                                                    <input type="button" class="btn btn-primary clear-btn" value="New Task" name="btnAdd" id="BtnNewTask">
+                                                                    <input type="button" class="btn btn-primary clear-btn" value="Add Task Group" id="btnAddTaskGroup">
+                                                                    <input type="button" class="btn btn-primary clear-btn modal-dismiss" value="Save" name="btnDone" id="btnDone">
+                                                                    <input type="button" class="btn btn-primary clear-btn" value="Reset" name="btnReset" id="btnReset">
+                                                                    <input type="button" class="btn btn-primary show-btn" value="Cancel" id="cancelbtn">
+                                                                    <input type="button" class="btn btn-primary show-btn" value="Accept" id="accept-btn">
+                                                                    <input type="button" class="btn btn-primary show-btn task-group" value="Add Task Group" id="accept-btn">
+                                                                </div>
+                                                                <div class="addNewTask space-top-custom">
+                                                			   		<div class="form-group">
+                                                			   			<label class="col-sm-3 control-label">Task Order:</label>
+                                                			   			<div class="col-sm-2">
+                                                			   				<input type="text" class="form-control input-sm"  name="modal_task_order" id="modal_task_order">
+                                                			   			</div>
+                                                			   		</div>
+                                                			   		<div class="form-group">
+                                                                        <label class="col-sm-3 control-label"><span class="required">*</span> Task:</label>
+                                                			   			<div class="col-md-4 col-sm-4">
+	                                                			   			<select class="form-control" name="modal_task_id" id="modal_task_id">
+	                                        			   			            <option selected=""></option>
+                                                                                {% for task in tasks %}
+                                                                                  <option value="{{ task.task_id }}">{{ task.task_description }}</option>
+	                                        			   						  {% endfor %}
+	                                                			   			</select>
+	                                                			   		</div>
+                                                			   		</div>
+                                                			   		<div class="form-group">
+                                                                        <label class="col-sm-3 control-label"><span class="required">*</span> Task Type:</label>
+                                                			   			<div class="col-md-4 col-sm-4">
+	                                                			   			<input type="radio" name="modal_task_type" class="modal_task_type" id="modal_task_type1" value="0" checked>
+	                                                			   			<label for="complete">Complete</label>&nbsp;
+	                                                			   			<input type="radio" name="modal_task_type" class="modal_task_type" id="modal_task_type2" value="1">
+                                                                          <label for="Ye/NO">Yes/No/NA</label>
+	                                                			   		</div>
+                                                			   		</div>
+                                                                    <div class="incomplete_ticket_type">
+                                                                        <div class="form-group">
+                                                                        <label class="col-sm-3 control-label">If Response:</label>
+                                                			   			<div class="col-lg-8 col-md-8 col-sm-8 response-top-space">
+                                                                            <div class="row">
+                                                                                <small class="col-sm-4">Add Task Group=</small>
+                                                                                <small class="col-sm-2">Cancel All Open Tasks</small>
+                                                                                <small class="col-sm-2">Close Ticket</small>
+                                                                                <small class="col-sm-4">Update Substatus to =</small>
+                                                                            </div>
+	                                                			   		</div>
+                                                			   		</div>
+                                                                        <div class="form-group">
+                                                                            <label class="col-sm-3 control-label">=Yes</label>
+                                                                            <div class="col-md-8 col-sm-8">
+                                                                                <div class="row">
+                                                                                    <div class="col-sm-4">
+                                                                                        <select class="form-control modal_task_type_group_id" name="modal_task_type_group_id1" id="modal_task_type_group_id1">
+                                                                                            <option selected=""> </option>
+                                                                                            {% if taskGroups %}
+                                                                                                {% for taskGroup in taskGroups %}
+                                                                                                    <option value="{{ taskGroup.taskgroup_id }}" >{{ taskGroup.taskgroup_description }}</option>
+                                                                                                {% endfor %}
+                                                                                            {% endif %}
+                                                                                        </select>
+                                                                                    </div>
+                                                                                    <label class="col-sm-2">
+                                                                                        <input type="checkbox" name="modal_cancel_open_task1" id="modal_cancel_open_task1" class="modal_cancel_open_task" value="1">
+                                                                                     </label>
+                                                                                    <label class="col-sm-2">
+                                                                                        <input type="checkbox" name="modal_task_type_close_ticket1" id="modal_task_type_close_ticket1" class="modal_task_type_close_ticket" data-id="1" value="1">
+                                                                                     </label>
+                                                                                    <div class="col-sm-4">
+                                                                                        <select class="form-control modal_task_type_substatus_id" name="modal_task_type_substatus_id1" id="modal_task_type_substatus_id1">
+                                                                                            <option value=""> </option>
+                                                                                            {% if substatus %}
+                                                                                                {% for sstatus in substatus %}
+                                                                                                    <option value="{{ sstatus.sub_status_id }}">{{ sstatus.sub_status_text }}</option>
+                                                                                                {% endfor %}
+                                                                                            {% endif %}
+                                                                                        </select>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="form-group">
+                                                                            <label class="col-sm-3 control-label">=No</label>
+                                                                            <div class="col-md-8 col-sm-8">
+                                                                                <div class="row">
+                                                                                    <div class="col-sm-4">
+                                                                                        <select class="form-control modal_task_type_group_id" name="modal_task_type_group_id2" id="modal_task_type_group_id2">
+                                                                                            <option selected=""> </option>
+                                                                                            {% if taskGroups %}
+                                                                                                {% for taskGroup in taskGroups %}
+                                                                                                    <option value="{{ taskGroup.taskgroup_id }}" >{{ taskGroup.taskgroup_description }}</option>
+                                                                                                {% endfor %}
+                                                                                            {% endif %}
+                                                                                        </select>
+                                                                                    </div>
+                                                                                    <label class="col-sm-2">
+                                                                                        <input type="checkbox" name="modal_cancel_open_task2" id="modal_cancel_open_task1" class="modal_cancel_open_task" value="1">
+                                                                                     </label>
+                                                                                    <label class="col-sm-2">
+                                                                                        <input type="checkbox" name="modal_task_type_close_ticket2" id="modal_task_type_close_ticket2" class="modal_task_type_close_ticket"  data-id="2" value="1">
+                                                                                     </label>
+                                                                                    <div class="col-sm-4">
+                                                                                        <select class="form-control modal_task_type_substatus_id" name="modal_task_type_substatus_id2" id="modal_task_type_substatus_id2">
+                                                                                            <option value=""> </option>
+                                                                                            {% if substatus %}
+                                                                                                {% for sstatus in substatus %}
+                                                                                                    <option value="{{ sstatus.sub_status_id }}">{{ sstatus.sub_status_text }}</option>
+                                                                                                {% endfor %}
+                                                                                            {% endif %}
+                                                                                        </select>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="form-group">
+                                                                            <label class="col-sm-3 control-label">=N/A</label>
+                                                                            <div class="col-md-8 col-sm-8">
+                                                                                <div class="row">
+                                                                                    <div class="col-sm-4">
+                                                                                        <select class="form-control modal_task_type_group_id" name="modal_task_type_group_id3" id="modal_task_type_group_id3">
+                                                                                            <option selected=""> </option>
+                                                                                            {% if taskGroups %}
+                                                                                                {% for taskGroup in taskGroups %}
+                                                                                                    <option value="{{ taskGroup.taskgroup_id }}" >{{ taskGroup.taskgroup_description }}</option>
+                                                                                                {% endfor %}
+                                                                                            {% endif %}
+                                                                                        </select>
+                                                                                    </div>
+                                                                                    <label class="col-sm-2">
+                                                                                        <input type="checkbox" name="modal_cancel_open_task3" id="modal_cancel_open_task3" class="modal_cancel_open_task" value="1">
+                                                                                     </label>
+                                                                                    <label class="col-sm-2">
+                                                                                        <input type="checkbox" name="modal_task_type_close_ticket3" id="modal_task_type_close_ticket3" class="modal_task_type_close_ticket"  data-id="3" value="1">
+                                                                                     </label>
+                                                                                    <div class="col-sm-4">
+                                                                                        <select class="form-control modal_task_type_substatus_id" name="modal_task_type_substatus_id3" id="modal_task_type_substatus_id3">
+                                                                                            <option value=""> </option>
+                                                                                            {% if substatus %}
+                                                                                                {% for sstatus in substatus %}
+                                                                                                    <option value="{{ sstatus.sub_status_id }}">{{ sstatus.sub_status_text }}</option>
+                                                                                                {% endfor %}
+                                                                                            {% endif %}
+                                                                                        </select>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <br>
+                                                                    <div class="form-group">
+                                                			   			<label class="col-sm-3 control-label">Note:</label>
+                                                			   			<div class="col-sm-9">
+                                                			   				<textarea class="form-control" name="modal_task_note" id="modal_task_note" rows="9" cols="68"></textarea>
+                                                			   			</div>
+                                                			   		</div>
+                                                			   		<div class="form-group">
+                                                			   			<label class="col-sm-3 control-label">Due Date:</label>
+                                                			   			<div class="col-md-4 col-sm-4">
+	                                                			   			<div class="input-group">
+	                                                                            <span class="input-group-addon">
+	                                                                                <i class="fa fa-calendar"></i>
+	                                                                            </span>
+	                                                                            <input type="text" id="modal_due_date" name="modal_due_date" data-plugin-datepicker class="form-control datepicker" />
+	                                                                        </div>
+	                                                                    </div>
+                                                			   		</div>
+                                                			   		<div class="form-group">
+                                                			   		    <label class="col-sm-3 control-label">Dependency: </label>
+                                                			   		    <div class="col-md-4 col-sm-4">
+                                                			   		        <div class="radio-primary form-check col-sm-4">
+                                                			   		            <label for="task_type" class="form-check-label">
+                                                			   		                <input class="form-check-input radio-inline modal_dependency" type="radio" id="modal_dependency1" name="modal_dependency" value="0" checked>
+                                                			   		                None</label>
+                                                			   		            <label for="task_type" class="form-check-label">
+                                                			   		                <input class="form-check-input radio-inline modal_dependency" type="radio" id="modal_dependency2" name="modal_dependency" value="1">
+                                                			   		                Order</label>
+                                                			   		        </div>
+                                                                            <div class="col-sm-4">
+                                                                                <input type="text" name="modal_dependency_order" id="modal_dependency_order" class="form-control input-inline" title="Please Enter Dependency Order." placeholder="eg.: 1" />
+                                                                            </div>
+                                                			   		    </div>
+                                                			   		</div>
+                                                			   		<div class="form-group">
+                                                			   		    <label class="col-md-3 col-sm-3 control-label">Assigned To </label>
+                                                			   		    <div class="col-md-4 col-sm-4">
+                                                			   		        <select name="modal_task_assign_to" id="modal_task_assign_to" data-plugin-selectTwo required class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Select an Task", "allowClear": true }'>
+                                                			   		            <option value="">-Unassigned-</option>
+                                                			   		            {% if users %}
+                                                			   		                {% for user in users %}
+                                                			   		                    <option value="{{ user.id }}" >{{ user.first_name }}{{ user.last_name }}</option>
+                                                			   		                {% endfor %}
+                                                			   		            {% endif %}
+                                                			   		        </select>
+                                                			   		    </div>
+                                                			   		</div>
+                                                                </div>
+                                                                <div class="addTaskGrpup space-top-custom">
+	                                                                <div class="form-group">
+	                                                                    <label class="col-md-3 col-sm-3 control-label"><span class="required">*</span>Task Group</label>
+	                                                                    <div class="col-md-4 col-sm-4">
+	                                                                        <select class="form-control modal_taskgroup_id" name="modal_taskgroup_id" id="modal_taskgroup_id">
+                                                                                <option selected=""> </option>
+	                                                                            {% if taskGroups %}
+	                                                                                {% for taskGroup in taskGroups %}
+	                                                                                    <option value="{{ taskGroup.taskgroup_id }}" >{{ taskGroup.taskgroup_description }}</option>
+	                                                                                {% endfor %}
+	                                                                            {% endif %}
+	                                                                        </select>
+	                                                                    </div>
+	                                                                </div>
+                                                                    <div class="form-group">
+                                                			   			<label class="col-sm-3 control-label">Insert a Task Order:</label>
+                                                			   			<div class="col-sm-2">
+                                                			   				<input type="text" class="form-control input-sm"  name="modal_task_group_order" id="modal_task_group_order">
+                                                			   			</div>
+                                                			   		</div>
+	                                                            </div>
+                                                            </form>
+                                                        </div>
+                                                        <!-- <footer class="panel-footer">
+                                                            <div class="row">
+                                                                <div class="col-md-12 text-right">
+{#                                                                    <button class="btn btn-primary modal-confirm">Save</button>#}
+                                                                    <button href="javascript:void(0)"  onclick="closePopUp();" class="btn btn-danger modal-dismiss">Cancel</button>
+                                                                </div>
+                                                            </div>
+                                                        </footer> -->
+                                                    </section>
+                                                </div>
+                                                <!-- Modal Form For Task Manager End-->
+
+
+                                                <div class="col-md-9">
+                                                    <section class="panel">
+                                                        <div class="panel-body">
+{#                                                            <span class="required">Note: Task's Updation will be visible on Ticket Submission.</span>#}
+                                                            <div class="table-responsive">
+                                                                <table class="table table-condensed mb-none table-tasks">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>#</th>
+                                                                            <th>Task</th>
+                                                                            <th>Assgined To</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </section>
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+                                        <footer class="panel-footer">
+                                            <div class="row">
+                                                <div class="col-sm-9">
+                                                    <button class="btn btn-primary">Update</button>
+                                                    <button type="reset" class="btn btn-default">Reset</button>
+                                                </div>
+                                            </div>
+                                        </footer>
+                                    </section>
+                                </form>
+                            </div>
+                        </div>
+					<!-- end: page -->
+				</section>
+			</div>
+
+    {% endblock %}
+
+    {% block script %}
+        <script>
+            var globalArray = [];
+            var date = new Date();
+            var today = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            var row_counter=0;var row_edit=0;var task_order_start=1;var task_order_end=1;
+
+            var optComponent = {
+              format: 'mm-dd-yyyy',
+              container: '#datePicker',
+              orientation: 'auto top',
+              todayHighlight: true,
+              autoclose: true
+            };
+
+            $(function(){
+                // COMPONENT
+                $( '#datePicker' ).datepicker( optComponent );
+                $( '#datePicker' ).datepicker( 'setDate', today );
+
+                //Get Data Base Record If there is Any Exist
+                var taskgroupId = $('#taskgroup_id').val();
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'getTaskManagerByTaskgroupId' %}",
+                    data: {group_id: taskgroupId},
+                    dataType: 'json',
+                    beforeSend: function (jqXHR, settings) {
+                        //Do something before send...
+                    },
+                    success: function (data, textStatus, jqXHR) {
+                        if (data.response) {
+                            result = jQuery.parseJSON(data['response'])
+                            console.log(result)
+                            $.each(result, function (index) {
+                                task_order_val = result[index].fields.tmgrgp_display_order
+                                task_id_val = result[index].fields.tmgrgp_task;
+                                task_id_text_val = $("#modal_task_id option[value='" + result[index].fields.tmgrgp_task + "']").text();
+                                task_type_val = result[index].fields.tg_task_type;
+                                if (task_type_val == 0) {
+                                    task_type_text_val = 'Complete';
+                                    modal_ttype_group_yes_val = ''
+                                    modal_ttype_group_yes_text_val = '';
+                                    modal_ttype_copen_yes_val = 0;
+                                    modal_ttype_cticket_yes_val = 0;
+                                    modal_ttype_substatus_yes_val = '';
+                                    modal_ttype_substatus_yes_text_val = '';
+                                    modal_ttype_group_no_val = '';
+                                    modal_ttype_group_no_text_val = '';
+                                    modal_ttype_copen_no_val = 0;
+                                    modal_ttype_cticket_no_val = 0;
+                                    modal_ttype_substatus_no_val = '';
+                                    modal_ttype_substatus_no_text_val = '';
+                                    modal_ttype_group_na_val = '';
+                                    modal_ttype_group_na_text_val = '';
+                                    modal_ttype_copen_na_val = 0;
+                                    modal_ttype_cticket_na_val = 0;
+                                    modal_ttype_substatus_na_val = '';
+                                    modal_ttype_substatus_na_text_val = '';
+                                }
+                                else {
+                                    task_type_text_val = 'Yes/No/NA';
+
+                                    /*Cases For Yes/No/NA Task Types Start*/
+                                    modal_ttype_group_yes_val = result[index].fields.tg_ttype_group_yes;
+                                    modal_ttype_group_yes_text_val = $("#modal_task_type_group_id1 option[value='" + result[index].fields.tg_ttype_group_yes + "']").text();
+                                    modal_ttype_copen_yes_val = result[index].fields.tg_ttype_copen_yes;
+                                    modal_ttype_cticket_yes_val = result[index].fields.tg_ttype_cticket_yes;
+                                    modal_ttype_substatus_yes_val = result[index].fields.tg_ttype_substatus_yes;
+                                    modal_ttype_substatus_yes_text_val = $("#modal_task_type_substatus_id1 option[value='" + result[index].fields.tg_ttype_substatus_yes + "']").text();
+                                    modal_ttype_group_no_val = result[index].fields.tg_ttype_group_no;
+                                    modal_ttype_group_no_text_val = $("#modal_task_type_group_id2 option[value='" + result[index].fields.tg_ttype_group_no + "']").text();
+                                    modal_ttype_copen_no_val = result[index].fields.tg_ttype_copen_no;
+                                    modal_ttype_cticket_no_val = result[index].fields.tg_ttype_cticket_no;
+                                    modal_ttype_substatus_no_val = result[index].fields.tg_ttype_substatus_no;
+                                    modal_ttype_substatus_no_text_val = $("#modal_task_type_substatus_id2 option[value='" + result[index].fields.tg_ttype_substatus_no + "']").text();
+                                    modal_ttype_group_na_val = result[index].fields.tg_ttype_group_na;
+                                    modal_ttype_group_na_text_val = $("#modal_task_type_group_id3 option[value='" + result[index].fields.tg_ttype_group_na + "']").text();
+                                    modal_ttype_copen_na_val = result[index].fields.tg_ttype_copen_na;
+                                    modal_ttype_cticket_na_val = result[index].fields.tg_ttype_cticket_na;
+                                    modal_ttype_substatus_na_val = result[index].fields.tg_ttype_substatus_na;
+                                    modal_ttype_substatus_na_text_val = $("#modal_task_type_substatus_id3 option[value='" + result[index].fields.tg_ttype_substatus_na + "']").text();
+
+                                    /*Cases For Yes/No/NA Task Types End*/
+                                }
+
+                                task_note_val = result[index].fields.tg_task_note;
+                                task_due_date_val = result[index].fields.tg_task_due_date;
+                                if(task_due_date_val != null){
+                                    var dateAr = task_due_date_val.split('-');
+                                    task_due_date_val = dateAr[2] + '/' + dateAr[1] + '/' + dateAr[0];
+                                }
+                                else{
+                                    task_due_date_val = '';
+                                }
+                                task_dependency_val = result[index].fields.tg_task_dependency;
+                                if (task_dependency_val == false) {
+                                    task_dependency_text_val = 'None'
+                                    task_dependency_val = 0
+                                } else {
+                                    task_dependency_text_val = 'Order'
+                                    task_dependency_val = 1
+                                }
+                                task_dependency_order_val = result[index].fields.tg_task_depend_order;
+                                task_assign_to_val = result[index].fields.tg_task_assigned_to;
+                                task_assign_to_text_val = $("#modal_task_assign_to option[value='" + result[index].fields.tg_task_assigned_to + "']").text()
+
+
+                                //Appened Row on the Panel as well on the Table
+                                globalArray.push({
+                                    task_order_val: task_order_val,
+                                    task_id_val: task_id_val,
+                                    task_id_text_val: task_id_text_val,
+                                    task_assign_to_val: task_assign_to_val,
+                                    task_assign_to_text_val: task_assign_to_text_val,
+                                    task_due_date_val: task_due_date_val,
+                                    task_dependency_text_val: task_dependency_text_val,
+                                    task_dependency_val: task_dependency_val,
+                                    task_type_val: task_type_val,
+                                    task_type_text_val: task_type_text_val,
+                                    modal_ttype_group_yes_val           : modal_ttype_group_yes_val,
+                                    modal_ttype_group_yes_text_val      : modal_ttype_group_yes_text_val,
+                                    modal_ttype_copen_yes_val           : modal_ttype_copen_yes_val,
+                                    modal_ttype_cticket_yes_val         : modal_ttype_cticket_yes_val,
+                                    modal_ttype_substatus_yes_val       : modal_ttype_substatus_yes_val,
+                                    modal_ttype_substatus_yes_text_val  : modal_ttype_substatus_yes_text_val,
+                                    modal_ttype_group_no_val            : modal_ttype_group_no_val,
+                                    modal_ttype_group_no_text_val       : modal_ttype_group_no_text_val,
+                                    modal_ttype_copen_no_val            : modal_ttype_copen_no_val,
+                                    modal_ttype_cticket_no_val          : modal_ttype_cticket_no_val,
+                                    modal_ttype_substatus_no_val        : modal_ttype_substatus_no_val,
+                                    modal_ttype_substatus_no_text_val   : modal_ttype_substatus_no_text_val,
+                                    modal_ttype_group_na_val            : modal_ttype_group_na_val,
+                                    modal_ttype_group_na_text_val       : modal_ttype_group_na_text_val,
+                                    modal_ttype_copen_na_val            : modal_ttype_copen_na_val,
+                                    modal_ttype_cticket_na_val          : modal_ttype_cticket_na_val,
+                                    modal_ttype_substatus_na_val        : modal_ttype_substatus_na_val,
+                                    modal_ttype_substatus_na_text_val   : modal_ttype_substatus_na_text_val,
+                                    task_note_val: task_note_val,
+                                    task_dependency_val: task_dependency_val,
+                                    task_dependency_order_val: task_dependency_order_val
+                                });
+                                row_counter++;
+                                task_order_end++;
+                                intializeTaskManager(globalArray)
+
+
+                            })
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    }
+                });
+            });
+
+
+            $('#modal_due_date').datepicker({
+                format: 'dd/mm/yyyy'
+             });
+
+
+            $("#BtnNewTask").click(function () {
+                $('#accept-btn').val('Accept')
+                $('.incomplete_ticket_type').hide()
+                $('#modal_dependency_order').prop('readonly', true)
+                $(this).parent('.modal-buton').addClass('custom-model-btn');
+                if(task_order_end == 1){
+                    $('#modal_task_order').prop('readonly', true)
+                }else{
+                    $('#modal_task_order').prop('readonly', false)
+                }
+                $('#modal_task_order').val(task_order_end);
+                $(".addNewTask").toggle('slow');
+            });
+
+
+            $("#btnAddTaskGroup").click(function () {
+                $('#accept-btn').val('Add Task Group')
+                $(this).parent('.modal-buton').addClass('custom-model-btn');
+                if(task_order_end == 1){
+                    $('#modal_task_order').prop('readonly', true)
+                }else{
+                    $('#modal_task_order').prop('readonly', false)
+                }
+                if(task_order_end == 1){
+                    $('#modal_task_group_order').prop('readonly', true)
+                }else{
+                    $('#modal_task_group_order').prop('readonly', false)
+                }
+                $('#modal_task_group_order').val(task_order_end)
+                $(".addTaskGrpup").toggle('slow');
+            });
+
+
+            $(document).on('click','#cancelbtn', function(e) {
+                $(this).parent('.modal-buton').removeClass('custom-model-btn');
+                $(".addNewTask").hide('slow');
+                $(".addTaskGrpup").hide('slow');
+                //close select2 dropdown if open
+                $('#modal_task_assign_to').select2("close");
+            });
+
+
+            $(document).on('change', '#modal_task_id', function(){
+                task_id = $('#modal_task_id').val();
+
+                //Get Task Type of Selected Task.IF if is YES/NO/N/A then show the IComplete Task Type Block
+                $.ajax({
+                    url:"{% url 'getTaskTypeById' %}",
+                    type:'POST',
+                    dataType: 'json',
+                    data:{
+                        'task_id': task_id,
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    },
+                    success:function(data){
+                        if(data.task_type == 0){
+                            $('.incomplete_ticket_type').hide();
+                            $('#modal_task_type1').prop('checked',true);
+                        }else{
+                            $('.incomplete_ticket_type').show();
+                            $('#modal_task_type2').prop('checked',true);
+                        }
+                    },
+                    error:function(){
+                        console.log('error')
+                    },
+                });
+            })
+
+
+            $(document).on('change', '.modal_task_type', function(){
+                task_type_val = $('input[name=modal_task_type]:checked').val();
+                if(task_type_val == 0){
+                    $('.incomplete_ticket_type').hide()
+                }else{
+                    $('.incomplete_ticket_type').show()
+                }
+            })
+
+
+            $(document).on('change', '.modal_dependency', function(){
+                task_dependency_val = $('input[name=modal_dependency]:checked').val();
+                if(task_dependency_val == 0){
+                    $('#modal_dependency_order').prop('readonly', true)
+                    $('#modal_dependency_order').val('');
+                }else{
+                    $('#modal_dependency_order').prop('readonly', false)
+                }
+            })
+
+
+            $(document).on('change', '.modal_task_type_close_ticket', function(){
+                r_id = ($(this).attr('data-id'));
+                if(this.checked) {
+                    $('#modal_task_type_group_id'+r_id).prop('disabled', true);
+                    $('#modal_task_type_group_id'+r_id).val('');
+                }else{
+                    $('#modal_task_type_group_id'+r_id).prop('disabled', false);
+                }
+            })
+
+
+            function clearNewTaskForm(){
+                $('#modal_task_id').val('');
+                $('#modal_task_type1').prop('checked',true);
+                /* Clear Task Type YES/No/N/A div Start*/
+                $('#modal_task_type_group_id1').val('');
+                $('#modal_cancel_open_task1').prop('checked',false);
+                $('#modal_task_type_close_ticket1').prop('checked',false);
+                $('#modal_task_type_substatus_id1').val('');
+                $('#modal_task_type_group_id2').val('');
+                $('#modal_cancel_open_task2').prop('checked',false);
+                $('#modal_task_type_close_ticket2').prop('checked',false);
+                $('#modal_task_type_substatus_id2').val('');
+                $('#modal_task_type_group_id3').val('');
+                $('#modal_cancel_open_task3').prop('checked',false);
+                $('#modal_task_type_close_ticket3').prop('checked',false);
+                $('#modal_task_type_substatus_id3').val('');
+                /* Clear Task Type YES/No/N/A div End*/
+                $('#modal_task_note').val('')
+                $('#modal_due_date').val('')
+                $('#modal_dependency1').prop('checked',true)
+                $('#modal_dependency_order').val('')
+                $('#modal_task_assign_to').select2("val", "");
+            }
+
+
+            function sortByKeyAsc(array, key) {
+                return array.sort(function (a, b) {
+                    var x = a[key]; var y = b[key];
+                    return ((x < y) ? -1 : ((x == y) ? -1 : ((x > y) ? 1 : 0)));
+                });
+            }
+
+
+            function iterByKeyAsc(array, key) {
+                order = 1;
+                $.each(array, function (k, v) {
+                    array[k][key] = order
+                    order++;
+                })
+            }
+
+
+            function intializeTaskManager(myArray){
+
+                sortByKeyAsc(myArray, 'task_order_val') //Global Array will be sorted as per the task order Val
+                iterByKeyAsc(myArray, 'task_order_val') //Global Array will be iterated start from 1 and go futher with 1 increment
+
+                $.ajax({
+                    url:"{% url 'getGroupModalTaskManagerById' %}",
+                    type:'POST',
+                    dataType: 'text',
+                    data:{
+                        'records':JSON.stringify(myArray),
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    },
+                    success:function(data){
+                        $('.table-task-modal tbody').html(data);
+                        $(this).parent('.modal-buton').removeClass('custom-model-btn');
+                        $(".addNewTask").hide('slow');
+                        $(".addTaskGrpup").hide('slow');
+                    },
+                    error:function(){
+                        console.log('error')
+                    },
+                });
+
+                //Appened Entry on the Submit Ticket Table along with the Task Manger Button
+                $.ajax({
+                    url:"{% url 'getGroupTableTaskManagerById' %}",
+                    type:'POST',
+                    dataType: 'text',
+                    data:{
+                        'records':JSON.stringify(myArray),
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    },
+                    success:function(data){
+                        $('.table-tasks tbody').html(data);
+                    },
+                    error:function(){
+                        console.log('error')
+                    },
+                });
+            }
+
+
+            $(document).on('click','#accept-btn', function(e) {
+                $(this).parent('.table-bordered').addClass('append-data');
+                if($(this).val() == 'Add Task Group'){
+                    task_order_val = $('#modal_task_group_order').val();
+                    taskgroup_id_val = $('#modal_taskgroup_id').val();
+                    if(taskgroup_id_val == ''){
+                        alert('Task Group Name cannot be Empty!');
+                    }
+                    else if(task_order_val > task_order_end){
+                        alert('Task Order must be a valid whole number between '+task_order_start+' and '+task_order_end+'!');
+                    }
+                    else {
+                        $(this).parent('.modal-buton').removeClass('custom-model-btn');
+                        $.ajax({
+                            type: 'POST',
+                            url: "{% url 'getModalGroupTasksById' %}",
+                            data: {group_id: taskgroup_id_val, 'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()},
+                            dataType: 'json',
+                            beforeSend: function (jqXHR, settings) {
+                                //Do something before send...
+                            },
+                            success: function (data, textStatus, jqXHR) {
+                                if (data.response) {
+                                    result = jQuery.parseJSON(data['response'])
+                                    $.each(result, function (index) {
+                                        task_order_val = result[index].fields.tmgrgp_display_order
+                                        task_id_val = result[index].fields.tmgrgp_task;
+                                        task_id_text_val = $("#modal_task_id option[value='" + result[index].fields.tmgrgp_task + "']").text();
+                                        task_type_val = result[index].fields.tg_task_type;
+                                        if (task_type_val == 0) {
+                                            task_type_text_val = 'Complete';
+                                            modal_ttype_group_yes_val = ''
+                                            modal_ttype_group_yes_text_val = '';
+                                            modal_ttype_copen_yes_val = 0;
+                                            modal_ttype_cticket_yes_val = 0;
+                                            modal_ttype_substatus_yes_val = '';
+                                            modal_ttype_substatus_yes_text_val = '';
+                                            modal_ttype_group_no_val = '';
+                                            modal_ttype_group_no_text_val = '';
+                                            modal_ttype_copen_no_val = 0;
+                                            modal_ttype_cticket_no_val = 0;
+                                            modal_ttype_substatus_no_val = '';
+                                            modal_ttype_substatus_no_text_val = '';
+                                            modal_ttype_group_na_val = '';
+                                            modal_ttype_group_na_text_val = '';
+                                            modal_ttype_copen_na_val = 0;
+                                            modal_ttype_cticket_na_val = 0;
+                                            modal_ttype_substatus_na_val = '';
+                                            modal_ttype_substatus_na_text_val = '';
+                                        }
+                                        else {
+                                            task_type_text_val = 'Yes/No/NA';
+
+                                            /*Cases For Yes/No/NA Task Types Start*/
+                                            modal_ttype_group_yes_val = result[index].fields.tg_ttype_group_yes;
+                                            modal_ttype_group_yes_text_val = $("#modal_task_type_group_id1 option[value='" + result[index].fields.tg_ttype_group_yes + "']").text();
+                                            modal_ttype_copen_yes_val = result[index].fields.tg_ttype_copen_yes;
+                                            modal_ttype_cticket_yes_val = result[index].fields.tg_ttype_cticket_yes;
+                                            modal_ttype_substatus_yes_val = result[index].fields.tg_ttype_substatus_yes;
+                                            modal_ttype_substatus_yes_text_val = $("#modal_task_type_substatus_id1 option[value='" + result[index].fields.tg_ttype_substatus_yes + "']").text();
+                                            modal_ttype_group_no_val = result[index].fields.tg_ttype_group_no;
+                                            modal_ttype_group_no_text_val = $("#modal_task_type_group_id2 option[value='" + result[index].fields.tg_ttype_group_no + "']").text();
+                                            modal_ttype_copen_no_val = result[index].fields.tg_ttype_copen_no;
+                                            modal_ttype_cticket_no_val = result[index].fields.tg_ttype_cticket_no;
+                                            modal_ttype_substatus_no_val = result[index].fields.tg_ttype_substatus_no;
+                                            modal_ttype_substatus_no_text_val = $("#modal_task_type_substatus_id2 option[value='" + result[index].fields.tg_ttype_substatus_no + "']").text();
+                                            modal_ttype_group_na_val = result[index].fields.tg_ttype_group_na;
+                                            modal_ttype_group_na_text_val = $("#modal_task_type_group_id3 option[value='" + result[index].fields.tg_ttype_group_na + "']").text();
+                                            modal_ttype_copen_na_val = result[index].fields.tg_ttype_copen_na;
+                                            modal_ttype_cticket_na_val = result[index].fields.tg_ttype_cticket_na;
+                                            modal_ttype_substatus_na_val = result[index].fields.tg_ttype_substatus_na;
+                                            modal_ttype_substatus_na_text_val = $("#modal_task_type_substatus_id3 option[value='" + result[index].fields.tg_ttype_substatus_na + "']").text();
+
+                                            /*Cases For Yes/No/NA Task Types End*/
+                                        }
+
+                                        task_note_val = result[index].fields.tg_task_note;
+                                        task_due_date_val = result[index].fields.tg_task_due_date;
+                                        if(task_due_date_val != null){
+                                            var dateAr = task_due_date_val.split('-');
+                                            task_due_date_val = dateAr[2] + '/' + dateAr[1] + '/' + dateAr[0];
+                                        }
+                                        else{
+                                            task_due_date_val = '';
+                                        }
+                                        task_dependency_val = result[index].fields.tg_task_dependency;
+                                        if (task_dependency_val == false) {
+                                            task_dependency_text_val = 'None'
+                                            task_dependency_val = 0
+                                        } else {
+                                            task_dependency_text_val = 'Order'
+                                            task_dependency_val = 1
+                                        }
+                                        task_dependency_order_val = result[index].fields.tg_task_depend_order;
+                                        task_assign_to_val = result[index].fields.tg_task_assigned_to;
+                                        task_assign_to_text_val = $("#modal_task_assign_to option[value='" + result[index].fields.tg_task_assigned_to + "']").text()
+
+
+                                        //Appened Row on the Panel as well on the Table
+                                        globalArray.push({
+                                            task_order_val: task_order_val,
+                                            task_id_val: task_id_val,
+                                            task_id_text_val: task_id_text_val,
+                                            task_assign_to_val: task_assign_to_val,
+                                            task_assign_to_text_val: task_assign_to_text_val,
+                                            task_due_date_val: task_due_date_val,
+                                            task_dependency_text_val: task_dependency_text_val,
+                                            task_dependency_val: task_dependency_val,
+                                            task_type_val: task_type_val,
+                                            task_type_text_val: task_type_text_val,
+                                            modal_ttype_group_yes_val           : modal_ttype_group_yes_val,
+                                            modal_ttype_group_yes_text_val      : modal_ttype_group_yes_text_val,
+                                            modal_ttype_copen_yes_val           : modal_ttype_copen_yes_val,
+                                            modal_ttype_cticket_yes_val         : modal_ttype_cticket_yes_val,
+                                            modal_ttype_substatus_yes_val       : modal_ttype_substatus_yes_val,
+                                            modal_ttype_substatus_yes_text_val  : modal_ttype_substatus_yes_text_val,
+                                            modal_ttype_group_no_val            : modal_ttype_group_no_val,
+                                            modal_ttype_group_no_text_val       : modal_ttype_group_no_text_val,
+                                            modal_ttype_copen_no_val            : modal_ttype_copen_no_val,
+                                            modal_ttype_cticket_no_val          : modal_ttype_cticket_no_val,
+                                            modal_ttype_substatus_no_val        : modal_ttype_substatus_no_val,
+                                            modal_ttype_substatus_no_text_val   : modal_ttype_substatus_no_text_val,
+                                            modal_ttype_group_na_val            : modal_ttype_group_na_val,
+                                            modal_ttype_group_na_text_val       : modal_ttype_group_na_text_val,
+                                            modal_ttype_copen_na_val            : modal_ttype_copen_na_val,
+                                            modal_ttype_cticket_na_val          : modal_ttype_cticket_na_val,
+                                            modal_ttype_substatus_na_val        : modal_ttype_substatus_na_val,
+                                            modal_ttype_substatus_na_text_val   : modal_ttype_substatus_na_text_val,
+                                            task_note_val: task_note_val,
+                                            task_dependency_val: task_dependency_val,
+                                            task_dependency_order_val: task_dependency_order_val
+                                        });
+                                        row_counter++;
+                                        task_order_end++;
+                                        intializeTaskManager(globalArray)
+
+
+                                    })
+                                }
+                                $(this).parent('.modal-buton').removeClass('custom-model-btn');
+                                $(".addNewTask").hide('slow');
+                                $(".addTaskGrpup").hide('slow');
+                                $('#modal_taskgroup_id').val('');
+                            },
+                            error: function (jqXHR, textStatus, errorThrown) {
+                                alert(textStatus + '. ' + errorThrown);
+                            }
+                        });
+                    }
+                }
+                else{
+                    task_order_val = $('#modal_task_order').val();
+                    task_id_val = $('#modal_task_id').val();
+                    task_id_text_val = $('#modal_task_id option:selected').text();
+                    task_type_val = $('input[name=modal_task_type]:checked').val();
+                    if(task_type_val == 0){
+                        task_type_text_val = 'Complete';
+                        modal_ttype_group_yes_val = ''
+                        modal_ttype_group_yes_text_val = ''
+                        modal_ttype_copen_yes_val = 0
+                        modal_ttype_cticket_yes_val = 0
+                        modal_ttype_substatus_yes_val = ''
+                        modal_ttype_substatus_yes_text_val = ''
+                        modal_ttype_group_no_val = ''
+                        modal_ttype_group_no_text_val = ''
+                        modal_ttype_copen_no_val = 0
+                        modal_ttype_cticket_no_val = 0
+                        modal_ttype_substatus_no_val = ''
+                        modal_ttype_substatus_no_text_val = ''
+                        modal_ttype_group_na_val = ''
+                        modal_ttype_group_na_text_val = ''
+                        modal_ttype_copen_na_val = 0
+                        modal_ttype_cticket_na_val = 0
+                        modal_ttype_substatus_na_val = ''
+                        modal_ttype_substatus_na_text_val = ''
+                    }else{
+                        task_type_text_val = 'Yes/No/NA';
+
+                        //Case Yes on Response
+                        /* Get Task Group on Yes Reponse */
+                        if($('#modal_task_type_group_id1').val() != ''){
+                            modal_ttype_group_yes_val = $('#modal_task_type_group_id1').val();
+                            modal_ttype_group_yes_text_val = $('#modal_task_type_group_id1 option:selected').text();
+                        }else{
+                            modal_ttype_group_yes_val = '';
+                            modal_ttype_group_yes_text_val = '';
+                        }
+                        /* Validate the Cancel All Open Task is Checked or Not*/
+                        if ($('#modal_cancel_open_task1').is(":checked"))
+                        {
+                          modal_ttype_copen_yes_val = 1
+                        }else{
+                          modal_ttype_copen_yes_val = 0
+                        }
+                        /* Validate Close Ticket is Checked or Not*/
+                        if ($('#modal_task_type_close_ticket1').is(":checked"))
+                        {
+                          modal_ttype_cticket_yes_val = 1
+                        }else{
+                          modal_ttype_cticket_yes_val = 0
+                        }
+                        /* Get Ticket Status Update from Substatus*/
+                        if($('#modal_task_type_substatus_id1').val() != ''){
+                            modal_ttype_substatus_yes_val = $('#modal_task_type_substatus_id1').val();
+                            modal_ttype_substatus_yes_text_val = $('#modal_task_type_substatus_id1 option:selected').text();
+                        }
+                        else{
+                            modal_ttype_substatus_yes_val = '';
+                            modal_ttype_substatus_yes_text_val = '';
+                        }
+
+                        //Case No on Response
+                        /* Get Task Group on No Reponse */
+                        if($('#modal_task_type_group_id2').val() != ''){
+                            modal_ttype_group_no_val = $('#modal_task_type_group_id2').val();
+                            modal_ttype_group_no_text_val = $('#modal_task_type_group_id2 option:selected').text();
+                        }else{
+                            modal_ttype_group_no_val = '';
+                            modal_ttype_group_no_text_val = '';
+                        }
+                        /* Validate the Cancel All Open Task is Checked or Not*/
+                        if ($('#modal_cancel_open_task2').is(":checked"))
+                        {
+                          modal_ttype_copen_no_val = 1
+                        }else{
+                          modal_ttype_copen_no_val = 0
+                        }
+                        /* Validate Close Ticket is Checked or Not*/
+                        if ($('#modal_task_type_close_ticket2').is(":checked"))
+                        {
+                          modal_ttype_cticket_no_val = 1
+                        }else{
+                          modal_ttype_cticket_no_val = 0
+                        }
+                        /* Get Ticket Status Update from Substatus*/
+                        if($('#modal_task_type_substatus_id2').val() != ''){
+                            modal_ttype_substatus_no_val = $('#modal_task_type_substatus_id2').val();
+                            modal_ttype_substatus_no_text_val = $('#modal_task_type_substatus_id2 option:selected').text();
+                        }
+                        else{
+                            modal_ttype_substatus_no_val = '';
+                            modal_ttype_substatus_no_text_val = '';
+                        }
+
+                        // Case N/A on Reponse
+                        /* Get Task Group on N/A Reponse */
+                        if($('#modal_task_type_group_id3').val() != ''){
+                            modal_ttype_group_na_val = $('#modal_task_type_group_id3').val();
+                            modal_ttype_group_na_text_val = $('#modal_task_type_group_id3 option:selected').text();
+                        }else{
+                            modal_ttype_group_na_val = '';
+                            modal_ttype_group_na_text_val = '';
+                        }
+                        /* Validate the Cancel All Open Task is Checked or Not*/
+                        if ($('#modal_cancel_open_task3').is(":checked"))
+                        {
+                          modal_ttype_copen_na_val = 1
+                        }else{
+                          modal_ttype_copen_na_val = 0
+                        }
+                        /* Validate Close Ticket is Checked or Not*/
+                        if ($('#modal_task_type_close_ticket3').is(":checked"))
+                        {
+                          modal_ttype_cticket_na_val = 1
+                        }else{
+                          modal_ttype_cticket_na_val = 0
+                        }
+                        /* Get Ticket Status Update from Substatus*/
+                        if($('#modal_task_type_substatus_id3').val() != ''){
+                            modal_ttype_substatus_na_val = $('#modal_task_type_substatus_id3').val();
+                            modal_ttype_substatus_na_text_val = $('#modal_task_type_substatus_id3 option:selected').text();
+                        }
+                        else{
+                            modal_ttype_substatus_na_val = '';
+                            modal_ttype_substatus_na_text_val = '';
+                        }
+                    }
+                    task_note_val = $('#modal_task_note').val();
+                    dateObject = $('#modal_due_date').val();
+                    task_due_date_val = dateObject;
+
+                    task_dependency_val = $('input[name=modal_dependency]:checked').val();
+                    task_dependency_text_val = $('#modal_dependency_order').val();
+                    if(task_dependency_val == 1 && $.isNumeric(task_dependency_text_val)){
+                        task_dependency_order_val = task_dependency_text_val
+                        task_dependency_val = 1
+                    }else{
+                        task_dependency_order_val = 'None'
+                        task_dependency_val = 0
+                    }
+                    task_assign_to_val = $('#modal_task_assign_to').val();
+                    task_assign_to_text_val = $('#modal_task_assign_to option:selected').text();
+
+                    if(task_id_val == ''){
+                        alert('Task Name cannot be Empty!');
+                    }
+                    else if(task_order_val > task_order_end){
+                        alert('Task Order must be a valid whole number between '+task_order_start+' and '+task_order_end+'!');
+                    }
+                    else {
+                        $(this).parent('.modal-buton').removeClass('custom-model-btn');
+                        if($(this).val() == 'Accept'){
+                            globalArray.push({
+                                task_order_val                      : task_order_val,
+                                task_id_val                         : task_id_val,
+                                task_id_text_val                    : task_id_text_val,
+                                task_assign_to_val                  : task_assign_to_val,
+                                task_assign_to_text_val             : task_assign_to_text_val,
+                                task_due_date_val                   : task_due_date_val,
+                                task_dependency_text_val            : task_dependency_text_val,
+                                task_dependency_val                 : task_dependency_val,
+                                task_type_val                       : task_type_val,
+                                task_type_text_val                  : task_type_text_val,
+                                modal_ttype_group_yes_val           : modal_ttype_group_yes_val,
+                                modal_ttype_group_yes_text_val      : modal_ttype_group_yes_text_val,
+                                modal_ttype_copen_yes_val           : modal_ttype_copen_yes_val,
+                                modal_ttype_cticket_yes_val         : modal_ttype_cticket_yes_val,
+                                modal_ttype_substatus_yes_val       : modal_ttype_substatus_yes_val,
+                                modal_ttype_substatus_yes_text_val  : modal_ttype_substatus_yes_text_val,
+                                modal_ttype_group_no_val            : modal_ttype_group_no_val,
+                                modal_ttype_group_no_text_val       : modal_ttype_group_no_text_val,
+                                modal_ttype_copen_no_val            : modal_ttype_copen_no_val,
+                                modal_ttype_cticket_no_val          : modal_ttype_cticket_no_val,
+                                modal_ttype_substatus_no_val        : modal_ttype_substatus_no_val,
+                                modal_ttype_substatus_no_text_val   : modal_ttype_substatus_no_text_val,
+                                modal_ttype_group_na_val            : modal_ttype_group_na_val,
+                                modal_ttype_group_na_text_val       : modal_ttype_group_na_text_val,
+                                modal_ttype_copen_na_val            : modal_ttype_copen_na_val,
+                                modal_ttype_cticket_na_val          : modal_ttype_cticket_na_val,
+                                modal_ttype_substatus_na_val        : modal_ttype_substatus_na_val,
+                                modal_ttype_substatus_na_text_val   : modal_ttype_substatus_na_text_val,
+                                task_note_val                       : task_note_val,
+                                task_dependency_val                 : task_dependency_val,
+                                task_dependency_order_val           : task_dependency_order_val
+                            });
+
+                            row_counter++;
+                            task_order_end++;
+                            intializeTaskManager(globalArray)
+
+
+                        }
+                        else if($(this).val() == 'Update'){
+
+                            $("#task-order"+ row_edit + "").closest('tr').remove();
+                            $("#tbl_row"+ row_edit + "").remove();
+
+                            //Remove the Entry that is Updating
+
+                            var tempArray = $.grep(globalArray, function(e){
+                                 return e.task_order_val != row_edit;
+                            });
+                            globalArray = tempArray
+
+
+
+                            {#Add Entry of Updating Task with New Values#}
+                            globalArray.push({
+                                task_order_val                      : task_order_val,
+                                task_id_val                         : task_id_val,
+                                task_id_text_val                    : task_id_text_val,
+                                task_assign_to_val                  : task_assign_to_val,
+                                task_assign_to_text_val             : task_assign_to_text_val,
+                                task_due_date_val                   : task_due_date_val,
+                                task_dependency_text_val            : task_dependency_text_val,
+                                task_dependency_val                 : task_dependency_val,
+                                task_type_val                       : task_type_val,
+                                task_type_text_val                  : task_type_text_val,
+                                modal_ttype_group_yes_val           : modal_ttype_group_yes_val,
+                                modal_ttype_group_yes_text_val      : modal_ttype_group_yes_text_val,
+                                modal_ttype_copen_yes_val           : modal_ttype_copen_yes_val,
+                                modal_ttype_cticket_yes_val         : modal_ttype_cticket_yes_val,
+                                modal_ttype_substatus_yes_val       : modal_ttype_substatus_yes_val,
+                                modal_ttype_substatus_yes_text_val  : modal_ttype_substatus_yes_text_val,
+                                modal_ttype_group_no_val            : modal_ttype_group_no_val,
+                                modal_ttype_group_no_text_val       : modal_ttype_group_no_text_val,
+                                modal_ttype_copen_no_val            : modal_ttype_copen_no_val,
+                                modal_ttype_cticket_no_val          : modal_ttype_cticket_no_val,
+                                modal_ttype_substatus_no_val        : modal_ttype_substatus_no_val,
+                                modal_ttype_substatus_no_text_val   : modal_ttype_substatus_no_text_val,
+                                modal_ttype_group_na_val            : modal_ttype_group_na_val,
+                                modal_ttype_group_na_text_val       : modal_ttype_group_na_text_val,
+                                modal_ttype_copen_na_val            : modal_ttype_copen_na_val,
+                                modal_ttype_cticket_na_val          : modal_ttype_cticket_na_val,
+                                modal_ttype_substatus_na_val        : modal_ttype_substatus_na_val,
+                                modal_ttype_substatus_na_text_val   : modal_ttype_substatus_na_text_val,
+                                task_note_val                       : task_note_val,
+                                task_dependency_val                 : task_dependency_val,
+                                task_dependency_order_val           : task_dependency_order_val
+                            });
+
+                            intializeTaskManager(globalArray)
+
+
+                            $(this).parent('.modal-buton').removeClass('custom-model-btn');
+                            $(".addNewTask").hide('slow');
+                            $(".addTaskGrpup").hide('slow');
+                        }
+                        clearNewTaskForm()
+                    }
+                }
+
+            });
+
+
+            $(document).on('click', '.delete_record', function(e) {
+                // cancel submit
+                e.preventDefault();
+                $(this).closest('tr').remove();
+                r_id = ($(this).attr('data-id'));
+                $("#tbl_row"+ r_id + "").remove();
+
+                var tempArray = $.grep(globalArray, function(e){
+                     return e.task_order_val != r_id;
+                });
+                globalArray = tempArray
+
+                intializeTaskManager(globalArray)
+                row_counter--;
+                task_order_end--;
+
+            })
+
+
+            $(document).on('click', '#btnReset', function(e) {
+                e.preventDefault();
+                row_counter = 0;
+                task_order_start = 1;
+                task_order_end = 1;
+                globalArray = []
+                $('.table-task-modal tbody').html('')
+                $('.table-tasks tbody').html('')
+
+            })
+
+
+            $(document).on('click','.edit_record',function () {
+                $('#BtnNewTask').parent('.modal-buton').addClass('custom-model-btn');
+                $('#accept-btn').val('Update')
+                $(".addNewTask").toggle('slow');
+                row_edit = r_id = $(this).attr('data-id');
+                index = row_edit - 1;
+                t_order = globalArray[index].task_order_val;
+                t_id = globalArray[index].task_id_val;
+                t_type = globalArray[index].task_type_val;
+                t_note = globalArray[index].task_note_val;
+                t_due_date = globalArray[index].task_due_date_val;
+                t_dependency = globalArray[index].task_dependency_val;
+                t_dependency_order = globalArray[index].task_dependency_order_val;
+                t_assign_to = globalArray[index].task_assign_to_val;
+
+                /* Get Values for the Ticket Type YES/NO/NA Start*/
+                modal_ttype_group_yes_val = globalArray[index].modal_ttype_group_yes_val
+                modal_ttype_copen_yes_val = globalArray[index].modal_ttype_copen_yes_val
+                modal_ttype_cticket_yes_val = globalArray[index].modal_ttype_cticket_yes_val
+                modal_ttype_substatus_yes_val = globalArray[index].modal_ttype_substatus_yes_val
+                modal_ttype_group_no_val = globalArray[index].modal_ttype_group_no_val
+                modal_ttype_copen_no_val = globalArray[index].modal_ttype_copen_no_val
+                modal_ttype_cticket_no_val = globalArray[index].modal_ttype_cticket_no_val
+                modal_ttype_substatus_no_val = globalArray[index].modal_ttype_substatus_no_val
+                modal_ttype_group_na_val = globalArray[index].modal_ttype_group_na_val
+                modal_ttype_copen_na_val = globalArray[index].modal_ttype_copen_na_val
+                modal_ttype_cticket_na_val = globalArray[index].modal_ttype_cticket_na_val
+                modal_ttype_substatus_na_val = globalArray[index].modal_ttype_substatus_na_val
+                /* Get Values for the Ticket Type YES/NO/NA Start*/
+
+
+                $('#modal_task_order').val(t_order)
+                $('#modal_task_id').val(t_id)
+                if(t_type == '0'){
+                    $('#modal_task_type1').prop('checked',true);
+                    $('.incomplete_ticket_type').hide();
+
+                    /* Get Task Group on Yes Reponse */
+                    $('#modal_task_type_group_id1').val('')
+
+                    /* Validate the Cancel All Open Task is Checked or Not*/
+                   $('#modal_cancel_open_task1').prop('checked',false);
+
+                    /* Validate Close Ticket is Checked or Not*/
+                   $('#modal_task_type_close_ticket1').prop('checked',false);
+
+                    /* Get Ticket Status Update from Substatus*/
+                    $('#modal_task_type_substatus_id1').val('')
+
+                    //Case Yes on Response End
+
+
+                    //Case No on Response Start
+                    /* Get Task Group on No Reponse */
+                    $('#modal_task_type_group_id2').val('')
+
+                    /* Validate the Cancel All Open Task is Checked or Not*/
+                    $('#modal_cancel_open_task2').prop('checked',false);
+
+                    /* Validate Close Ticket is Checked or Not*/
+                    $('#modal_task_type_close_ticket2').prop('checked',false);
+
+                    /* Get Ticket Status Update from Substatus*/
+                    $('#modal_task_type_substatus_id2').val('')
+
+                    //Case No on Response End
+
+
+                    //Case N/A on Response Start
+                    /* Get Task Group on Yes Reponse */
+                    $('#modal_task_type_group_id3').val('')
+
+                    /* Validate the Cancel All Open Task is Checked or Not*/
+                    $('#modal_cancel_open_task3').prop('checked',false);
+
+                    /* Validate Close Ticket is Checked or Not*/
+                    $('#modal_task_type_close_ticket3').prop('checked',false);
+
+                    /* Get Ticket Status Update from Substatus*/
+                    $('#modal_task_type_substatus_id3').val('')
+
+                    //Case N/A on Response End
+                }
+                else{
+                    $('#modal_task_type2').prop('checked',true);
+                    $('.incomplete_ticket_type').show();
+                    //Case Yes on Response Start
+
+                    /* Get Task Group on Yes Reponse */
+                    $('#modal_task_type_group_id1').val(modal_ttype_group_yes_val)
+
+                    /* Validate the Cancel All Open Task is Checked or Not*/
+                    if(modal_ttype_copen_yes_val == '1'){
+                       $('#modal_cancel_open_task1').prop('checked',true);
+                    }
+                    else{
+                       $('#modal_cancel_open_task1').prop('checked',false);
+                    }
+
+                    /* Validate Close Ticket is Checked or Not*/
+                    if(modal_ttype_cticket_yes_val == '1'){
+                       $('#modal_task_type_close_ticket1').prop('checked',true);
+                       $('#modal_task_type_group_id1').prop('disabled', true);
+                       $('#modal_task_type_group_id1').val('');
+                    }
+                    else{
+                       $('#modal_task_type_close_ticket1').prop('checked',false);
+                       $('#modal_task_type_group_id1').prop('disabled', false);
+                    }
+
+                    /* Get Ticket Status Update from Substatus*/
+                    $('#modal_task_type_substatus_id1').val(modal_ttype_substatus_yes_val)
+
+                    //Case Yes on Response End
+
+
+                    //Case No on Response Start
+                    /* Get Task Group on No Reponse */
+                    $('#modal_task_type_group_id2').val(modal_ttype_group_no_val)
+
+                    /* Validate the Cancel All Open Task is Checked or Not*/
+                    if(modal_ttype_copen_no_val == '1'){
+                       $('#modal_cancel_open_task2').prop('checked',true);
+                    }
+                    else{
+                       $('#modal_cancel_open_task2').prop('checked',false);
+                    }
+
+                    /* Validate Close Ticket is Checked or Not*/
+                    if(modal_ttype_cticket_no_val == '1'){
+                       $('#modal_task_type_close_ticket2').prop('checked',true);
+                       $('#modal_task_type_group_id2').prop('disabled', true);
+                       $('#modal_task_type_group_id2').val('');
+                    }
+                    else{
+                       $('#modal_task_type_close_ticket2').prop('checked',false);
+                       $('#modal_task_type_group_id2').prop('disabled', false);
+                    }
+
+                    /* Get Ticket Status Update from Substatus*/
+                    $('#modal_task_type_substatus_id2').val(modal_ttype_substatus_no_val)
+
+                    //Case No on Response End
+
+
+                    //Case N/A on Response Start
+                    /* Get Task Group on Yes Reponse */
+                    $('#modal_task_type_group_id3').val(modal_ttype_group_na_val)
+
+                    /* Validate the Cancel All Open Task is Checked or Not*/
+                    if(modal_ttype_copen_na_val == '1'){
+                       $('#modal_cancel_open_task3').prop('checked',true);
+                    }
+                    else{
+                       $('#modal_cancel_open_task3').prop('checked',false);
+                    }
+
+                    /* Validate Close Ticket is Checked or Not*/
+                    if(modal_ttype_cticket_na_val == '1'){
+                       $('#modal_task_type_close_ticket3').prop('checked',true);
+                       $('#modal_task_type_group_id3').prop('disabled', true);
+                       $('#modal_task_type_group_id3').val('');
+                    }
+                    else{
+                       $('#modal_task_type_close_ticket3').prop('checked',false);
+                       $('#modal_task_type_group_id3').prop('disabled', false);
+                    }
+
+                    /* Get Ticket Status Update from Substatus*/
+                    $('#modal_task_type_substatus_id3').val(modal_ttype_substatus_na_val)
+
+                    //Case N/A on Response End
+
+                }
+                $('#modal_task_note').val(t_note)
+                $('#modal_due_date').val(t_due_date)
+                if(t_dependency == '0'){$('#modal_dependency1').prop('checked',true);}else{$('#modal_dependency2').prop('checked',true)}
+                if(t_dependency == '1'){$('#modal_dependency_order').val(t_dependency_order);$('#modal_dependency_order').prop('readonly', false)}else{$('#modal_dependency_order').val('');$('#modal_dependency_order').prop('readonly', true)}
+                $('#modal_task_assign_to').select2("val", t_assign_to);
+            });
+
+
+            $(document).on('click','#btnDone',function (e) {
+                var taskgroupId = $('#taskgroup_id').val();
+                e.preventDefault();
+                $.ajax({
+                    url:"{% url 'saveModalTaskManagerByTaskGroupId' %}",
+                    type:'POST',
+                    dataType: 'text',
+                    data:{
+                        'records':JSON.stringify(globalArray),
+                        'groupId': taskgroupId,
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    },
+                    success:function(data){
+                        console.log(data)
+                    },
+                    error:function(){
+                        console.log('error')
+                },
+
+                });
+            });
+
+
+        </script>
+
+        <script>
+            $(document).on('click','#modalLG',function(e){if($('.select2-drop-active').is(':visible')){$('.select2-drop-active').hide();$('.select2-container-active').removeClass('select2-dropdown-open')}});
+        </script>
+        <script>
+            
+            $(document).on('click','.resetBtn1' ,function(e){
+                
+                $("#tgr_group option:selected").removeAttr("selected");
+                $("#tgr_group").multiselect('refresh');
+                $("#tgr_org option:selected").removeAttr("selected");
+                $("#tgr_org").multiselect('refresh');
+
+                });
+
+        //     $(document).on('click','.saveButton',function (e) {
+        //     var tgr_group = $('#tgr_group').val();
+        //     var tgr_org = $('#tgr_org').val();
+        //     var task_group_id = $('#task_group_id').val();
+        //     var type = $('#type').val();
+        //     e.preventDefault();
+        //     $.ajax({
+        //         url:"{% url 'saveRestrictTaskGroup' %}",
+        //         type:'POST',
+        //         dataType: 'text',
+        //         data:{
+        //             'type':type,
+        //             'tgr_org': tgr_org,
+        //             'tgr_group':tgr_group,
+        //             'task_group_id':task_group_id,
+        //             'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+        //         },
+        //         success:function(data){
+        //             console.log(data);
+        //         },
+        //         error:function(){
+        //             console.log('error')
+        //         },
+        //         complete:function(){
+                    
+        //             window.onbeforeunload = confirmBeforeClose();
+        //             window.location.reload();
+        //         }
+        //     });
+        // });
+            
+        function confirmBeforeClose()
+            {
+            return 'You have made changes on this page that will be lost if you navigate away without saving.';
+            }
+        function DeleteRestrictTaskGroup(id){
+            $.ajax({
+                url:"{% url 'deleteRestrictTaskGroup' %}",
+                type:'POST',
+                dataType: 'text',
+                data:{
+                    'id': id,
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                },
+                success:function(data){
+                    console.log(data);
+                },
+                error:function(){
+                    console.log('error')
+                },
+                complete:function(){
+                    window.onbeforeunload = confirmBeforeClose();
+                    window.location.reload();
+                }
+            });
+        }
+        
+        function closePopUp(){
+            $('#modal_task_assign_to').select2("close");
+        }
+        </script>
+    {% endblock %}
+
+

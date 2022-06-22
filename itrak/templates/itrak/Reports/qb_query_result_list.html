@@ -1,0 +1,198 @@
+    {% include "itrak/includes/header.html" %}
+   {% include "itrak/includes/top_bar.html" %}
+
+	<body>
+
+        {% block body_block %}
+        {% load static %}
+        {% load templates_extras %}
+
+				<section role="main" class="content-body">
+					<header class="page-header">
+                       <h2><i class="fa fa-ticket" aria-hidden="true"></i> Report</h2>
+
+						<div class="right-wrapper pull-right">
+							<ol class="breadcrumbs">
+								<li>
+									<a href="{% url 'home' %}">
+										<i class="fa fa-home"></i>
+									</a>
+								</li>
+								<li><span>Report</span></li>
+								<li><span>Query Results</span></li>
+							</ol>
+
+							<a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+						</div>
+					</header>
+
+					<!-- start: page -->
+						<section class="panel">
+							<header class="panel-heading custom-style">
+
+                                <h3 class="text-primary text-bold">{{ search_title }}</h3>
+                                {% if records.count > 0 %}
+                                    <div class="right-detail">
+                                        <h5 class="text-danger text-bold">
+                                            Export To Excel: <a  href="javascript:getXlsDownload(0)" id="xlsbrief_list" class="">Export</a>
+                                        </h5>
+                                    </div>
+                                {% endif %}
+                           </header>
+
+                         <form id="standard_form" name="standard_form" method="post" action="{% url 'export_rb_query_Report_xls' %}">
+                                    <input type="hidden" name="queryheader" id="queryheader" value="{{ query_id }}">
+                                    <input type="hidden" id="xlsType" name="xlsType" value="0">
+                                </form>
+							<div class="panel-body h5_mar_0">
+								<a href="{% url 'reportWriterQueries' %}" class="back-text"><span class="fa fa-arrow-circle-left"> </span> Return to Query Selections</a>
+                                <div class="row">
+                                    <div class="col-md-3 col-sm-3">
+                                        <h5 class="text-primary"><b>Query Name: </b></h5>
+                                    </div>
+                                    <div class="col-md-4 col-sm-4">
+                                        <span class="text-primary col-md-10 col-sm-10">{{ query_name }}</span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3 col-sm-3">
+                                        <h5 class="text-primary"><b>Query Description: </b></h5>
+                                    </div>
+                                    <div class="col-md-4 col-sm-4">
+                                        <span class="text-primary col-md-10 col-sm-10">{{ query_description }}</span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3 col-sm-3">
+                                        <h5 class="text-primary"><b>Number of Records in Query: </b></h5>
+                                    </div>
+                                    <div class="col-md-4 col-sm-4">
+                                        <span class="text-primary col-md-10 col-sm-10">{{ records.count }}</span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-3 col-sm-3">
+                                        <h5 class="text-primary"><b>Query Run Date: </b></h5>
+                                    </div>
+                                    <div class="col-md-4 col-sm-4">
+                                        <span class="text-primary col-md-10 col-sm-10">{{time}}</span>
+                                    </div>
+                                </div>
+{#                                <form id="" name="" method="post" action="">#}
+{#                                    <input type="hidden" name="tickets" value="{{ ticketid_list }}">#}
+{#                                    <input type="hidden" id="xlsType" name="xlsType" value="0">#}
+{#                                </form>#}
+                                <div style="overflow-x:auto;" class="table-scrol-adjust">
+    								<table class="table table-bordered table-striped table-condensed mb-none" id="datatable-default">
+                                    <thead>
+                                        <tr>
+                                            {% for column in selected_fields %}
+                                                <th>{{ column }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% if records %}
+                                        {% for record in records %}
+                                            <tr>
+                                                {% for key, value in record.items %}
+                                                    {% getTimeformating value key request.user.id   as value1 %}
+                                                    <td>
+                                                        {% if key == 'ticket_id' %}
+                                                            {% if value1 %}
+                                                                <a href="Home_ViewTicket?tickID={% get_encrypted_id value1 %}" target="_blank" >{{ value1 }}</a>
+                                                            {% endif %}
+                                                            {% elif key == 'description' %}
+                                                                {% if value1 %}
+                                                                    <input type="hidden" name="description_code" class="description_code" value="{{ value1 }}">
+                                                                    <div class="well well-sm description" ></div>
+                                                                {% endif %}
+                                                        {% else %}
+
+                                                            {% if value1 %}{{ value1 }}{% endif %}
+                                                        {% endif %}
+                                                    </td>
+                                                {% endfor %}
+                                            </tr>
+
+                                        {% endfor %}
+                                    {% endif %}
+                                    </tbody>
+								</table>
+                                </div>
+
+							</div>
+						</section>
+					<!-- end: page -->
+				</section>
+			</div>
+
+           <!-- Modal Warning -->
+        {# Delete Modal Popup on Delete#}
+        <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title" id="myModalLabel">Confirm Delete</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <p>You are about to delete a record, this procedure is irreversible.</p>
+                        <strong>Do you want to proceed?</strong>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <a class="btn btn-danger btn-ok">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% endblock %}
+
+    </body>
+    {% include "itrak/includes/footer.html" %}
+    {% block script %}
+        <script>
+            function getXlsDownload(){
+
+                var queryheader = $('#queryheader').val();
+                alert(queryheader)
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'export_rb_query_Report_xls' %}",
+                    data: {
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                        queryheader: queryheader
+                    },
+                    dataType: 'json',
+                    beforeSend: function(jqXHR, settings) {
+                        //Do something before send...
+                    },
+                    success: function(data, textStatus, jqXHR) {
+
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert(textStatus + '. ' + errorThrown);
+                    }
+                });
+
+            }
+
+              $(function () {
+                $('.description').each(function(i, obj) {
+                    $(this).html($(this).prev().attr('value'));
+                    })
+            });
+             function getXlsDownload(id){
+               $('#xlsType').val(id)
+               $('#standard_form').trigger('submit');
+            }
+        </script>
+
+
+    {% endblock %}
+

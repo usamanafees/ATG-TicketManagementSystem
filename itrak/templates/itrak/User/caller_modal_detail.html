@@ -1,0 +1,96 @@
+<!-- Modal Form For Org Detail-->
+    <div class="popup-modal-content">
+        <div id="modalCallerDetail" class="modal modal-block modal-block-primary modal-dialog">
+        <section class="panel">
+            <header class="panel-heading">
+                <h2 class="panel-title">Caller Details</h2>
+            </header>
+            <div class="panel-body">
+                {% if caller %}
+                    <form id="demo-form" class="form-horizontal mb-lg" novalidate="novalidate">
+                        <div class="form-group">
+                        	<label class="col-sm-4 control-label"></label>
+                            <div class="col-sm-8 ">
+                                <strong class="col-sm-9">{{ caller.first_name }},{{ caller.last_name }}</strong>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">User Type:</label>
+                            <div class="col-sm-8">
+                                <label class="col-sm-9">{% if caller.user_type == 0 %}Agent{% else %}User{% endif %}</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">User ID:</label>
+                            <div class="col-sm-8">
+                                <label class="col-sm-9">{{ caller.user_cus_id }}</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Photo:</label>
+                            <div class="col-sm-8">
+                                <label class="col-sm-9">No Photo Available</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">First Name:</label>
+                            <div class="col-sm-8">
+                                <label class="col-sm-9">{{ caller.first_name }}</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Last Name:</label>
+                            <div class="col-sm-8">
+                                <label class="col-sm-9">{{ caller.last_name }}</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Organization:</label>
+                            <div class="col-sm-8">
+                                <label class="col-sm-9">{{ caller.user_org.org_name }}</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Address:</label>
+                            <div class="col-sm-8">
+                                <label class="col-sm-9">{{ caller.address1 }}</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">City/State/Zip:</label>
+                            <div class="col-sm-8">
+                                <label class="col-sm-9">{{ caller.user_city }} / {{ caller.user_state }} / {{ caller.user_zip_code }}</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Country:</label>
+                            <div class="col-sm-8">
+                                <label class="col-sm-9">{{ caller.user_country }}</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Phone:</label>
+                            <div class="col-sm-8">
+                                <label class="col-sm-9">{{ caller.phone_no }}</label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">Email:</label>
+                            <div class="col-sm-8">
+                                <label class="col-sm-9">{{ caller.email }}</label>
+                            </div>
+                        </div>
+                        </form>
+                {% endif %}
+            </div>
+            <footer class="panel-footer">
+                <div class="row">
+                    <div class="col-md-12 text-right">
+                        <button class="btn btn-default modal-dismiss" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </footer>
+        </section>
+    </div>
+    </div>
+<!-- Modal Form For Org Detail End-->

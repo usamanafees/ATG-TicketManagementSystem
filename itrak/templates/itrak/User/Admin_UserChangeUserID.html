@@ -1,0 +1,79 @@
+   {% extends 'itrak/base.html' %}
+
+    {% block body_block %}
+        {% load static %}
+        {% load tz %}
+  <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-gears" aria-hidden="true"></i> User ID Maintenance</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+{#                    <li><span>Email Notification</span></li>#}
+{#                    <li><span>Email Defaults</span></li>#}
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+
+
+        <!-- start: page -->
+        <div class="row">
+            <div class="col-md-12">
+                <section class="panel">
+                    <header class="panel-heading">
+                        <h2 class="panel-title">User ID Maintenance</h2>
+                    </header>
+                    	<footer class="panel-footer">
+                            <div class="row">
+                                <div class="col-sm-2 ">
+
+                                </div>
+                                <div class="col-sm-10 text-right save-buttons-main">
+                                    <a class="btn btn-primary saveButton" href="{% url 'UserMerge' %}">Merge Duplicate Users</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <a class="btn btn-primary saveButton" href="{% url 'UserChangeID' %}">Change User's User ID</a>
+                                </div>
+                            </div>
+
+                        </footer>
+                    <div class="panel-body">
+                        {% for message in messages %}
+                            <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            {{ message }}
+                            </div>
+                        {% endfor %}
+
+                        <h3>User ID Maintenance Options</h3>
+
+                        <p>Read descriptions of the options below. Make a selection from the right of panel:</p>
+                        <br>
+                        <table>
+                            <tbody>
+                                <tr>
+                                </tr>
+                                <tr>
+                                    <td style="width: 155px;vertical-align: top;"><b>Merge Duplicate Users:</b></td>
+                                    <td style="padding-left:15px;">Choose this menu option to combine two user records into one. Select the record you wish to retain (primary) and another User (secondary) to be replaced. This process will replace all instances of the secondary User with the primary User value you wish to retain, transferring all issues, assets, history records, etc. to the primary user. However, neither User record is modified. Check the box "Delete after processing" to remove the secondary user record from the system completely.</td>
+                                </tr>
+                                <tr>
+                                    <td style="width: 155px;vertical-align: top;"><b>Change User's User ID:</b></td>
+                                    <td style="padding-left:15px;">Choose this menu option to edit an existing User ID value. Enter the current User ID as well as the new value for User ID. The new value should not already exist in your Users table. This process will update the user record as well as any other instance of the ID found throughout the system (issues, assets, audit history, etc.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <br>
+
+
+                    </div>
+                </section>
+            </div>
+        </div>
+    </section>
+    {% endblock %}

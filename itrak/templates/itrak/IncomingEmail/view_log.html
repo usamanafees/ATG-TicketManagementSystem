@@ -1,0 +1,243 @@
+{% extends 'itrak/base.html' %}
+
+{% block body_block %}
+    {% load static %}
+            <style>
+                table {
+                    padding: 0px !important;
+                }
+            </style>
+            <section role="main" class="content-body">
+                <header class="page-header">
+                   <h2><i class="fa fa-sitemap" aria-hidden="true"></i> Incoming Email</h2>
+
+                    <div class="right-wrapper pull-right">
+                        <ol class="breadcrumbs">
+                            <li>
+                                <a href="{% url 'home' %}">
+                                    <i class="fa fa-home"></i>
+                                </a>
+                            </li>
+                            <li><span>Incoming Email</span></li>
+                            <li><span>View Log</span></li>
+                        </ol>
+
+                        <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+                    </div>
+                </header>
+
+                <!-- start: page -->
+                    <section class="panel">
+                        <header class="panel-heading">
+                            <h2 class="panel-title">Email Processing Log</h2>
+                            <div class="pull-right">
+                                <!-- <h5 class="text-danger text-bold">
+                                    <a href="javascript:getXlsDownload(0)" id="xlsbrief_list" class=""><i class="fa fa-file-excel-o" aria-hidden="true"></i> Export All Users</a>
+                                </h5> -->
+                            </div>
+                        </header>
+                        <div class="panel-body">
+                            {% for message in messages %}
+                                <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+{#                                data-url="{% static 'ajax/ajax-datatables-sample.json' %} "#}
+                            <form action="{% url 'viewLog' %}" method="POST" id="frm-viewlog-report">
+                                {% csrf_token %}
+                                <div class="form-row">
+                                    <div class="col-lg-3">
+                                        <label>Date Received:</label>
+                                        <div class="input-group date" id="datePicker">
+                                            <input type="text" name="received_from" id="received_from" value="{% if received_from != ''%}{{received_from}}{% endif %}" data-plugin-datepicker class="form-control data-datepicker" placeholder="From" />
+                                            <span class="input-group-addon">
+                                                <i class="fa fa-calendar"></i>
+                                            </span>
+                                        </div>
+                                        <label class="e-error" for="received_from"></label>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <label>To:</label>
+                                        <div class="input-group date" id="datePicker">
+                                            <input type="text" name="received_to" id="received_to" value="{% if received_to != ''%}{{received_to}}{% endif %}" data-plugin-datepicker class="form-control data-datepicker" placeholder="To" />
+                                            <span class="input-group-addon">
+                                                <i class="fa fa-calendar"></i>
+                                            </span>
+                                        </div>
+                                        <label class="e-error" for="received_to"></label>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <label>Date Processed:</label>
+                                        <div class="input-group date" id="datePicker">
+                                            <input type="text" name="processed_from" value="{% if processed_from != ''%}{{processed_from}}{% endif %}" id="processed_from" data-plugin-datepicker class="form-control data-datepicker" placeholder="From" />
+                                            <span class="input-group-addon">
+                                                <i class="fa fa-calendar"></i>
+                                            </span>
+                                        </div>
+                                        <label class="e-error" for="processed_from"></label>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <label>To:</label>
+                                        <div class="input-group date" id="datePicker">
+                                            <input type="text" name="processed_to" value="{% if processed_to != ''%}{{processed_to}}{% endif %}" id="processed_to" data-plugin-datepicker class="form-control data-datepicker" placeholder="To" />
+                                            <span class="input-group-addon">
+                                                <i class="fa fa-calendar"></i>
+                                            </span>
+                                        </div>
+                                        <label class="e-error" for="processed_to"></label>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="col-lg-4">
+                                        <label>Account ID:</label>
+                                        <input type="text" class="form-control" name="account_id" id="account_id" value="{% if account_id != '' %}{{account_id}}{% endif %}" placeholder="Account ID">
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <label>Email Sender:</label>
+                                        <input type="text" class="form-control" name="sender_email" id="sender_email" value="{% if sender_email != '' %}{{sender_email}}{% endif %}" placeholder="Email Sender" >
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <label>Status:</label>
+                                        <select name="status" id="status" data-plugin-selectTwo class="form-control populate placeholder" data-plugin-options='{ "placeholder": "Status", "allowClear": true }'>
+                                            <option value="0">Any</option>
+                                            <option value="2">Ready To Process</option>
+                                            <option value="3">In Process</option>
+                                            <option value="4">Successfully Processed</option>
+                                            <option value="5">Failed To Process</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="col-lg-4">
+                                        <label>Status Message:</label>
+                                        <input type="text" class="form-control" name="status_message" id="status_message" value="{% if status_message != '' %}{{status_message}}{% endif %}" placeholder="Status Message" >
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <label>Subject:</label>
+                                        <input type="text" class="form-control" name="subject" id="subject" value="{% if subject != '' %}{{subject}}{% endif %}" placeholder="Subject" >
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <label>Attachments:</label>
+                                        <input type="text" class="form-control" name="attachment_name" id="attachment_name" value="{% if attachment_name != '' %}{{attachment_name}}{% endif %}" placeholder="File Name" >
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary" id="submitBtn" type="submit" style="margin: 8px 0px 0px 15px;">Search</button>
+                                <button class="btn btn-default" type="reset" style="margin: 8px 0px 0px 0px;">Reset</button>
+                            </form>
+                            <hr>
+                            <div id="Grid"></div>
+                        </div>
+                    </section>
+                <!-- end: page -->
+            </section>
+        </div>
+        <div id="popup-modal-content"></div>
+
+    <!--view Body Modal -->
+    <div class="modal fade" id="viewEmailBodyModal" role="dialog">
+        <div class="modal-dialog">    
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Email Body</h4>
+            </div>
+            <div class="modal-body">
+                <p id="paste_email_body"></p>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+        
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        $('#preloader').show();
+    </script>
+    <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js" type="text/javascript"></script>
+    <link href="https://cdn.syncfusion.com/ej2/material.css" rel="stylesheet">
+    <script>
+        
+    // Rendered button control 
+    var button = new ej.buttons.Button({ isPrimary: true }); 
+    button.appendTo('#submitBtn'); 
+ 
+    // button click event 
+    button.element.onclick = function (e) { 
+        e.preventDefault();
+        var options = { 
+            rules: { 
+                // 'received_from': { required: true }, 
+                // 'received_to': { required: true },
+                // 'processed_from': { required: true },
+                // 'processed_to': { required: true },
+            } 
+        }; 
+        let formObject = new ej.inputs.FormValidator('#frm-viewlog-report', options); 
+        // formObject.validate();
+        if(formObject.validate()){
+            button.disabled = true;
+            // showSpinner("Spinner");
+            new ej.data.DataManager({ 
+                url: 'Admin_GetAllViewLogData/?'+$("#frm-viewlog-report").serialize(), 
+                adaptor: new ej.data.UrlAdaptor 
+            }) 
+            .executeQuery(new ej.data.Query()) 
+            .then((e) => { 
+                grid.dataSource = e.result; 
+                // hideSpinner("Spinner");
+                button.disabled = false;
+            }); 
+        } 
+        
+    } 
+    var productData = [];
+    let grid = new ej.grids.Grid({
+        dataSource: productData,
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowPaging: true,
+        allowResizing: true,
+        allowSorting: true,
+        textWrapSettings: { wrapMode: 'Content' },
+        allowTextWrap: true, 
+        showColumnChooser: true,
+        isresponsive:true,
+        width: 'auto',
+        // toolbar: ['Search'],
+        columns: [
+            { field: 'mail_server', headerText: 'Server'},
+            { field: 'account_id', headerText: 'Account ID'},
+            { field: 'evl_from', headerText: 'Sender'},
+            { field: 'evl_subject', headerText: 'Subject'},
+            { field: 'evl_body', headerText: 'Body', disableHtmlEncode: false},
+            { field: 'evl_received_date', headerText: 'Received'},
+            { field: 'evl_processed_date', headerText: 'Processed'},
+        ],
+    });
+    $('#preloader').hide();
+    grid.appendTo('#Grid');
+    $(document).on('click','#email_body', function(){
+        evl_id = $(this).attr('evl_id')
+        $.ajax({
+            beforeSend: function() { },
+            type: "POST",  
+            url: "{% url 'viewLogBody' %}",
+            data: {'evl_id' : evl_id}, 
+            success: function(data){
+                console.log(data)
+                $('#paste_email_body').text(data.body)  
+                //$("form#updatejob").hide(function(){$("div.success").fadeIn();});  
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) { 
+                alert("Status: " + textStatus); alert("Error: " + errorThrown); 
+            }       
+        });
+    });
+    </script>
+{% endblock %}

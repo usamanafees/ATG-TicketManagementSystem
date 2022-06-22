@@ -1,0 +1,13 @@
+
+*.pyc
+*.idea\*
+ATG_itrak/settings.py
+ATG_itrak/urls.py
+itrak/migrations
+*.xml
+*venv*
+*media
+*web.config
+wfastcgi.py
+ATG_itrak/urls.py
+ATG_itrak/urls.py

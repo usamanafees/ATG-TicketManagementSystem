@@ -1,0 +1,386 @@
+{% extends 'itrak/base.html' %}
+
+{% block body_block %}
+    {% load static %}
+    {% load tz %} {# it will Load the Django TimeZone Library#}
+{#        {% get_current_timezone as TIME_ZONE %} {# it will Load the Current Time Zone List#}
+
+            <section role="main" class="content-body">
+                <header class="page-header">
+                   <h2><i class="fa fa-user-circle-o" aria-hidden="true"></i> User</h2>
+
+                    <div class="right-wrapper pull-right">
+                        <ol class="breadcrumbs">
+                            <li>
+                                <a href="{% url 'home' %}">
+                                    <i class="fa fa-home"></i>
+                                </a>
+                            </li>
+                            <li><span>User</span></li>
+                            <li><span>Edit User</span></li>
+                        </ol>
+
+                        <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+                    </div>
+                </header>
+
+                <!-- start: page -->
+                     <div class="row">
+                        <div class="col-md-12">
+                            {% for message in messages %}
+                                <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                                      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                            <form id="summary-form" action="{% url 'saveUserAttachmentFiles' %}" method="post" class="form-horizontal dropzone-form" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <input type="hidden" id ="user_id" name="user_id" value="{{ user_id }}"/>
+                                <section class="panel">
+                                    <header class="panel-heading">
+                                        <h2 class="panel-title">Attachments for {{data.display_name}}</h2></br>
+                                        <h4>User Details</h4>
+                                        <p>User ID: &nbsp;&nbsp;{{data.username}}</p>	 
+                                        <p>Display Name: &nbsp;&nbsp; {{data.display_name}}</p>
+                                    </header>
+                                    <div class="panel-body">
+                                        <div class="validation-message">
+                                            <ul></ul>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-3 col-sm-3 control-label">Attachments:</label>
+                                            <div class="col-md-8 col-sm-8">
+                                                <div class="row">
+                                                    {% for ua_id, ua_file_path, ua_file_name, ua_file_size in attachments %}
+                                                        <label class="col-md-12 col-sm-12">
+                                                            {{ ua_file_name }} <b>({{ ua_file_size }})</b>
+                                                            <a class="fa fa-cloud-download" href='{{ MEDIA_URL }}{{ ua_file_path }}' download></a>
+                                                            <i><a href="javascript:void(0)" onclick="deleteUserAttachment(event, {{ ua_id }})" id="{{ ua_id }}">delete</a></i>
+                                                        </label>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-3 col-sm-3 control-label"></label>
+                                            <div class="col-md-8 col-sm-8">
+                                                <div class="row">
+                                                    <h4 class="col-md-6 col-sm-6 text-primary text-bold">Add Attachments</h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-3 col-sm-3 control-label"></label>
+                                            <div class="col-md-8 col-sm-8">
+                                                <div class="col-md-6 col-sm-6 row">
+                                                    <p>To add attachments, first select files and then press Save.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-md-3 col-sm-3 control-label">Filenames:</label>
+                                            <div class="col-md-8 col-sm-9">
+                                                <div class="row">
+                                                    <div class="col-md-12">
+                                                        <div class="fileupload fileupload-new" data-provides="fileupload">
+                                                            <div class="input-append">
+                                                                <div class="uneditable-input">
+                                                                    <i class="fa fa-file fileupload-exists"></i>
+                                                                    <span class="fileupload-preview"></span>
+                                                                </div>
+                                                                <span class="btn btn-default btn-file">
+                                                                    <span class="fileupload-exists">Change</span>
+                                                                    <span class="fileupload-new">Select file</span>
+                                                                    <input type="file" name="file1" id="file1"/>
+                                                                </span>
+                                                                <a href="#" class="btn btn-default fileupload-exists" data-dismiss="fileupload">Remove</a>
+                                                            </div>
+                                                        </div>
+                                                        <div class="fileupload fileupload-new" data-provides="fileupload">
+                                                            <div class="input-append">
+                                                                <div class="uneditable-input">
+                                                                    <i class="fa fa-file fileupload-exists"></i>
+                                                                    <span class="fileupload-preview"></span>
+                                                                </div>
+                                                                <span class="btn btn-default btn-file">
+                                                                    <span class="fileupload-exists">Change</span>
+                                                                    <span class="fileupload-new">Select file</span>
+                                                                    <input type="file" name="file2" id="file2"/>
+                                                                </span>
+                                                                <a href="#" class="btn btn-default fileupload-exists" data-dismiss="fileupload">Remove</a>
+                                                            </div>
+                                                        </div>
+                                                        <div class="fileupload fileupload-new" data-provides="fileupload">
+                                                            <div class="input-append">
+                                                                <div class="uneditable-input">
+                                                                    <i class="fa fa-file fileupload-exists"></i>
+                                                                    <span class="fileupload-preview"></span>
+                                                                </div>
+                                                                <span class="btn btn-default btn-file">
+                                                                    <span class="fileupload-exists">Change</span>
+                                                                    <span class="fileupload-new">Select file</span>
+                                                                    <input type="file" name="file3" id="file3"/>
+                                                                </span>
+                                                                <a href="#" class="btn btn-default fileupload-exists" data-dismiss="fileupload">Remove</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- <label class="col-md-3 col-sm-3 control-label">Filenames:</label>
+                                        <form method="post" action="{% url 'saveUserAttachmentFiles' %}" enctype="multipart/form-data">
+                                            <div class="form-group">
+                                                <div class="col-md-9 col-sm-9">
+                                                    <div class="col-md-6 col-sm-7">
+                                                            {% csrf_token %}
+                                                            <input type="file" class="" name="upload_user_file_1" id="upload_user_file_1"></br>
+                                                            <input type="file" class="" name="upload_user_file_2" id="upload_user_file_2"></br>
+                                                            <input type="file" class="" name="upload_user_file_3" id="upload_user_file_3"></br> 
+                                                            <input type="hidden" id ="user_id" name="user_id" value="{{ user_id }}"/>    
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form> -->
+                                    </div>
+                                        
+                                    <footer class="panel-footer">
+                                        <div class="row">
+                                            <div class="col-sm-9">
+                                                <button type="submit" class="btn btn-primary saveButton" id="submit-btn">Save</button>
+                                                <button type="reset" class="btn btn-default resetBtn">Reset</button>
+                                            </div>
+                                        </div>
+                                    </footer>
+                                </section>
+                            </form>
+                        </div>
+                    </div>
+                <!-- end: page -->
+            </section>
+{% endblock %}
+{% block script %}
+
+<script>
+            $('.resetBtn').on('click', function(e){
+                    $("#upload_user_file_1").input("val", "");
+                    $("#upload_user_file_2").input("val", "");
+                    $("#upload_user_file_3").input("val", "");
+                });
+          
+</script>
+<script type="text/javascript">
+
+    /* for add correspondence log */
+    Dropzone.options.DropZoneFiddle1 = {
+        headers: {
+            'X-CSRF-TOKEN': getCookie('csrftoken')
+        },
+        previewsContainer: "#doclist1",
+        paramName: "file", //the parameter name containing the uploaded file
+        clickable: true,
+        maxFilesize: 25, //in mb
+        maxFiles: 1000,
+        addRemoveLinks: true,
+        autoProcessQueue: true,
+        //parallelUploads: 1,
+        acceptedFiles: '.jpeg,.jpg,.png,.bmp,.gif,.pdf,.doc,.docx,.xls,.xlsx,.csv', // allowed
+        dictDefaultMessage: "Drag & drop PDF file the file size must <br> be less then 25 MB", //override the default text
+        init: function () {
+            this.on("addedfile", function (file) {
+                //debugger;
+                var form_id = $(this.element).closest('form').attr('id');
+                var countimg = $("#" + form_id + " #countuploadimg").val();
+                //alert(countimg);
+                var filelimitoption = this.options.maxFiles;
+                var filelimitcounter = filelimitoption - countimg;
+
+                /* Display Default file icon */
+
+                var ext = file.name.split('.').pop();
+                ext = ext.toLowerCase();
+                //alertify.log(ext);
+                if (ext == "pdf") {
+                    $(file.previewElement).find(".dz-image img").attr("src", "/admin/images/dummypdf.jpg");
+                } else if (ext.indexOf("doc") != -1) {
+                    $(file.previewElement).find(".dz-image img").attr("src", "/admin/images/dummyword.jpg");
+                } else if (ext.indexOf("xls") != -1) {
+                    $(file.previewElement).find(".dz-image img").attr("src", "/admin/images/dummyxls.jpg");
+                } else if (ext.indexOf("txt") != -1) {
+                    $(file.previewElement).find(".dz-image img").attr("src", "/admin/images/dummytext1.jpg");
+                } else if (ext.indexOf("pptx") != -1) {
+                    $(file.previewElement).find(".dz-image img").attr("src", "/admin/images/dummyppt.jpg");
+                }
+
+                /* Remove file */
+                while (this.files.length > this.options.maxFiles) {
+                    this.removeFile(this.files[0]);
+                    //alertify.error("You can not upload more than 6 files");
+                }
+
+
+            });
+
+            this.on("sending", function (file, xhr, formData) {
+                //alert("send");
+            });
+            this.on("success", function (file, responseText) {
+
+                a = JSON.parse(responseText);
+                var form_id = $(this.element).closest('form').attr('id');
+                //alert(form_id);
+                $(file.previewTemplate).find('.dz-details').append('<input type="hidden" name="imagename[]" value="' + a.filenameupload + '" />');
+                $(file.previewTemplate).find('.dz-details').append('<input type="hidden" name="orignalname[]" value="' + file.name + '" />');
+                $(file.previewTemplate).find('.dz-details').append('<input type="hidden" name="filesize[]" value="' + file.size + '" />');
+
+            });
+            this.on("processing", function (file) {
+                this.options.url = "/sidebarcorrespondinglog/upload/image";
+            });
+            this.on("error", function (file, errorMessage) {
+                //debugger;
+                //this.removeFile(this.files);
+                $(file.previewElement).remove();
+                alertify.error(errorMessage);
+
+            });
+            this.on("uploadprogress", function (file, progress, bytesSent) {
+                //debugger;
+                var form_id = $(this.element).closest('form').attr('id');
+                progress = Math.floor(progress);
+                //$("#"+form_id+" .dz-upload").text(progress+"%");
+                $(file.previewElement).find(".dz-upload").text(progress + "%");
+
+            });
+        }
+    }
+
+    Dropzone.autoDiscover = false;
+    if ($("#my-awesome-dropzone").length > 0){
+        var myyDropzone = new Dropzone("#my-awesome-dropzone", {
+            url: "/SaveTAttachs/",
+            paramName: "file", //the parameter name containing the uploaded file
+            clickable: true,
+            autoProcessQueue: false,
+            method: "post",
+            createImageThumbnails: true,
+            addRemoveLinks: true,
+            maxFilesize: 256 * 4 * 10,
+            maxFiles: 1000,
+            dictDefaultMessage: "Drag & drop PDF file the file size must <br> be less then 25 MB", //override the default text
+            uploadMultiple: true,
+            parallelUploads: 10,
+
+            init: function () {
+                var myDropzone = this;
+                var addButton = document.querySelector("#submit-btn")
+                this.on("addedfile", function (file) {
+                    /* Display Default file icon */
+                    var ext = file.name.split('.').pop();
+                    ext = ext.toLowerCase();
+
+                    if (ext == "pdf") {
+                        $(file.previewElement).find(".dz-image img").attr("src", "{% static "itrak/images/icons/dummypdf.jpg" %}");
+                    } else if (ext.indexOf("doc") != -1) {
+                        $(file.previewElement).find(".dz-image img").attr("src", "{% static "itrak/images/icons/dummyword.jpg" %}");
+                    } else if (ext.indexOf("xls") != -1) {
+                        $(file.previewElement).find(".dz-image img").attr("src", "{% static "itrak/images/icons/dummyxls.jpg" %}");
+                    } else if (ext.indexOf("txt") != -1) {
+                        $(file.previewElement).find(".dz-image img").attr("src", "{% static "itrak/images/icons/dummytext1.jpg" %}");
+                    } else if (ext.indexOf("pptx") != -1) {
+                        $(file.previewElement).find(".dz-image img").attr("src", "{% static "itrak/images/icons/dummyppt.jpg" %}");
+                    }else{
+                        $(file.previewElement).find(".dz-image img").attr("src", "{% static "itrak/images/icons/dummydefault.png" %}");
+                    }
+                    /* Remove file */
+                    while (this.files.length > this.options.maxFiles) {
+                        this.removeFile(this.files[0]);
+                        //alertify.error("You can not upload more than 6 files");
+                    }
+                });
+
+                this.on("success", function (file, responseText) {
+                    alert('Success')
+
+                });
+                this.on("error", function (file, errorMessage) {
+                    //debugger;
+                    //this.removeFile(this.files);
+                    $(file.previewElement).remove();
+                    alertify.error(errorMessage);
+
+                });
+
+                // First change the button to actually tell Dropzone to process the queue.
+                addButton.addEventListener("click", function (e) {
+                    // Make sure that the form isn't actually being sent.
+                    {#e.preventDefault();#}
+                    {#e.stopPropagation();#}
+                    if (myDropzone.getQueuedFiles().length > 0) {
+                        myDropzone.processQueue();
+                    } else {
+                        $(".dropzone-form").submit();
+                    }
+                });
+
+                this.on("successmultiple", function (files, response) {
+                    setTimeout(function () {
+                        $(".dropzone-form").submit();
+                    }, 1000);
+                });
+            },
+            sending: function (file, xhr, formData) {
+                formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+                formData.append('user_id', $('#user_id').val());
+                formData.append('file1', $('#file1').val());
+                formData.append('file2', $('#file2').val());
+                formData.append('file3', $('#file3').val());
+                formData.append("attach_files", file);
+            }
+        });
+
+        myyDropzone.on("removedfile", function(file){
+            alert('remove triggered');
+        });
+
+        myyDropzone.on("success", function(file){
+            alert('success triggered');
+        });
+    }
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    function deleteUserAttachment(e, ua_id, user_id) {
+            if(ua_id){
+                alertify.confirm("Are you sure you want to delete this attachment?", function (e) {
+                if (e) {
+                    // Generate URL without "id" bit
+                    var url = "{% url 'deleteUserAttach' %}";
+
+                    // Construct the full URL with "id"
+                    document.location.href = url + "?ua_id=" + ua_id;
+                }
+                else{
+                      alertify.log("Your attachment is safe!");
+                    }
+                });
+
+            }
+        }
+
+</script>
+{% endblock %}
+
+

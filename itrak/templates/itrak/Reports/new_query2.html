@@ -1,0 +1,636 @@
+{% extends 'itrak/base.html' %}
+{% block body_block %}
+    {% load static %}
+    {% load tz %} {# it will Load the Django TimeZone Library#}
+    {% load templates_extras %}
+
+    <section role="main" class="content-body">
+        <header class="page-header">
+            <h2><i class="fa fa-file" aria-hidden="true"></i> New Query</h2>
+
+            <div class="right-wrapper pull-right">
+                <ol class="breadcrumbs">
+                    <li>
+                        <a href="{% url 'home' %}">
+                            <i class="fa fa-home"></i>
+                        </a>
+                    </li>
+                    <li><span>Reports</span></li>
+                    <li><span>New Query</span></li>
+                </ol>
+
+                <a class="sidebar-right-toggle" data-open="sidebar-right"><i class="fa fa-chevron-left"></i></a>
+            </div>
+        </header>
+
+        <div class="row content-flex">
+            <div class="col-md-12">
+                {% for message in messages %}
+                    <div class="alert {% if 'success' in message.tags %} alert-success {% else %} alert-danger{% endif %} alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+
+                <section class="panel">
+                    <header class="panel-heading">
+                        <h2 class="panel-title">New Query</h2>
+                    </header>
+
+                    <div class="panel-body">
+                        <center><h3>Build Query: Step 2 of 3 - Create Filter</h3></center>
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                <a id="btn-cancel" class="btn btn-primary">Cancel </a>
+                                <a id="btn-back" class="btn btn-primary">< Back</a>
+                                <button class="btn btn-primary" id="next">Next ></button>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="form-group">
+                            <label class="col-lg-2 col-md-3 col-sm-5 control-label"></label>
+                            <div class="col-md-4 col-sm-5">
+                                <p class="font-italic">	Do you want to filter the data in the query?</p>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="col-lg-2 col-md-3 col-sm-5 control-label"><span class="required">*</span> Field:</label>
+                            <div class="col-md-4 col-sm-5">
+                                <select id="data_pairs" class="form-control">
+                                    <option value="None"></option>
+                                    {% for field in fields %}
+                                        <option value={{ field.df_actual_column_name }},{{ field.df_primary_table_name }}>{{ field.df_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-lg-2 col-md-3 col-sm-5 control-label"><span class="required">*</span> Conditions:</label>
+                            <div class="col-md-4 col-sm-5">
+                                <select id="conditions" class="form-control">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group" id="field_value_div" style="display:None">
+                            <label class="col-lg-2 col-md-3 col-sm-5 control-label"><span class="required">*</span> Field Value:</label>
+                            <div class="col-md-4 col-sm-5">
+                                <input type="text" class="form-control" id="field_value" name="field_value">
+                            </div>
+                            <div class="col-sm-2 col-md-2 field_value_date" hidden>
+                                <div class="input-group date" id="datePicker">
+                                    <input type="text" name="field_value_date" id="field_value_date" data-plugin-datepicker class="form-control data-datepicker" />
+                                    <span class="input-group-addon">
+                                        <i class="fa fa-calendar"></i>
+                                    </span>
+                                </div>
+                                <small class="text-info text-bold">Select Date for Field Value</small>
+                            </div>
+                            <div class="col-md-4 col-sm-4 field_value_daterange" hidden>
+                                <div class="col-md-12 col-sm-12">
+                                    <input type="text" id="field_value_daterange" name="field_value_daterange" placeholder="Select Date" class="form-control" />
+                                </div>
+                                <div class="col-md-12 col-sm-12">
+                                   <small class="text-info text-bold">Select Date for Field Value</small>
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="form-group">
+                            <button class="btn btn-primary" onclick="savefilter()">Save Filter Expression</button>
+                        </div>
+                        <br>
+                        <div class="form-group">
+                            <label class="col-lg-2 col-md-3 col-sm-5 control-label padding_top_0">Filter Expressions:</label>
+                            <div class="col-md-10 col-xs-10 col-sm-10">
+                                <div id="filter_expression">
+                                {% if expression_content_array %}
+                                    {% for exp,exp1 in expression_content_array %}
+                                        <div id="filter{{ forloop.counter }}" class="filter_expression">
+                                            <a data-id="{{ exp }}" class="edit_filter" onclick="editFilter({{ exp }})">edit</a> |<a class="del_filter" onclick="delFilter({{ exp }})">del</a>&nbsp;&nbsp;&nbsp;{% get_correct_filter_expression exp1|safe %}
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="form-group">
+                            <label class="col-lg-2 col-md-3 col-sm-5 control-label">Filter Statement:</label>
+                            <div class="col-md-4 col-sm-5">
+                                <input type="text" class="form-control" id="filter_statement" name="filter_statement">
+                            </div>
+                            <div class="col-sm-3">
+                                <button id="reset" class="btn btn-primary">Reset</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-lg-2 col-md-3 col-sm-5 control-label">Examples:</label>
+                            <div class="col-md-4 col-sm-5">
+                                <h6>A and B</h6>
+                                <h6>A and (B or C)</h6>
+                                <h6>A and B and NOT C</h6>
+                                <h6>A and (B or C or D)</h6>
+                                <h6> A and (B or (C and D))</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="panel-footer">
+                        <div class="row">
+                            <div class="col-sm-12">
+                            	<label class="required-lable" style="margin-bottom: 10px;"><span class="required">*</span> Required</label>
+                            </div>
+                        </div>
+                    </footer>
+                </section>
+
+            </div>
+        </div>
+
+    </section>
+    <input type="hidden" name="char" id="char" value="A">
+    <input type="hidden" name="count" id="count" value="{% if filter_expression_array %}{{ filter_expression_array|length }}{% else %}1{% endif %}">
+    <input type="hidden" name="edit_checker" id="edit_checker" value="0">
+    <input type="hidden" name="char_checker" id="char_checker" value="0">
+
+{% endblock %}
+
+{% block script %}
+<script>
+
+    //DatePicker Plugin
+    var date = new Date();
+    var today = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+    var optComponent = {
+      format: 'mm/dd/yyyy',
+      container: '#datePicker',
+      orientation: 'auto top',
+      todayHighlight: true,
+      autoclose: true
+    };
+
+    //DateRange Picker Plugin
+    var start = moment().subtract(365, 'days');
+    var end = moment();
+
+    function cb_open(start, end) {
+        $('#field_value_daterange').val(start.format('MM/DD/YYYY') + ' - ' + end.format('MM/DD/YYYY'));
+    }
+
+    $('#field_value_daterange').daterangepicker({
+        startDate: start,
+        endDate: end,
+        autoUpdateInput: false,
+        locale: {
+          cancelLabel: 'Clear'
+        },
+        ranges: {
+           'Today': [moment(), moment()],
+           'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+           'Tomorrow': [moment().add(1, 'days'), moment().add(1, 'days')],
+           'This Week': [moment().startOf('week'), moment().endOf('week')],
+           'Last Week': [moment().subtract(1, 'week').startOf('week'), moment().subtract(1, 'week').endOf('week')],
+           'Next Week': [moment().add(1, 'week').startOf('week'), moment().add(1, 'week').endOf('week')],
+           'This Month': [moment().startOf('month'), moment().endOf('month')],
+           'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+           'Next Month': [moment().add(1, 'month').startOf('month'), moment().add(1, 'month').endOf('month')],
+           'This Year': [moment().startOf('year'), moment().endOf('year')],
+           'Last Year': [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')],
+           'Next Year': [moment().add(1, 'year').startOf('year'), moment().add(1, 'year').endOf('year')]
+        }
+    }, cb_open);
+    cb_open(start, end);
+    $('#field_value_daterange').val('');
+
+    $('#field_value_daterange').on('cancel.daterangepicker', function(ev, picker) {
+      $(this).val('');
+    });
+
+    $(function(){
+        // COMPONENT
+        $( '#datePicker' ).datepicker( optComponent );
+        {#$( '#datePicker' ).datepicker( 'setDate', today );#}
+        var filter_statement = '{{ filter_statement }}'
+        if(filter_statement != ''){
+            $("#filter_statement").val(filter_statement);
+            var counter = parseInt($('#count').val())+1
+            $('#count').val(counter);
+            for(i=1; i< counter;i++){
+                var ch = nextChar($('#char').val());
+                $('#char').val(ch);
+            }
+        }
+    })
+
+    $('#datePicker').on('change', function() {
+        var dateObject = $('#field_value_date').val();
+        $('#field_value').val($('#field_value_date').val());
+    });
+
+    $('#field_value_daterange').on('apply.daterangepicker', function() {
+        var dateObject = $('#field_value_daterange').val();
+        $('#field_value').val($('#field_value_daterange').val());
+    });
+
+    $('#data_pairs').on('change', function() {
+        //$("#data_pairs option[value='None']").remove();
+        if(this.value == 'None'){
+            $('#field_value_div').hide();
+            $('#field_value').val('');
+            $('#conditions').html('');
+        } else {
+            var array = this.value.split(',');
+            $.ajax({
+                type: 'POST',
+                url: "{% url 'getFieldsConditions' %}",
+                data: {field_name:array[0],table_name:array[1]},
+                success: function (data) {
+                    $('#field_value_div').hide();
+                    $('#field_value').val('');
+                    $('#conditions').html('');
+                    $('#conditions').html(data);
+                }
+            });
+        }
+    });
+
+    $('#conditions').on('change', function() {
+        $('#field_value_div').hide();
+        $('.field_value_date').hide();
+        $('.field_value_daterange').hide();
+
+        if($("#conditions").val()!="Is Blank" && $("#conditions").val()!="Is Not Blank" && $("#conditions").val()!="Is True" && $("#conditions").val()!="Is False"){
+            $('#field_value_div').show();
+        }
+        if($('option:selected', this).attr('data-id')=="Datetime" && ($("#conditions").val()!="Is Blank" && $("#conditions").val()!="Is Not Blank")){
+            if($("#conditions").val()=="=" || $("#conditions").val()=="<>" || $("#conditions").val()==">" || $("#conditions").val()=="<" || $("#conditions").val()==">=" || $("#conditions").val()=="<="){
+                $('.field_value_date').show();
+            }else{
+                $('.field_value_daterange').show();
+            }
+        }
+    });
+
+    function savefilter(){
+        if($('#data_pairs').val()=='None'){
+            alert('A Field selection is required!');
+        } else if ($('#conditions').val()==''){
+            alert('A Condition selection is required!');
+        } else if($('#field_value').val()==''){
+            if($("#conditions").val()=="Is Blank" || $("#conditions").val()=="Is Not Blank" || $("#conditions").val()=="Is True" || $("#conditions").val()=="Is False"){
+                var array = $('#data_pairs').val().split(',');
+                char = $('#char').val();
+                count = $('#count').val();
+                field_value = "";
+                save_filter(char,count,field_value);
+            }else{
+                alert('A Value is required!');
+            }
+        } else if($('#field_value').val()!='' && ($("#conditions").val()=="Is Blank" || $("#conditions").val()=="Is Not Blank" || $("#conditions").val()=="Is True" || $("#conditions").val()=="Is False")){
+            var array = $('#data_pairs').val().split(',');
+            char = $('#char').val();
+            count = $('#count').val();
+            $('#field_value').val('')
+            field_value = "";
+            save_filter(char,count,field_value);
+        } else {
+            var array = $('#data_pairs').val().split(',');
+            char = $('#char').val();
+            count = $('#count').val();
+
+            if ($('option:selected', '#conditions').attr('data-id') == "Datetime" && ($("#conditions").val() == "=" || $("#conditions").val() == "<>" || $("#conditions").val() == ">" || $("#conditions").val() == "<" || $("#conditions").val() == ">=" || $("#conditions").val() == "<=")) {
+                var dateRegEx = /^(0[1-9]|1[012]|[1-9])[- /.](0[1-9]|[12][0-9]|3[01]|[1-9])[- /.](19|20)\d\d$/
+                if (($('#field_value').val()).match(dateRegEx) !== null) {
+                    field_value = "'" + $('#field_value').val() + "'";
+                    save_filter(char, count, field_value);
+                    $('#field_value_date').val('');
+                } else {
+                    alert('Field Value seems Invalid. Select Date from given Datepicker.');
+                }
+            } else if ($('option:selected', '#conditions').attr('data-id') == "Datetime" && ($("#conditions").val() != "=" && $("#conditions").val() != "<>" && $("#conditions").val() != ">" && $("#conditions").val() != "<" && $("#conditions").val() != ">=" && $("#conditions").val() != "<=")) {
+                var dateRegEx = /^(0[1-9]|1[012]|[1-9])[- /.](0[1-9]|[12][0-9]|3[01]|[1-9])[- /.](19|20)\d\d$/
+                var date = ($('#field_value').val()).split(" - ");
+                if ((date[0]).match(dateRegEx) !== null && (date[1]).match(dateRegEx) !== null) {
+                    field_value = "'" + $('#field_value').val() + "'";
+                    save_filter(char, count, field_value);
+                    $('#field_value_daterange').val('');
+                } else {
+                    alert('Field Value seems Invalid. Select Date Range from given Datepicker.');
+                }
+            }else{
+                if(/^[a-zA-Z0-9\.\-\_\@/,\d,\s- ]+$/.test($('#field_value').val()) == false) {
+                   alert('Field Value contains illegal characters.');
+                }else{
+                    field_value = "'"+$('#field_value').val()+"'";
+                    save_filter(char,count,field_value);
+                }
+            }
+        }
+    }
+
+    function editFilter(field,condition,value,count,char){
+        $('#data_pairs option[value="'+field+'"]').prop('selected', true);
+        var array = field.split(',');
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'getFieldsConditions' %}",
+            data: {field_name:array[0],table_name:array[1],condition:condition},
+            success: function (data) {
+                $('#conditions').html('');
+                $('#conditions').html(data);
+            }
+        });
+
+        if(value!=""){
+            if(value.includes("/")){
+                if(condition=="=" || condition=="<>" || condition==">" || condition=="<" || condition==">=" || condition=="<="){
+                    $('.field_value_date').show();
+                    $('.field_value_daterange').hide();
+                    $( '#datePicker' ).datepicker( 'setDate', value );
+                }else{
+                    $('.field_value_daterange').show();
+                    $('.field_value_datefilter_expression').hide();
+                    $('#field_value_daterange').val(value);
+                }
+            }
+            $('#field_value_div').show();
+        }else{
+            $('#field_value_div').hide();
+            $('#field_value').val('');
+            $('.field_value_date').hide();
+            $('.field_value_daterange').hide();
+        }
+        $('#field_value').val(value);
+        $('#edit_checker').val(count);
+        $('#char_checker').val(char);
+    }
+
+    function delFilter(field,condition,value,count,char){
+        $('#filter'+count+'').remove();
+        counter_total = $('#count').val()-1;
+        if (count<counter_total){
+            for (i = count; i < counter_total; i++) {
+                if($('#filter'+(i+1)+' b').text()!=""){
+                    //Get Previous Character which is going to be Deleted
+                    var ch = prevChar($('#filter'+(i+1)+' b').text());
+                    $('#filter'+(i+1)+' b').text(ch+":");
+
+                    //Update the Value of data-id of Edit Fitler
+                    var dt_value = $('#filter'+(i+1)+' .edit_filter').attr('data-id')
+                    res = dt_value.slice(0, -2) + ch + dt_value.slice(-1);
+                    $('#filter'+(i+1)+' .edit_filter').attr('data-id', res);
+
+                    //Update the Value of onClick of Edit Filter
+                    var edit_dc_value = $('#filter'+(i+1)+' .edit_filter').attr('onclick')
+                    res1 = edit_dc_value.slice(0, -3) + ch + edit_dc_value.slice(-2);
+                    $('#filter'+(i+1)+' .edit_filter').attr('onclick', res1);
+                    $('#filter'+(i+1)+' .del_filter').attr('data-id', res);
+
+                    //Update the Value of onClick of Delete Filter
+                    var del_dc_value = $('#filter'+(i+1)+' .del_filter').attr('onclick')
+                    res1 = del_dc_value.slice(0, -3) + ch + del_dc_value.slice(-2);
+                    $('#filter'+(i+1)+' .del_filter').attr('onclick', res1);
+
+                    ch = nextChar($('#filter'+(i+1)+' b').text());
+                    $('#char').val(ch);
+                }else{
+                    $('#char').val("A");
+                }
+            }
+            if($("#filter_expression b").length==0){
+                $("#filter_statement").val("");
+            }else if($("#filter_expression b").length==1){
+                $("#filter_statement").val("A");
+            }else{
+                var smt = "A"
+                chk = "A"
+                for (i = 1; i < $("#filter_expression b").length; i++) {
+                    chk = nextChar(chk);
+                    smt +=  " and "+chk;
+                    $("#filter_statement").val(smt);
+                }
+            }
+        }else{
+            ch = prevChar( $('#char').val());
+            $('#char').val(ch);
+            if($("#filter_expression b").length==0){
+                $("#filter_statement").val("");
+            }else if($("#filter_expression b").length==1){
+                $("#filter_statement").val("A");
+            }else{
+                var smt = "A"
+                chk = "A"
+                for (i = 1; i < $("#filter_expression b").length; i++) {
+                    chk = nextChar(chk);
+                    smt +=  " and "+chk;
+                    $("#filter_statement").val(smt);
+                }
+            }
+        }
+    }
+
+    function save_filter(char,count,field_value){
+        if(char!="["){
+            if($('#edit_checker').val()!=0){
+                new_count = $('#edit_checker').val();
+                $('#filter'+new_count+'').html('<a class="edit_filter" data-id="\''+$('#data_pairs').val()+'\',\''+$('#conditions').val()+'\',\''+$('#field_value').val()+'\','+new_count+',\''+$('#char_checker').val()+'\'" onclick="editFilter(\''+$('#data_pairs').val()+'\',\''+$('#conditions').val()+'\',\''+$('#field_value').val()+'\','+new_count+',\''+$('#char_checker').val()+'\')" >edit</a> |<a class="del_filter" onclick="delFilter(\''+$('#data_pairs').val()+'\',\''+$('#conditions').val()+'\',\''+$('#field_value').val()+'\','+new_count+',\''+$('#char_checker').val()+'\')">del</a>&nbsp;&nbsp;&nbsp;<b>'+$('#char_checker').val()+':</b> '+ $('#data_pairs option:selected').text()+ ' ' +$('#conditions').val() + ' '+ field_value + '');
+                $("#filter_expression").after( "<br>" );
+                $('#edit_checker').val(0);
+                $('#field_value_div').hide();
+                $('#field_value').val('');
+                $('#conditions option[value="None"]').prop('selected', true)
+                $('#data_pairs option[value="None"]').prop('selected', true)
+            }else{
+                $('#filter_expression').append('<div id="filter'+count+'" class="filter_expression"><a class="edit_filter" data-id="\''+$('#data_pairs').val()+'\',\''+$('#conditions').val()+'\',\''+$('#field_value').val()+'\','+count+',\''+char+'\'" onclick="editFilter(\''+$('#data_pairs').val()+'\',\''+$('#conditions').val()+'\',\''+$('#field_value').val()+'\','+count+',\''+char+'\')">edit</a> |<a class="del_filter" onclick="delFilter(\''+$('#data_pairs').val()+'\',\''+$('#conditions').val()+'\',\''+$('#field_value').val()+'\','+count+',\''+char+'\')">del</a>&nbsp;&nbsp;&nbsp;<b>'+char+':</b> '+ $('#data_pairs option:selected').text()+ ' ' +$('#conditions').val() + ' '+ field_value + '</div>');
+                if($("#filter_statement").val()==""){
+                    $("#filter_statement").val(char);
+                }else{
+                    var stmt = $("#filter_statement").val();
+                    stmt = stmt+" and "+char;
+                    $("#filter_statement").val(stmt);
+                }
+                var ch = nextChar(char);
+                $('#char').val(ch);
+                var counter = parseInt(count)+1;
+                $('#count').val(counter);
+                $('#field_value_div').hide();
+                $('#field_value').val('');
+                $('#conditions option[value="None"]').prop('selected', true)
+                $('#data_pairs option[value="None"]').prop('selected', true)
+            }
+        }else{
+            alert("No more expression can add!");
+        }
+    }
+
+    $("#reset").click(function(){
+        $("#filter_statement").val("");
+        var smt = "A"
+        chk = "A"
+        if($("#filter_expression b").length==1){
+            $("#filter_statement").val(smt);
+        }else{
+            for (i = 1; i < $("#filter_expression b").length; i++) {
+                chk = nextChar(chk);
+                smt +=  " and "+chk;
+                $("#filter_statement").val(smt);
+            }
+        }
+    });
+
+    $("#next").click(function(){
+        if($("#filter_statement").val()!=""){
+            var allow = 1;
+            var allowed = 1;
+            var label_chk = 1;
+            var false_chk = 1;
+            str = $("#filter_statement").val();
+            par_start = "(";
+            par_end = ")";
+
+            //Conditons for labels and realation words
+            labels = $("#filter_expression b").text().toLowerCase();
+            labels = labels.split(":");
+            labels.splice(-1,1)
+            labels.push("and","not","or","(",")");
+            var ret = str.split(" ");
+            for(i = 0; i < ret.length; i++){
+                if(ret[i].length >= 2 && (ret[i].indexOf('(') != -1 || ret[i].indexOf(')') != -1)) {
+                    ret[i] = ret[i].split('').join(' ');
+                }
+            }
+            str = ret.join(' ');
+            $("#filter_statement").val(str);
+            var ret = str.split(" ");
+            for(i = 0; i < ret.length; i++){
+                if(ret.length >= 2 && i <  (ret.length-1)){
+                    if($.inArray(ret[i].toLowerCase(), ["and","not","or","(",")"]) == -1 && $.inArray(ret[i+1].toLowerCase(), ["and","not","or","(",")"]) == -1){
+                        false_chk = 0;
+                        break;
+                    }
+                }
+                if($.inArray(ret[i].toLowerCase(), labels) == -1){
+                    false_chk = 0;
+                }
+                if(ret[i].toLowerCase()=="and"){
+                    if(ret[i-1].toLowerCase()=="and" || ret[i-1].toLowerCase()=="or"){
+                        false_chk = 0;
+                    }
+                    label_chk = relation_check("and",ret);
+                }else if(ret[i].toLowerCase()=="not"){
+                    if(ret[i+1].toLowerCase()=="and" || ret[i+1].toLowerCase()=="or" || ret[i+1].toLowerCase()=="not"){
+                        false_chk = 0;
+                        break;
+                    }
+                    label_chk = relation_check("not",ret);
+                }else if(ret[i].toLowerCase()=="or"){
+                    if(ret[i-1].toLowerCase()=="and" || ret[i-1].toLowerCase()=="or"){
+                        false_chk = 0;
+                    }
+                    label_chk = relation_check("or",ret);
+                }
+            }
+
+            //Conditions For Paranthesis
+            par_start_occ = getAllIndexes(str,par_start);
+            par_end_occ = getAllIndexes(str,par_end);
+            for(i = 0; i < par_start_occ.length; i++){
+                if(par_end_occ[i]>par_start_occ[i]){
+                    allow = 0;
+                }else if(par_end_occ[i]<par_start_occ[i]){
+                    allowed = 0;
+                }
+            }
+
+            if($.inArray('not', ret) !== -1){
+                not_fixer = getAllIndexes(ret,'not');
+                for(i = 0; i < not_fixer.length; i++){
+                    if(ret[not_fixer[i]-1]!=0){
+                        if(ret[not_fixer[i]-1].toLowerCase()!="and" && ret[not_fixer[i]-1].toLowerCase()!="or"){
+                            ret[not_fixer[i]] = "and not"
+                        }
+                    }
+                }
+                ret = ret.join(' ');
+                $("#filter_statement").val(ret);
+            }
+
+            //Conditions for Validations
+            if(str.split(par_start).length - 1 != str.split(par_end).length - 1){
+                alert("Syntax error in Filter Statement: Placement of parenthesis");
+            }else if(allowed==0){
+                alert("Syntax error in Filter Statement: Placement of parenthesis");
+            }else if(label_chk==0 || false_chk == 0){
+                alert("Syntax error in Filter Statement: Invalid Condition");
+            }else{
+                redirector();
+            }
+        }else{
+            if($("#filter_statement").val()==""){
+                $("#filter_statement").val("");
+                var smt = "A"
+                chk = "A"
+                if($("#filter_expression b").length==1){
+                    $("#filter_statement").val(smt);
+                }else{
+                    for (i = 1; i < $("#filter_expression b").length; i++) {
+                        chk = nextChar(chk);
+                        smt +=  " and "+chk;
+                        $("#filter_statement").val(smt);
+                    }
+                }
+            }
+            redirector();
+        }
+    });
+
+    function getAllIndexes(arr, val) {
+        var indexes = [], i;
+        for(i = 0; i < arr.length; i++)
+            if (arr[i] === val)
+                indexes.push(i);
+        return indexes;
+    }
+
+    function relation_check(rel,ret){
+        if(ret[0].toLowerCase()==rel || ret[ret.length-1].toLowerCase()==rel){
+            return 0;
+        }else{
+            return 1;
+        }
+    }
+
+    function redirector(){
+        statement = $("#filter_statement").val();
+        expression = $('#filter_expression .filter_expression').map(function() { return $(this).text(); }).get().join('^')
+        expression_content = $('#filter_expression .filter_expression').map(function() { return $(this)[0].firstElementChild.attributes['data-id'].value; }).get().join('|')
+        {#console.log(expression_content)#}
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'setFilters' %}",
+            data: {statement:statement,expression:expression,expression_content:expression_content},
+            success: function (data) {
+                return window.location.href = "{% url 'thirdQuery' %}";
+            }
+        });
+    }
+
+    function nextChar(c) {
+        return String.fromCharCode(c.charCodeAt(0) + 1);
+    }
+
+    function prevChar(c) {
+        return String.fromCharCode(c.charCodeAt(0) - 1);
+    }
+
+    $("#btn-cancel").click(function(){
+        window.location.href = "{% url 'reportWriterQueries' %}";
+    });
+
+    $("#btn-back").click(function(){
+        window.location.href = "{% url 'newQuery' %}";
+    });
+
+</script>
+{% endblock %}
